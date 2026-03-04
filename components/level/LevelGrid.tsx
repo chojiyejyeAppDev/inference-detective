@@ -143,32 +143,34 @@ export default function LevelGrid({
                 }}
                 disabled={!isClickable || loadingLevel !== null}
                 className={[
-                  'w-full text-left rounded-xl border p-5 transition-all duration-200 group',
+                  'w-full text-left rounded-2xl border p-5 transition-all duration-250 group relative overflow-hidden',
                   isClickable && loadingLevel === null
                     ? isCurrent
-                      ? 'border-amber-500/70 bg-amber-500/10 hover:bg-amber-500/15 cursor-pointer'
-                      : 'border-slate-700 bg-slate-800/60 hover:border-slate-600 cursor-pointer'
+                      ? 'border-amber-500/60 bg-amber-500/[0.08] hover:bg-amber-500/12 cursor-pointer animate-level-pulse'
+                      : isCompleted
+                        ? 'border-emerald-500/30 bg-emerald-500/[0.05] hover:border-emerald-500/50 cursor-pointer animate-level-complete'
+                        : 'border-white/[0.08] bg-[#111C30]/60 hover:border-white/15 hover:bg-white/[0.04] cursor-pointer'
                     : isThisLoading
-                      ? 'border-amber-500/50 bg-amber-500/10 cursor-wait'
-                      : 'border-slate-800 bg-slate-900/40 cursor-not-allowed opacity-50',
+                      ? 'border-amber-500/50 bg-amber-500/[0.08] cursor-wait'
+                      : 'border-white/[0.04] bg-[#0F1A2E]/60 cursor-not-allowed opacity-40',
                 ].join(' ')}
               >
                 {/* Level number */}
                 <div className="flex items-center justify-between mb-3">
                   <div className={[
-                    'w-9 h-9 rounded-full flex items-center justify-center font-bold text-sm border-2',
+                    'w-9 h-9 rounded-full flex items-center justify-center font-black text-sm border-2 transition-all',
                     isCompleted
                       ? 'bg-emerald-500/20 border-emerald-500/50 text-emerald-400'
                       : isCurrent
-                        ? 'bg-amber-500 border-amber-400 text-slate-900'
-                        : 'bg-slate-800 border-slate-700 text-slate-500',
+                        ? 'bg-amber-500 border-amber-400 text-slate-900 shadow-md shadow-amber-500/30'
+                        : 'bg-white/[0.05] border-white/10 text-slate-500',
                   ].join(' ')}>
                     {isCompleted ? '✓' : config.level}
                   </div>
 
                   <div className="flex items-center gap-1">
                     {isCurrent && !isThisLoading && (
-                      <span className="text-[10px] font-bold text-amber-400 bg-amber-500/20 px-2 py-0.5 rounded-full">
+                      <span className="text-[10px] font-black text-amber-400 bg-amber-500/20 px-2 py-0.5 rounded-full border border-amber-500/30">
                         현재
                       </span>
                     )}
@@ -187,12 +189,12 @@ export default function LevelGrid({
 
                 {/* Info */}
                 <div>
-                  <p className="font-semibold text-sm text-slate-200 mb-0.5">{config.name}</p>
-                  <p className="text-xs text-slate-500">{config.description}</p>
+                  <p className="font-bold text-sm text-slate-200 mb-0.5">{config.name}</p>
+                  <p className="text-xs text-slate-500 leading-relaxed">{config.description}</p>
                 </div>
 
                 {/* Stats */}
-                <div className="mt-3 flex items-center gap-3 text-xs text-slate-500">
+                <div className="mt-3 flex items-center gap-3 text-xs text-slate-600">
                   <span>{config.slots}단계 추론</span>
                   <span>·</span>
                   <span>
@@ -228,16 +230,19 @@ export default function LevelGrid({
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.5 }}
-          className="mt-8 rounded-xl border border-slate-700 bg-slate-800/50 p-6 text-center"
+          className="relative mt-8 rounded-2xl border border-white/[0.08] bg-white/[0.025] p-6 text-center overflow-hidden"
         >
-          <p className="text-slate-300 font-semibold mb-1">더 빠르게 성장하고 싶으신가요?</p>
-          <p className="text-slate-500 text-sm mb-4">구독하면 무제한 문제 + 전체 힌트 + 오답 분석을 이용할 수 있어요.</p>
-          <button
-            onClick={() => router.push('/pricing')}
-            className="px-6 py-2.5 rounded-lg bg-amber-500 text-slate-900 text-sm font-bold hover:bg-amber-400 transition-colors"
-          >
-            구독 플랜 보기
-          </button>
+          <div className="absolute inset-0 bg-dot-grid opacity-50 pointer-events-none" />
+          <div className="relative">
+            <p className="text-slate-200 font-bold mb-1.5">더 빠르게 성장하고 싶으신가요?</p>
+            <p className="text-slate-500 text-sm mb-5">구독하면 무제한 문제 + 전체 힌트 + 오답 분석을 이용할 수 있어요.</p>
+            <button
+              onClick={() => router.push('/pricing')}
+              className="animate-cta-glow px-7 py-2.5 rounded-xl bg-amber-500 text-slate-900 text-sm font-black hover:bg-amber-400 transition-colors shadow-lg shadow-amber-500/25"
+            >
+              구독 플랜 보기
+            </button>
+          </div>
         </motion.div>
       )}
     </div>

@@ -1,6 +1,6 @@
 'use client'
 
-import { motion } from 'framer-motion'
+import { motion, type Variants } from 'framer-motion'
 import Link from 'next/link'
 import { ArrowRight, Brain, Target, TrendingUp, Zap, Users, ChevronRight } from 'lucide-react'
 
@@ -44,13 +44,13 @@ const MOCK_CHAIN = [
   { text: '따라서 리터러시 교육이 필요하다', correct: true },
 ]
 
-const container = {
+const container: Variants = {
   hidden: { opacity: 0 },
   show: { opacity: 1, transition: { staggerChildren: 0.09 } },
 }
-const item = {
+const item: Variants = {
   hidden: { opacity: 0, y: 22 },
-  show:   { opacity: 1, y: 0, transition: { duration: 0.45, ease: [0.25, 0.46, 0.45, 0.94] } },
+  show:   { opacity: 1, y: 0, transition: { duration: 0.45 } },
 }
 
 export default function LandingPage() {
