@@ -1,7 +1,6 @@
 'use client'
 
 import { Draggable } from '@hello-pangea/dnd'
-import { motion } from 'framer-motion'
 import { Sentence } from '@/types'
 
 interface SentenceCardProps {
@@ -14,20 +13,17 @@ export default function SentenceCard({ sentence, index, isDimmed = false }: Sent
   return (
     <Draggable draggableId={sentence.id} index={index}>
       {(provided, snapshot) => (
-        <motion.div
+        <div
           ref={provided.innerRef}
           {...provided.draggableProps}
           {...provided.dragHandleProps}
-          layout
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: isDimmed ? 0.35 : 1, y: 0 }}
-          transition={{ duration: 0.2, delay: index * 0.04 }}
           className={[
             'group relative flex items-start gap-2 rounded-lg border px-3 py-2.5 cursor-grab active:cursor-grabbing select-none',
             'transition-all duration-150',
             snapshot.isDragging
               ? 'border-amber-400 bg-slate-700 shadow-lg shadow-amber-500/20 scale-[1.02] rotate-1 z-50'
               : 'border-slate-600 bg-slate-800/80 hover:border-slate-500 hover:bg-slate-700/80',
+            isDimmed ? 'opacity-35' : 'opacity-100',
           ].join(' ')}
           style={provided.draggableProps.style}
         >
@@ -37,7 +33,7 @@ export default function SentenceCard({ sentence, index, isDimmed = false }: Sent
           </span>
 
           {/* Sentence text */}
-          <p className="flex-1 text-sm leading-relaxed text-slate-200 word-break-keep-all break-words">
+          <p className="flex-1 text-sm leading-relaxed text-slate-200 break-words">
             {sentence.text}
           </p>
 
@@ -50,7 +46,7 @@ export default function SentenceCard({ sentence, index, isDimmed = false }: Sent
               </div>
             ))}
           </div>
-        </motion.div>
+        </div>
       )}
     </Draggable>
   )

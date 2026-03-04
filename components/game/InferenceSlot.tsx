@@ -59,23 +59,18 @@ export default function InferenceSlot({
               {sentence ? (
                 <Draggable draggableId={sentence.id} index={0}>
                   {(draggableProvided, draggableSnapshot) => (
-                    <motion.div
+                    <div
                       ref={draggableProvided.innerRef}
                       {...draggableProvided.draggableProps}
                       {...draggableProvided.dragHandleProps}
-                      key={sentence.id}
-                      initial={{ opacity: 0, scale: 0.95 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      exit={{ opacity: 0, scale: 0.95 }}
-                      transition={{ duration: 0.15 }}
                       className={[
-                        'w-full text-sm leading-relaxed text-slate-100 cursor-grab active:cursor-grabbing',
-                        draggableSnapshot.isDragging ? 'opacity-50' : '',
+                        'w-full text-sm leading-relaxed text-slate-100 cursor-grab active:cursor-grabbing transition-opacity duration-150',
+                        draggableSnapshot.isDragging ? 'opacity-50' : 'opacity-100',
                       ].join(' ')}
                       style={draggableProvided.draggableProps.style}
                     >
                       {sentence.text}
-                    </motion.div>
+                    </div>
                   )}
                 </Draggable>
               ) : (
