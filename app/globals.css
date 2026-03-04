@@ -124,3 +124,177 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* ─────────────────────────────────────────────
+   Inference Detective — Design System
+   ───────────────────────────────────────────── */
+
+/* Keyframes */
+
+@keyframes level-pulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(251, 191, 36, 0);
+  }
+  50% {
+    box-shadow: 0 0 0 6px rgba(251, 191, 36, 0.12), 0 0 24px rgba(251, 191, 36, 0.08);
+  }
+}
+
+@keyframes level-complete-glow {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(52, 211, 153, 0);
+  }
+  50% {
+    box-shadow: 0 0 0 4px rgba(52, 211, 153, 0.10), 0 0 16px rgba(52, 211, 153, 0.07);
+  }
+}
+
+@keyframes float-y {
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(-7px); }
+}
+
+@keyframes shimmer-sweep {
+  0%   { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+
+@keyframes cta-glow {
+  0%, 100% {
+    box-shadow: 0 4px 20px rgba(251, 191, 36, 0.18);
+  }
+  50% {
+    box-shadow: 0 4px 40px rgba(251, 191, 36, 0.38), 0 0 0 3px rgba(251, 191, 36, 0.07);
+  }
+}
+
+@keyframes counter-in {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+    filter: blur(3px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+    filter: blur(0);
+  }
+}
+
+@keyframes slide-up-fade {
+  from { opacity: 0; transform: translateY(18px); }
+  to   { opacity: 1; transform: translateY(0);    }
+}
+
+@keyframes hero-glow-pulse {
+  0%, 100% { opacity: 0.25; transform: scale(1); }
+  50%       { opacity: 0.40; transform: scale(1.06); }
+}
+
+@keyframes badge-pop {
+  0%   { opacity: 0; transform: scale(0.8) translateY(-4px); }
+  60%  { transform: scale(1.06) translateY(0); }
+  100% { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+/* ── Utility classes ── */
+
+.animate-level-pulse    { animation: level-pulse 2.6s ease-in-out infinite; }
+.animate-level-complete { animation: level-complete-glow 3.2s ease-in-out infinite; }
+.animate-float-y        { animation: float-y 3.8s ease-in-out infinite; }
+.animate-cta-glow       { animation: cta-glow 2.6s ease-in-out infinite; }
+.animate-counter-in     { animation: counter-in 0.65s ease-out both; }
+.animate-slide-up       { animation: slide-up-fade 0.55s ease-out both; }
+.animate-badge-pop      { animation: badge-pop 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
+.animate-hero-glow      { animation: hero-glow-pulse 4s ease-in-out infinite; }
+
+/* Shimmer text */
+.text-shimmer {
+  background: linear-gradient(
+    108deg,
+    #f59e0b 0%,
+    #fbbf24 25%,
+    #fef3c7 50%,
+    #fbbf24 75%,
+    #f59e0b 100%
+  );
+  background-size: 220% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: shimmer-sweep 4.5s linear infinite;
+}
+
+/* Amber text glow */
+.text-glow-amber {
+  text-shadow:
+    0 0 18px rgba(251, 191, 36, 0.55),
+    0 0 36px rgba(251, 191, 36, 0.22);
+}
+
+/* Dot grid backgrounds */
+.bg-dot-grid {
+  background-image: radial-gradient(
+    circle,
+    rgba(148, 163, 184, 0.11) 1px,
+    transparent 1px
+  );
+  background-size: 28px 28px;
+}
+
+.bg-dot-grid-dense {
+  background-image: radial-gradient(
+    circle,
+    rgba(148, 163, 184, 0.09) 1px,
+    transparent 1px
+  );
+  background-size: 20px 20px;
+}
+
+/* Amber radial hero glow */
+.hero-glow-amber {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    ellipse 80% 60% at 50% 30%,
+    rgba(251, 191, 36, 0.08) 0%,
+    transparent 70%
+  );
+  pointer-events: none;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.18);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(148, 163, 184, 0.32);
+}
+
+/* Prefers-reduced-motion */
+@media (prefers-reduced-motion: reduce) {
+  .animate-level-pulse,
+  .animate-level-complete,
+  .animate-float-y,
+  .animate-cta-glow,
+  .animate-counter-in,
+  .animate-slide-up,
+  .animate-badge-pop,
+  .animate-hero-glow {
+    animation: none;
+  }
+  .text-shimmer {
+    animation: none;
+    background: none;
+    -webkit-text-fill-color: #fbbf24;
+    color: #fbbf24;
+  }
+}

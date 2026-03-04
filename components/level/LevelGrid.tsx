@@ -62,15 +62,23 @@ export default function LevelGrid({
   }
 
   return (
-    <div className="min-h-screen bg-[#0F172A] px-6 py-10">
+    <div className="min-h-screen bg-[#0C1628] px-6 py-10">
+      {/* Background */}
+      <div className="fixed inset-0 bg-dot-grid opacity-40 pointer-events-none" />
+
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
-        className="mb-8"
+        className="relative mb-8"
       >
         <div className="flex items-center justify-between mb-1">
-          <h1 className="text-2xl font-bold text-white tracking-tight">추론 탐정</h1>
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-lg bg-amber-500 flex items-center justify-center shadow-lg shadow-amber-500/30">
+              <span className="text-slate-900 font-black text-xs">탐</span>
+            </div>
+            <h1 className="text-2xl font-black text-white tracking-tight">추론 탐정</h1>
+          </div>
           <div className="flex items-center gap-4 text-sm">
             <div className="flex items-center gap-1.5 text-amber-400">
               <Lightbulb size={13} />
@@ -87,7 +95,7 @@ export default function LevelGrid({
             )}
           </div>
         </div>
-        <p className="text-slate-400 text-sm">레벨을 선택하고 추론 훈련을 시작하세요.</p>
+        <p className="text-slate-500 text-sm mt-1">레벨을 선택하고 추론 훈련을 시작하세요.</p>
       </motion.div>
 
       {/* Daily limit banner */}
@@ -95,15 +103,16 @@ export default function LevelGrid({
         <motion.div
           initial={{ opacity: 0, scale: 0.98 }}
           animate={{ opacity: 1, scale: 1 }}
-          className="mb-6 rounded-xl border border-amber-500/30 bg-amber-500/10 p-4 flex items-center justify-between"
+          className="relative mb-6 rounded-2xl border border-amber-500/35 bg-amber-500/[0.07] p-4 flex items-center justify-between overflow-hidden"
         >
-          <div>
-            <p className="text-amber-300 font-semibold text-sm">오늘 분량을 모두 사용했어요!</p>
+          <div className="absolute inset-0 bg-dot-grid-dense opacity-50 pointer-events-none" />
+          <div className="relative">
+            <p className="text-amber-300 font-bold text-sm">오늘 분량을 모두 사용했어요!</p>
             <p className="text-amber-400/70 text-xs mt-0.5">구독하면 무제한으로 계속 풀 수 있어요.</p>
           </div>
           <button
             onClick={() => router.push('/pricing')}
-            className="px-4 py-2 rounded-lg bg-amber-500 text-slate-900 text-xs font-bold hover:bg-amber-400 transition-colors"
+            className="relative px-4 py-2 rounded-xl bg-amber-500 text-slate-900 text-xs font-black hover:bg-amber-400 transition-colors shadow-lg shadow-amber-500/25"
           >
             구독하기
           </button>
@@ -111,7 +120,7 @@ export default function LevelGrid({
       )}
 
       {/* Level grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+      <div className="relative grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
         {LEVEL_CONFIGS.map((config, i) => {
           const isUnlocked = config.level <= currentLevel
           const isCurrent = config.level === currentLevel
