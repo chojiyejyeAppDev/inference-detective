@@ -1,8 +1,10 @@
 'use client'
 
+import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
-import { Lock, ChevronRight, Lightbulb, Star } from 'lucide-react'
+import { Lock, ChevronRight, Lightbulb, Star, Loader2 } from 'lucide-react'
+import { toast } from 'sonner'
 import { LEVEL_CONFIGS, FREE_DAILY_LIMIT } from '@/lib/game/levelConfig'
 import { SubscriptionStatus } from '@/types'
 
@@ -22,6 +24,42 @@ export default function LevelGrid({
   const router = useRouter()
   const isFree = subscriptionStatus !== 'active'
   const remaining = isFree ? Math.max(0, FREE_DAILY_LIMIT - dailyUsed) : null
+  const [loadingLevel, setLoadingLevel] = useState<number | null>(null)
+
+  async function handleLevelClick(level: number) {
+    if (loadingLevel !== null) return
+    setLoadingLevel(level)
+    try {
+      const res = await fetch(`/api/game/question?level=${level}`)
+      const data = await res.json()
+
+      if (res.status === 403 && data.error === 'daily_limit_reached') {
+        toast.error('오늘 풀 수 있는 문제를 모두 풀었어요!', {
+          description: '구독하면 무제한으로 계속 풀 수 있어요.',
+          action: {
+            label: '구독하기',
+            onClick: () => router.push('/pricing'),
+          },
+        })
+        return
+      }
+
+      if (!res.ok || !data.question?.id) {
+        toast.error('문제를 불러오지 못했어요.', {
+          description: '잠시 후 다시 시도해 주세요.',
+        })
+        return
+      }
+
+      router.push(`/play/${data.question.id}`)
+    } catch {
+      toast.error('네트워크 오류가 발생했어요.', {
+        description: '인터넷 연결을 확인하고 다시 시도해 주세요.',
+      })
+    } finally {
+      setLoadingLevel(null)
+    }
+  }
 
   return (
     <div className="min-h-screen bg-[#0F172A] px-6 py-10">
@@ -78,6 +116,8 @@ export default function LevelGrid({
           const isUnlocked = config.level <= currentLevel
           const isCurrent = config.level === currentLevel
           const isCompleted = config.level < currentLevel
+          const isClickable = isUnlocked && (remaining === null || remaining > 0)
+          const isThisLoading = loadingLevel === config.level
 
           return (
             <motion.div
@@ -88,18 +128,20 @@ export default function LevelGrid({
             >
               <button
                 onClick={() => {
-                  if (isUnlocked && (remaining === null || remaining > 0)) {
-                    router.push('/play/current')
+                  if (isClickable) {
+                    handleLevelClick(config.level)
                   }
                 }}
-                disabled={!isUnlocked}
+                disabled={!isClickable || loadingLevel !== null}
                 className={[
                   'w-full text-left rounded-xl border p-5 transition-all duration-200 group',
-                  isUnlocked && (remaining === null || remaining > 0)
+                  isClickable && loadingLevel === null
                     ? isCurrent
                       ? 'border-amber-500/70 bg-amber-500/10 hover:bg-amber-500/15 cursor-pointer'
                       : 'border-slate-700 bg-slate-800/60 hover:border-slate-600 cursor-pointer'
-                    : 'border-slate-800 bg-slate-900/40 cursor-not-allowed opacity-50',
+                    : isThisLoading
+                      ? 'border-amber-500/50 bg-amber-500/10 cursor-wait'
+                      : 'border-slate-800 bg-slate-900/40 cursor-not-allowed opacity-50',
                 ].join(' ')}
               >
                 {/* Level number */}
@@ -116,13 +158,16 @@ export default function LevelGrid({
                   </div>
 
                   <div className="flex items-center gap-1">
-                    {isCurrent && (
+                    {isCurrent && !isThisLoading && (
                       <span className="text-[10px] font-bold text-amber-400 bg-amber-500/20 px-2 py-0.5 rounded-full">
                         현재
                       </span>
                     )}
+                    {isThisLoading && (
+                      <Loader2 size={14} className="text-amber-400 animate-spin" />
+                    )}
                     {!isUnlocked && <Lock size={13} className="text-slate-600" />}
-                    {isUnlocked && !isCurrent && (
+                    {isUnlocked && !isCurrent && !isThisLoading && (
                       <ChevronRight
                         size={14}
                         className="text-slate-600 group-hover:text-slate-400 transition-colors"

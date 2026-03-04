@@ -5,6 +5,7 @@ import ErrorPatternCard from '@/components/dashboard/ErrorPatternCard'
 import HintDependencyChart from '@/components/dashboard/HintDependencyChart'
 import InviteSection from '@/components/dashboard/InviteSection'
 import Link from 'next/link'
+import { BookOpen } from 'lucide-react'
 
 export default async function DashboardPage() {
   const supabase = await createClient()
@@ -14,13 +15,16 @@ export default async function DashboardPage() {
 
   const service = await createServiceClient()
 
-  const { data: profile } = await service
+  const { data: profile, error: profileError } = await service
     .from('profiles')
     .select('*')
     .eq('id', user.id)
     .single()
 
-  if (!profile) redirect('/login')
+  if (profileError || !profile) {
+    console.error('[dashboard] profile fetch error:', profileError?.message)
+    redirect('/login')
+  }
 
   const isPremium = profile.subscription_status === 'active'
 
@@ -133,21 +137,43 @@ export default async function DashboardPage() {
         {/* Charts — blur for free users */}
         <div className={isPremium ? '' : 'relative'}>
           {!isPremium && (
-            <div className="absolute inset-0 z-10 backdrop-blur-md rounded-xl flex items-center justify-center">
-              <p className="text-slate-400 text-sm font-medium">구독 후 확인 가능</p>
+            <div className="absolute inset-0 z-10 backdrop-blur-md rounded-xl flex flex-col items-center justify-center gap-3">
+              <p className="text-slate-300 font-semibold text-sm">구독 후 확인 가능</p>
+              <Link
+                href="/pricing"
+                className="px-4 py-2 rounded-lg bg-amber-500 text-slate-900 text-xs font-bold hover:bg-amber-400 transition-colors"
+              >
+                구독 플랜 보기
+              </Link>
             </div>
           )}
-          <div className="space-y-4">
-            <AccuracyChart data={accuracyData} />
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <ErrorPatternCard patterns={errorPatternData} />
-              <HintDependencyChart
-                totalQuestions={totalQ}
-                questionsWithHints={withHints}
-                avgHintsPerQuestion={avgHints}
-              />
+          {totalQ === 0 ? (
+            <div className="rounded-xl border border-slate-700 bg-slate-800/50 p-10 text-center">
+              <div className="w-12 h-12 rounded-full bg-slate-700 flex items-center justify-center mx-auto mb-3">
+                <BookOpen size={20} className="text-slate-500" />
+              </div>
+              <p className="text-slate-400 font-medium text-sm mb-1">아직 풀어본 문제가 없어요</p>
+              <p className="text-slate-600 text-xs mb-4">문제를 풀면 여기서 성장 그래프를 확인할 수 있어요.</p>
+              <Link
+                href="/levels"
+                className="inline-block px-5 py-2 rounded-lg bg-amber-500 text-slate-900 text-xs font-bold hover:bg-amber-400 transition-colors"
+              >
+                문제 풀러 가기
+              </Link>
             </div>
-          </div>
+          ) : (
+            <div className="space-y-4">
+              <AccuracyChart data={accuracyData} />
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <ErrorPatternCard patterns={errorPatternData} />
+                <HintDependencyChart
+                  totalQuestions={totalQ}
+                  questionsWithHints={withHints}
+                  avgHintsPerQuestion={avgHints}
+                />
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Invite section */}

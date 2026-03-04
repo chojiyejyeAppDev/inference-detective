@@ -61,14 +61,18 @@ export async function GET(req: NextRequest) {
 
   const solvedIds = solved?.map((s) => s.question_id) ?? []
 
+  // UUID 형식 검증 (SQL 인젝션 방지)
+  const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+  const safeIds = solvedIds.filter((id) => typeof id === 'string' && UUID_RE.test(id))
+
   // 문제 조회
   let query = service
     .from('questions')
     .select('id, difficulty_level, topic, passage, sentences, conclusion, hints')
     .eq('difficulty_level', level)
 
-  if (solvedIds.length > 0) {
-    query = query.not('id', 'in', `(${solvedIds.join(',')})`)
+  if (safeIds.length > 0) {
+    query = query.not('id', 'in', `(${safeIds.join(',')})`)
   }
 
   const { data: questions, error: qError } = await query.limit(10)

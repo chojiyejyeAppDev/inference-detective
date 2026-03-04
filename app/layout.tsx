@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { Noto_Sans_KR } from 'next/font/google'
+import { Toaster } from 'sonner'
 import './globals.css'
 
 const notoSansKR = Noto_Sans_KR({
@@ -19,6 +20,17 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="ko">
       <body className={`${notoSansKR.variable} font-sans antialiased`}>
         {children}
+        <Toaster
+          theme="dark"
+          position="top-center"
+          toastOptions={{
+            style: {
+              background: '#1e293b',
+              border: '1px solid #334155',
+              color: '#e2e8f0',
+            },
+          }}
+        />
       </body>
     </html>
   )
