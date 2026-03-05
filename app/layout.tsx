@@ -10,9 +10,23 @@ const notoSansKR = Noto_Sans_KR({
 })
 
 export const metadata: Metadata = {
-  title: '추론 탐정 — 수능 비문학 추론 훈련',
+  title: '이:르다 — 수능 비문학 추론 훈련',
   description: '드래그&드롭으로 추론 경로를 조립하며 수능 비문학 논리력을 훈련하는 학습 게임',
-  keywords: ['수능', '비문학', '추론', '논리', '국어', '학습', '게임'],
+  keywords: ['수능', '비문학', '추론', '논리', '국어', '학습', '게임', '이르다'],
+  metadataBase: new URL('https://inference-detective.vercel.app'),
+  openGraph: {
+    title: '이:르다 — 수능 비문학 추론 훈련',
+    description: '드래그&드롭으로 추론 경로를 조립하며 수능 비문학 논리력을 훈련하는 학습 게임',
+    url: 'https://inference-detective.vercel.app',
+    siteName: '이:르다',
+    locale: 'ko_KR',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: '이:르다 — 수능 비문학 추론 훈련',
+    description: '드래그&드롭으로 추론 경로를 조립하며 수능 비문학 논리력을 훈련하는 학습 게임',
+  },
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

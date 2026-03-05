@@ -10,6 +10,7 @@ import PassageViewer from './PassageViewer'
 import SentenceCard from './SentenceCard'
 import InferenceSlot from './InferenceSlot'
 import ConnectionIndicator from './ConnectionIndicator'
+import LevelUpAnimation from '@/components/level/LevelUpAnimation'
 
 interface GameBoardProps {
   question: Question
@@ -38,12 +39,20 @@ export default function GameBoard({
     Array(levelConfig.slots).fill(null),
   )
   const [pool, setPool] = useState<Sentence[]>(question.sentences)
+  const [showLevelUp, setShowLevelUp] = useState(false)
 
   // Reset when question changes
   useEffect(() => {
     setChain(Array(levelConfig.slots).fill(null))
     setPool(question.sentences)
   }, [question.id, levelConfig.slots, question.sentences])
+
+  // Show level up animation when triggered
+  useEffect(() => {
+    if (evaluationResult?.level_up) {
+      setShowLevelUp(true)
+    }
+  }, [evaluationResult])
 
   const getSentenceById = useCallback(
     (id: string) => question.sentences.find((s) => s.id === id) ?? null,
@@ -98,10 +107,11 @@ export default function GameBoard({
   }
 
   return (
+    <>
     <DragDropContext onDragEnd={onDragEnd}>
       <div className="min-h-screen bg-[#0F172A] flex flex-col">
         {/* Header */}
-        <header className="flex items-center justify-between px-6 py-3 border-b border-slate-800">
+        <header className="flex items-center justify-between px-4 md:px-6 py-3 border-b border-slate-800">
           <div className="flex items-center gap-3">
             <span className="text-xs font-bold text-amber-400 tracking-widest uppercase">
               Lv.{levelConfig.level}
@@ -119,7 +129,7 @@ export default function GameBoard({
         </header>
 
         {/* Main content */}
-        <div className="flex-1 flex gap-5 p-5 min-h-0 overflow-hidden">
+        <div className="flex-1 flex flex-col md:flex-row gap-4 md:gap-5 p-4 md:p-5 min-h-0 overflow-auto md:overflow-hidden">
           {/* Left: Passage */}
           <PassageViewer
             passage={question.passage}
@@ -280,5 +290,14 @@ export default function GameBoard({
         </div>
       </div>
     </DragDropContext>
+
+    {showLevelUp && (
+      <LevelUpAnimation
+        fromLevel={levelConfig.level - 1}
+        toLevel={levelConfig.level}
+        onDismiss={() => setShowLevelUp(false)}
+      />
+    )}
+    </>
   )
 }

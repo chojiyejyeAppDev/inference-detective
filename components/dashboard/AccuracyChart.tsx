@@ -20,7 +20,12 @@ interface AccuracyChartProps {
   data: DataPoint[]
 }
 
-function CustomTooltip({ active, payload, label }: any) {
+interface TooltipPayloadItem {
+  value: number
+  payload: { level: number }
+}
+
+function CustomTooltip({ active, payload, label }: { active?: boolean; payload?: TooltipPayloadItem[]; label?: string }) {
   if (active && payload?.length) {
     return (
       <div className="rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-xs shadow-xl">

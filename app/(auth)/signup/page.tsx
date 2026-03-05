@@ -1,14 +1,13 @@
 'use client'
 
 import { Suspense, useState } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { Loader2 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 
 function SignupForm() {
-  const router = useRouter()
   const searchParams = useSearchParams()
   const refCode = searchParams.get('ref')
 
@@ -114,7 +113,7 @@ function SignupForm() {
       >
         {/* Logo */}
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-white mb-1">추론 탐정</h1>
+          <h1 className="text-3xl font-bold text-white mb-1">이:르다</h1>
           <p className="text-slate-400 text-sm">수능 비문학 추론 훈련</p>
         </div>
 

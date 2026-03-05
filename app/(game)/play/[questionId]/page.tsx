@@ -13,14 +13,14 @@ interface DailyLimitError {
 }
 
 export default function PlayPage({ params }: { params: Promise<{ questionId: string }> }) {
-  const { questionId } = use(params)
+  const { questionId: _questionId } = use(params)
   const router = useRouter()
   const [question, setQuestion] = useState<Question | null>(null)
   const [levelConfig, setLevelConfig] = useState<LevelConfig>(getLevelConfig(1))
   const [hintPoints, setHintPoints] = useState(10)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [evaluationResult, setEvaluationResult] = useState<EvaluationResult | null>(null)
-  const [dailyInfo, setDailyInfo] = useState<{ used: number; limit: number | null } | null>(null)
+  const [_dailyInfo, setDailyInfo] = useState<{ used: number; limit: number | null } | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
 
@@ -53,7 +53,7 @@ export default function PlayPage({ params }: { params: Promise<{ questionId: str
       setQuestion(data.question)
       setLevelConfig(getLevelConfig(data.question.difficulty_level))
       setDailyInfo({ used: data.daily_used, limit: data.daily_limit })
-    } catch (err) {
+    } catch (_err) {
       setError('문제를 불러오지 못했어요. 다시 시도해주세요.')
     } finally {
       setLoading(false)

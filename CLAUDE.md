@@ -1,4 +1,4 @@
-# 추론 탐정 (Inference Detective) — Agent Guide
+# 이:르다 (iruda) — Agent Guide
 
 ## 프로젝트 개요
 수능 비문학 추론 학습 앱. 드래그&드롭으로 추론 경로 조립. 7레벨. 프리미엄 구독(일 5문제 무료 / 유료 무제한).
@@ -18,7 +18,7 @@
 | 드래그&드롭 | @hello-pangea/dnd |
 | 애니메이션 | Framer Motion |
 | DB + Auth | Supabase (PostgreSQL + Auth) |
-| 결제 | Toss Payments Billing API |
+| 결제 | PortOne V2 Billing API |
 | 차트 | Recharts |
 | 배포 | Vercel (main 브랜치 자동 배포) |
 
@@ -37,7 +37,7 @@ app/
   api/game/question               # 문제 조회 (일일 제한)
   api/game/evaluate               # 체인 평가 + 레벨업 판정
   api/game/hint                   # 힌트 요청
-  api/payment/subscribe|webhook|cancel  # Toss 결제
+  api/payment/subscribe|webhook|cancel  # PortOne 결제
   api/invite/generate|redeem      # 초대 코드
 
 components/game/   # GameBoard, SentenceCard, InferenceSlot, ConnectionIndicator
@@ -48,7 +48,7 @@ lib/supabase/client.ts   # 브라우저용
 lib/supabase/server.ts   # 서버 컴포넌트/API용
 lib/game/evaluator.ts    # 체인 평가 알고리즘
 lib/game/levelConfig.ts  # 7레벨 설정
-lib/payment/toss.ts      # Toss Payments 클라이언트
+lib/payment/portone.ts   # PortOne V2 API 클라이언트
 
 scripts/seed-questions.ts  # 문제 데이터 시딩
 supabase/migrations/       # DB 스키마
@@ -62,9 +62,9 @@ supabase/migrations/       # DB 스키마
 NEXT_PUBLIC_SUPABASE_URL=https://dnfravwzyxiqpuawuyjh.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=<anon key>
 SUPABASE_SERVICE_ROLE_KEY=<service role key>
-NEXT_PUBLIC_TOSS_CLIENT_KEY=test_ck_placeholder   # ⚠️ 실제 키로 교체 필요
-TOSS_SECRET_KEY=test_sk_placeholder               # ⚠️ 실제 키로 교체 필요
-TOSS_WEBHOOK_SECRET=placeholder-webhook-secret    # ⚠️ 실제 키로 교체 필요
+NEXT_PUBLIC_PORTONE_STORE_ID=placeholder-store-id         # ⚠️ 실제 키로 교체 필요
+NEXT_PUBLIC_PORTONE_CHANNEL_KEY=placeholder-channel-key   # ⚠️ 실제 키로 교체 필요
+PORTONE_API_SECRET=placeholder-api-secret                 # ⚠️ 실제 키로 교체 필요
 NEXT_PUBLIC_APP_URL=http://localhost:3000
 ```
 
@@ -79,7 +79,7 @@ NEXT_PUBLIC_APP_URL=http://localhost:3000
 - [x] 힌트 시스템 (4단계)
 - [x] 서버사이드 일일 제한 API (무료 5문제)
 - [x] 레벨업 로직 (3세션 80% 이상)
-- [x] Toss Payments API 클라이언트 구조 (키 미설정)
+- [x] PortOne V2 결제 시스템 (빌링키 발급 + 정기결제)
 - [x] 초대 코드 시스템 API
 - [x] 성장 대시보드 컴포넌트 (Recharts)
 - [x] 랜딩 페이지 (Framer Motion 애니메이션)
@@ -88,7 +88,7 @@ NEXT_PUBLIC_APP_URL=http://localhost:3000
 
 ### ❌ 미완성 / 우선 작업 대상
 - [ ] **[P0] 문제 데이터 부족** — 레벨4~7 문제 없음. 레벨당 최소 10문제 필요
-- [ ] **[P0] Toss Payments 실결제** — 플레이스홀더 키. 실제 키 설정 후 결제 플로우 테스트
+- [ ] **[P0] PortOne 실결제** — 플레이스홀더 키. 실제 키 설정 후 결제 플로우 테스트
 - [ ] **[P1] 레벨업 애니메이션** — LevelUpAnimation 컴포넌트 미구현
 - [ ] **[P1] 이메일 알림** — 초대 성공 시 이메일 발송 (Resend 추천)
 - [ ] **[P1] 에러 모니터링** — Sentry 연동
@@ -203,8 +203,8 @@ npx vercel --prod --yes
 1. **문제 데이터 확장**: 레벨 4~7 각각 10문제 이상 생성 후 시딩
    - 수능 비문학 주제: 인문/사회/과학/기술/예술
    - `scripts/seed-questions.ts`에 추가 후 시딩 스크립트 실행
-2. **Toss Payments 연동 완성**: `NEXT_PUBLIC_TOSS_CLIENT_KEY`, `TOSS_SECRET_KEY` 실제 키 설정
-   - `lib/payment/toss.ts` 검토 및 실결제 테스트
+2. **PortOne 연동 완성**: `NEXT_PUBLIC_PORTONE_STORE_ID`, `NEXT_PUBLIC_PORTONE_CHANNEL_KEY`, `PORTONE_API_SECRET` 실제 키 설정
+   - `lib/payment/portone.ts` 검토 및 실결제 테스트
 
 ### P1 — 핵심 UX
 3. **LevelUpAnimation 컴포넌트** 구현
