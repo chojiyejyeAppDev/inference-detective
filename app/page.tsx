@@ -82,7 +82,7 @@ export default function LandingPage() {
       </nav>
 
       {/* ── Hero ── */}
-      <section className="relative max-w-5xl mx-auto px-6 pt-24 pb-28 text-center overflow-hidden">
+      <section className="relative max-w-5xl mx-auto px-4 sm:px-6 pt-16 sm:pt-24 pb-20 sm:pb-28 text-center overflow-hidden">
         {/* Background dot grid */}
         <div className="absolute inset-0 bg-dot-grid opacity-60 pointer-events-none" />
         {/* Amber radial glow */}
@@ -164,7 +164,7 @@ export default function LandingPage() {
               <div className="w-3 h-3 rounded-full bg-emerald-500/60" />
               <span className="text-xs text-slate-600 ml-2 font-mono">iruda.vercel.app/play</span>
             </div>
-            <div className="grid grid-cols-2 gap-5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
               {/* Passage */}
               <div className="space-y-3">
                 <div className="flex items-center gap-2">
@@ -228,7 +228,7 @@ export default function LandingPage() {
             <Users size={14} />
             <span>친구를 초대하면 둘 다 보너스 문제 지급</span>
           </div>
-          <div className="grid grid-cols-3 gap-6 max-w-lg mx-auto text-center">
+          <div className="grid grid-cols-3 gap-4 sm:gap-6 max-w-lg mx-auto text-center">
             {STATS.map((s, i) => (
               <motion.div key={s.label} variants={item} style={{ animationDelay: `${i * 0.12}s` }}>
                 <p className="text-4xl font-black text-amber-400 text-glow-amber leading-none mb-1">{s.n}</p>
@@ -293,7 +293,7 @@ export default function LandingPage() {
             <h2 className="text-3xl font-black tracking-tight">어떻게 하나요?</h2>
           </motion.div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 relative">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-6 relative">
             {/* Connector line (desktop) */}
             <div className="absolute top-5 left-[calc(12.5%+20px)] right-[calc(12.5%+20px)] h-px bg-gradient-to-r from-transparent via-amber-500/20 to-transparent hidden sm:block" />
             {STEPS.map((s, i) => (
@@ -392,7 +392,7 @@ export default function LandingPage() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.55 }}
-          className="relative rounded-3xl border border-amber-500/30 bg-gradient-to-b from-amber-500/[0.07] to-amber-500/[0.02] p-14 text-center overflow-hidden"
+          className="relative rounded-3xl border border-amber-500/30 bg-gradient-to-b from-amber-500/[0.07] to-amber-500/[0.02] p-8 sm:p-14 text-center overflow-hidden"
         >
           {/* Top glow line */}
           <div className="absolute top-0 left-1/2 -translate-x-1/2 w-1/2 h-px bg-gradient-to-r from-transparent via-amber-500/60 to-transparent" />

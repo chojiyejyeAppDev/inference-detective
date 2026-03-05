@@ -142,7 +142,7 @@ export default function PricingPage() {
   }
 
   return (
-    <div className="relative min-h-screen bg-[#0C1628] px-6 py-12 overflow-hidden">
+    <div className="relative min-h-screen bg-[#0C1628] px-4 sm:px-6 py-10 sm:py-12 overflow-hidden">
       {/* Background */}
       <div className="fixed inset-0 bg-dot-grid opacity-40 pointer-events-none" />
       <div
@@ -177,7 +177,7 @@ export default function PricingPage() {
         </motion.div>
 
         {/* Free vs Pro */}
-        <motion.div variants={item} className="grid grid-cols-2 gap-4 mb-8">
+        <motion.div variants={item} className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
           {/* Free */}
           <div className="rounded-2xl border border-white/[0.07] bg-white/[0.025] p-5">
             <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-4">무료</p>

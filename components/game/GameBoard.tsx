@@ -11,6 +11,7 @@ import SentenceCard from './SentenceCard'
 import InferenceSlot from './InferenceSlot'
 import ConnectionIndicator from './ConnectionIndicator'
 import LevelUpAnimation from '@/components/level/LevelUpAnimation'
+import ShareResultButton from './ShareResultButton'
 
 interface GameBoardProps {
   question: Question
@@ -111,20 +112,20 @@ export default function GameBoard({
     <DragDropContext onDragEnd={onDragEnd}>
       <div className="min-h-screen bg-[#0F172A] flex flex-col">
         {/* Header */}
-        <header className="flex items-center justify-between px-4 md:px-6 py-3 border-b border-slate-800">
-          <div className="flex items-center gap-3">
-            <span className="text-xs font-bold text-amber-400 tracking-widest uppercase">
+        <header className="flex items-center justify-between px-3 sm:px-4 md:px-6 py-3 border-b border-slate-800 gap-2">
+          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+            <span className="text-xs font-bold text-amber-400 tracking-widest uppercase shrink-0">
               Lv.{levelConfig.level}
             </span>
-            <span className="text-slate-600">·</span>
-            <span className="text-sm text-slate-400">{levelConfig.name}</span>
-            <span className="text-slate-600">·</span>
-            <span className="text-xs text-slate-500">{levelConfig.slots}단계 추론</span>
+            <span className="text-slate-600 hidden sm:inline">·</span>
+            <span className="text-sm text-slate-400 truncate hidden sm:inline">{levelConfig.name}</span>
+            <span className="text-slate-600 hidden sm:inline">·</span>
+            <span className="text-xs text-slate-500 shrink-0">{levelConfig.slots}단계</span>
           </div>
-          <div className="flex items-center gap-2 text-xs text-slate-400">
+          <div className="flex items-center gap-1.5 sm:gap-2 text-xs text-slate-400 shrink-0">
             <Lightbulb size={12} className="text-amber-400" />
             <span className="text-amber-400 font-semibold">{hintPoints}</span>
-            <span>힌트 포인트</span>
+            <span className="hidden sm:inline">힌트 포인트</span>
           </div>
         </header>
 
@@ -222,24 +223,33 @@ export default function GameBoard({
                       : 'border-slate-700 bg-slate-800/60',
                   ].join(' ')}
                 >
-                  <div className="flex items-center gap-2 mb-2">
-                    {evaluationResult.level_up ? (
-                      <Trophy size={16} className="text-amber-400" />
-                    ) : evaluationResult.is_correct ? (
-                      <span className="text-emerald-400">✓</span>
-                    ) : (
-                      <span className="text-red-400">✗</span>
-                    )}
-                    <span className={[
-                      'text-sm font-semibold',
-                      evaluationResult.is_correct ? 'text-emerald-400' : 'text-slate-300',
-                    ].join(' ')}>
-                      {evaluationResult.level_up
-                        ? `레벨업! Lv.${levelConfig.level + 1}로 올라갔어요!`
-                        : evaluationResult.is_correct
-                          ? '정답! 완벽한 추론 경로예요.'
-                          : `정확도 ${Math.round(evaluationResult.accuracy * 100)}%`}
-                    </span>
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                      {evaluationResult.level_up ? (
+                        <Trophy size={16} className="text-amber-400" />
+                      ) : evaluationResult.is_correct ? (
+                        <span className="text-emerald-400">✓</span>
+                      ) : (
+                        <span className="text-red-400">✗</span>
+                      )}
+                      <span className={[
+                        'text-sm font-semibold',
+                        evaluationResult.is_correct ? 'text-emerald-400' : 'text-slate-300',
+                      ].join(' ')}>
+                        {evaluationResult.level_up
+                          ? `레벨업! Lv.${levelConfig.level + 1}로 올라갔어요!`
+                          : evaluationResult.is_correct
+                            ? '정답! 완벽한 추론 경로예요.'
+                            : `정확도 ${Math.round(evaluationResult.accuracy * 100)}%`}
+                      </span>
+                    </div>
+                    <ShareResultButton
+                      level={levelConfig.level}
+                      accuracy={evaluationResult.accuracy}
+                      isCorrect={evaluationResult.is_correct}
+                      levelUp={evaluationResult.level_up}
+                      slots={levelConfig.slots}
+                    />
                   </div>
                   <p className="text-xs text-slate-400 leading-relaxed">
                     {evaluationResult.explanation}
@@ -249,24 +259,26 @@ export default function GameBoard({
             </AnimatePresence>
 
             {/* Action buttons */}
-            <div className="flex gap-3 mt-auto pt-2">
+            <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 mt-auto pt-2">
               {!isEvaluated ? (
                 <>
-                  <button
-                    onClick={onHintRequest}
-                    disabled={hintPoints <= 0 || levelConfig.level === 7}
-                    className="flex items-center gap-2 px-4 py-2.5 rounded-lg border border-amber-500/30 bg-amber-500/10 text-amber-400 text-sm font-medium hover:bg-amber-500/20 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
-                  >
-                    <Lightbulb size={14} />
-                    힌트 사용
-                  </button>
-                  <button
-                    onClick={onReset}
-                    className="flex items-center gap-1.5 px-3 py-2.5 rounded-lg border border-slate-700 text-slate-400 text-sm hover:border-slate-600 transition-colors"
-                  >
-                    <RefreshCw size={13} />
-                    초기화
-                  </button>
+                  <div className="flex gap-2 sm:gap-3">
+                    <button
+                      onClick={onHintRequest}
+                      disabled={hintPoints <= 0 || levelConfig.level === 7}
+                      className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg border border-amber-500/30 bg-amber-500/10 text-amber-400 text-sm font-medium hover:bg-amber-500/20 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                    >
+                      <Lightbulb size={14} />
+                      힌트
+                    </button>
+                    <button
+                      onClick={onReset}
+                      className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-lg border border-slate-700 text-slate-400 text-sm hover:border-slate-600 transition-colors"
+                    >
+                      <RefreshCw size={13} />
+                      초기화
+                    </button>
+                  </div>
                   <button
                     onClick={() => onSubmit(chain)}
                     disabled={!isChainComplete || isSubmitting}

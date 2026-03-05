@@ -62,7 +62,7 @@ export default function LevelGrid({
   }
 
   return (
-    <div className="min-h-screen bg-[#0C1628] px-6 py-10">
+    <div className="min-h-screen bg-[#0C1628] px-4 sm:px-6 py-8 sm:py-10">
       {/* Background */}
       <div className="fixed inset-0 bg-dot-grid opacity-40 pointer-events-none" />
 
@@ -72,22 +72,23 @@ export default function LevelGrid({
         animate={{ opacity: 1, y: 0 }}
         className="relative mb-8"
       >
-        <div className="flex items-center justify-between mb-1">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-0 mb-1">
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-lg bg-amber-500 flex items-center justify-center shadow-lg shadow-amber-500/30">
               <span className="text-slate-900 font-black text-xs">르</span>
             </div>
-            <h1 className="text-2xl font-black text-white tracking-tight">이:르다</h1>
+            <h1 className="text-xl sm:text-2xl font-black text-white tracking-tight">이:르다</h1>
           </div>
-          <div className="flex items-center gap-4 text-sm">
+          <div className="flex items-center gap-3 sm:gap-4 text-sm">
             <div className="flex items-center gap-1.5 text-amber-400">
               <Lightbulb size={13} />
               <span className="font-semibold">{hintPoints}</span>
-              <span className="text-slate-400">포인트</span>
+              <span className="text-slate-400 text-xs sm:text-sm">포인트</span>
             </div>
             {isFree && (
-              <div className="flex items-center gap-1.5 text-slate-400">
-                <span>오늘 남은 문제:</span>
+              <div className="flex items-center gap-1.5 text-slate-400 text-xs sm:text-sm">
+                <span className="hidden sm:inline">오늘 남은 문제:</span>
+                <span className="sm:hidden">남은:</span>
                 <span className={remaining === 0 ? 'text-red-400 font-bold' : 'text-emerald-400 font-bold'}>
                   {remaining}개
                 </span>

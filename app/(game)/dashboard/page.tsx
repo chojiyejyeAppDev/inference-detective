@@ -80,7 +80,7 @@ export default async function DashboardPage() {
   const overallAccuracy = totalQ > 0 ? Math.round((totalCorrect / totalQ) * 100) : 0
 
   return (
-    <div className="min-h-screen bg-[#0F172A] px-6 py-10">
+    <div className="min-h-screen bg-[#0F172A] px-4 sm:px-6 py-8 sm:py-10">
       <div className="max-w-3xl mx-auto">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
@@ -115,7 +115,7 @@ export default async function DashboardPage() {
         )}
 
         {/* Summary stats */}
-        <div className="grid grid-cols-3 gap-4 mb-6">
+        <div className="grid grid-cols-3 gap-2 sm:gap-4 mb-6">
           {[
             { label: '전체 문제', value: totalQ, unit: '개' },
             { label: '정답률', value: overallAccuracy, unit: '%' },
@@ -125,7 +125,7 @@ export default async function DashboardPage() {
               key={stat.label}
               className="rounded-xl border border-slate-700 bg-slate-800/50 p-4 text-center"
             >
-              <p className="text-2xl font-bold text-white">
+              <p className="text-xl sm:text-2xl font-bold text-white">
                 {stat.value}
                 <span className="text-base font-normal text-slate-400">{stat.unit}</span>
               </p>

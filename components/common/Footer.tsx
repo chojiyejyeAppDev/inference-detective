@@ -3,16 +3,16 @@ import Link from 'next/link'
 export default function Footer() {
   return (
     <footer className="border-t border-white/[0.06] bg-[#0C1628]">
-      <div className="max-w-5xl mx-auto px-6 py-10">
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8 sm:py-10">
         {/* 상단: 로고 + 정책 링크 */}
-        <div className="flex items-center justify-between mb-8">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 sm:gap-0 mb-8">
           <div className="flex items-center gap-2">
             <div className="w-5 h-5 rounded bg-amber-500/80 flex items-center justify-center">
               <span className="text-slate-900 font-black text-[9px]">르</span>
             </div>
             <span className="text-sm font-bold text-slate-400">이:르다</span>
           </div>
-          <div className="flex gap-5 text-xs">
+          <div className="flex gap-4 sm:gap-5 text-xs">
             <Link href="/terms" className="text-slate-500 hover:text-slate-300 transition-colors">
               이용약관
             </Link>

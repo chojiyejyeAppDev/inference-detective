@@ -101,9 +101,8 @@ NEXT_PUBLIC_APP_URL=http://localhost:3000
 ### ⏳ 미완성 / 우선 작업 대상
 - [ ] **[P1] Sentry DSN** — sentry.io에서 프로젝트 생성 후 `NEXT_PUBLIC_SENTRY_DSN` 설정 필요
 - [ ] **[P2] 커스텀 도메인** — Vercel에서 도메인 연결
-- [ ] **[P2] Resend 도메인 인증** — 현재 `onboarding@resend.dev` 사용 중, 자체 도메인 인증 권장
-- [ ] **[P3] 모바일 최적화** — 480px 이하 레이아웃 개선
-- [ ] **[P3] 소셜 공유** — 결과 카드 이미지 생성 후 카카오/트위터 공유
+- [x] **[P3] 모바일 최적화** — 480px 이하 레이아웃 반응형 개선 완료 ✅
+- [x] **[P3] 소셜 공유** — 결과 공유 (Twitter/X, 카카오스토리, 클립보드 복사, Web Share API) ✅
 
 ---
 
