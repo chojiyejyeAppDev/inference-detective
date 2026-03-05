@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion, type Variants } from 'framer-motion'
 import { Check, Zap, BookOpen, BarChart3, ArrowLeft } from 'lucide-react'
+import Link from 'next/link'
 import { PLANS } from '@/lib/payment/portone'
 
 const PLAN_FEATURES = {
@@ -244,6 +245,11 @@ export default function PricingPage() {
 
           <p className="text-center text-xs text-slate-600 mt-4">
             언제든지 해지 가능 · 해지 후 만료일까지 서비스 이용 가능
+          </p>
+          <p className="text-center text-[11px] text-slate-700 mt-2 space-x-3">
+            <Link href="/terms" className="hover:text-slate-400 underline transition-colors">이용약관</Link>
+            <Link href="/refund" className="hover:text-slate-400 underline transition-colors">환불규정</Link>
+            <Link href="/privacy" className="hover:text-slate-400 underline transition-colors">개인정보처리방침</Link>
           </p>
         </motion.div>
       </motion.div>
