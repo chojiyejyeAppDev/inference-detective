@@ -15,7 +15,7 @@ function getResend(): Resend | null {
 }
 
 // 발신 주소 — Resend 도메인 인증 후 변경 가능
-const FROM_EMAIL = 'iruda <onboarding@resend.dev>'
+const FROM_EMAIL = '이:르다 <eonlab@2onlab.com>'
 
 interface SendEmailOptions {
   to: string
