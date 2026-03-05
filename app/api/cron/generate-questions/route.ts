@@ -12,29 +12,9 @@
 
 import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
-
-// ── Types ──────────────────────────────────────────
-type Topic = 'humanities' | 'social' | 'science' | 'tech' | 'arts'
-
-interface Sentence {
-  id: string
-  text: string
-}
-
-interface Hint {
-  level: number
-  text: string
-}
-
-interface Question {
-  difficulty_level: number
-  topic: Topic
-  passage: string
-  sentences: Sentence[]
-  conclusion: string
-  correct_chain: string[]
-  hints: Hint[]
-}
+import type { Question, Topic } from '@/lib/questions/types'
+import { LEVEL3_QUESTIONS, LEVEL4_QUESTIONS } from '@/lib/questions/question-bank-l3-l4'
+import { LEVEL5_QUESTIONS, LEVEL6_QUESTIONS, LEVEL7_QUESTIONS } from '@/lib/questions/question-bank-l5-l7'
 
 // ── Level Configuration ────────────────────────────
 const LEVEL_CONFIG: Record<number, { slots: number; hintCount: number }> = {
@@ -49,10 +29,26 @@ const LEVEL_CONFIG: Record<number, { slots: number; hintCount: number }> = {
 
 const TOPICS: Topic[] = ['humanities', 'social', 'science', 'tech', 'arts']
 
+// ── Helper: group flat Question[] by topic ─────────
+function groupByTopic(questions: Question[]): Record<Topic, Question[]> {
+  const result: Record<Topic, Question[]> = {
+    humanities: [],
+    social: [],
+    science: [],
+    tech: [],
+    arts: [],
+  }
+  for (const q of questions) {
+    result[q.topic].push(q)
+  }
+  return result
+}
+
 // ── Question Bank per Level ────────────────────────
 // Each level has a pool of pre-written high-quality questions.
 // The generator randomly picks 10 (2 per topic) each day,
 // ensuring variety through date-based seeding.
+// Levels 1-2: inline questions. Levels 3-7: imported from lib/questions/.
 
 const QUESTION_BANK: Record<number, Record<Topic, Question[]>> = {
   // ═══════════════════════════════════════════
@@ -483,13 +479,11 @@ const QUESTION_BANK: Record<number, Record<Topic, Question[]>> = {
     ],
   },
 
-  // Levels 3-7 follow the same pattern but are omitted here for brevity.
-  // The full bank is loaded from the existing seed scripts.
-  3: { humanities: [], social: [], science: [], tech: [], arts: [] },
-  4: { humanities: [], social: [], science: [], tech: [], arts: [] },
-  5: { humanities: [], social: [], science: [], tech: [], arts: [] },
-  6: { humanities: [], social: [], science: [], tech: [], arts: [] },
-  7: { humanities: [], social: [], science: [], tech: [], arts: [] },
+  3: groupByTopic(LEVEL3_QUESTIONS),
+  4: groupByTopic(LEVEL4_QUESTIONS),
+  5: groupByTopic(LEVEL5_QUESTIONS),
+  6: groupByTopic(LEVEL6_QUESTIONS),
+  7: groupByTopic(LEVEL7_QUESTIONS),
 }
 
 // ── Date-based pseudo-random selection ──────────
