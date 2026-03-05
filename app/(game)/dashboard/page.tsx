@@ -39,10 +39,10 @@ export default async function DashboardPage() {
     .gte('created_at', thirtyDaysAgo.toISOString())
     .order('created_at', { ascending: true })
 
-  // 전체 진행 데이터
+  // 전체 진행 데이터 (correct_chain 포함하여 슬롯별 비교 가능)
   const { data: progress } = await service
     .from('user_progress')
-    .select('*')
+    .select('*, questions(correct_chain)')
     .eq('user_id', user.id)
 
   // 차트 데이터 변환
@@ -52,14 +52,18 @@ export default async function DashboardPage() {
     level: s.level,
   }))
 
-  // 오류 패턴: 틀린 문제의 슬롯 위치 분석
+  // 오류 패턴: 실제로 틀린 슬롯 위치만 분석
   const errorPatterns: Record<string, number> = {}
   for (const p of progress ?? []) {
     if (!p.is_correct && p.submitted_chain) {
-      const chain = p.submitted_chain as (string | null)[]
-      chain.forEach((_, idx) => {
-        const key = `슬롯 ${idx + 1}`
-        errorPatterns[key] = (errorPatterns[key] ?? 0) + 1
+      const submitted = p.submitted_chain as (string | null)[]
+      const correct = (p.questions as { correct_chain: string[] } | null)?.correct_chain
+      submitted.forEach((val, idx) => {
+        // correct_chain이 있으면 실제 틀린 슬롯만, 없으면 모든 슬롯 카운트
+        if (!correct || val !== correct[idx]) {
+          const key = `슬롯 ${idx + 1}`
+          errorPatterns[key] = (errorPatterns[key] ?? 0) + 1
+        }
       })
     }
   }

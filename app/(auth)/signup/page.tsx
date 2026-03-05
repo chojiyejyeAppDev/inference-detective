@@ -212,9 +212,13 @@ function SignupForm() {
 
         <p className="text-center text-xs text-slate-600 mt-4">
           가입 시{' '}
-          <span className="text-slate-500">서비스 이용약관</span>
+          <Link href="/terms" className="text-slate-500 hover:text-slate-300 underline underline-offset-2 transition-colors">
+            서비스 이용약관
+          </Link>
           {' '}및{' '}
-          <span className="text-slate-500">개인정보처리방침</span>
+          <Link href="/privacy" className="text-slate-500 hover:text-slate-300 underline underline-offset-2 transition-colors">
+            개인정보처리방침
+          </Link>
           에 동의하는 것으로 간주됩니다.
         </p>
       </motion.div>

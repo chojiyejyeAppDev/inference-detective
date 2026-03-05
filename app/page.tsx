@@ -162,7 +162,7 @@ export default function LandingPage() {
               <div className="w-3 h-3 rounded-full bg-red-500/60" />
               <div className="w-3 h-3 rounded-full bg-amber-500/60" />
               <div className="w-3 h-3 rounded-full bg-emerald-500/60" />
-              <span className="text-xs text-slate-600 ml-2 font-mono">iruda.vercel.app/play</span>
+              <span className="text-xs text-slate-600 ml-2 font-mono">iruda.kr/play</span>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
               {/* Passage */}
