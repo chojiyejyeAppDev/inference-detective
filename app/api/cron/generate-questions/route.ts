@@ -18,7 +18,7 @@ import { LEVEL3_QUESTIONS, LEVEL4_QUESTIONS } from '@/lib/questions/question-ban
 import { LEVEL5_QUESTIONS, LEVEL6_QUESTIONS, LEVEL7_QUESTIONS } from '@/lib/questions/question-bank-l5-l7'
 
 // ── Level Configuration ────────────────────────────
-const LEVEL_CONFIG: Record<number, { slots: number; hintCount: number }> = {
+const _LEVEL_CONFIG: Record<number, { slots: number; hintCount: number }> = {
   1: { slots: 3, hintCount: 3 },
   2: { slots: 3, hintCount: 3 },
   3: { slots: 4, hintCount: 2 },
@@ -509,7 +509,7 @@ function shuffleWithSeed<T>(arr: T[], seed: number): T[] {
   return copy
 }
 
-function pickQuestionsForLevel(
+function _pickQuestionsForLevel(
   level: number,
   count: number,
   date: Date,

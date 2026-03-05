@@ -1,11 +1,12 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion, type Variants } from 'framer-motion'
 import { Check, Zap, BookOpen, BarChart3, ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
 import { PLANS } from '@/lib/payment/portone'
+import { createClient } from '@/lib/supabase/client'
 
 const PLAN_FEATURES = {
   monthly: {
@@ -54,8 +55,43 @@ export default function PricingPage() {
   const router = useRouter()
   const [selectedPlan, setSelectedPlan] = useState<keyof typeof PLANS>('monthly')
   const [loading, setLoading] = useState(false)
+  const [userEmail, setUserEmail] = useState<string | null>(null)
+  const [userId, setUserId] = useState<string | null>(null)
+  const [userName, setUserName] = useState<string>('')
+  const [phoneNumber, setPhoneNumber] = useState<string>('')
+
+  useEffect(() => {
+    const supabase = createClient()
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (user) {
+        setUserEmail(user.email ?? null)
+        setUserId(user.id)
+        // 프로필에서 닉네임 가져오기
+        supabase
+          .from('profiles')
+          .select('nickname')
+          .eq('id', user.id)
+          .single()
+          .then(({ data: profile }) => {
+            if (profile?.nickname) setUserName(profile.nickname)
+          })
+      }
+    })
+  }, [])
 
   async function handleSubscribe() {
+    if (!userEmail || !userId) {
+      router.push('/login?redirect=/pricing')
+      return
+    }
+
+    // 전화번호 형식 검증
+    const cleanPhone = phoneNumber.replace(/[^0-9]/g, '')
+    if (!cleanPhone || cleanPhone.length < 10) {
+      alert('휴대폰 번호를 정확히 입력해주세요.')
+      return
+    }
+
     setLoading(true)
     try {
       const PortOne = await import('@portone/browser-sdk/v2')
@@ -67,7 +103,10 @@ export default function PricingPage() {
         issueId: `issue_${Date.now()}`,
         issueName: PLANS[selectedPlan].name,
         customer: {
-          customerId: `user_${Date.now()}`,
+          customerId: userId,
+          fullName: userName || '이용자',
+          email: userEmail,
+          phoneNumber: cleanPhone,
         },
       })
 
@@ -233,8 +272,22 @@ export default function PricingPage() {
           </div>
         </motion.div>
 
-        {/* CTA */}
+        {/* 결제 정보 입력 */}
         <motion.div variants={item}>
+          <div className="mb-4">
+            <label htmlFor="phoneNumber" className="block text-xs text-slate-500 mb-1.5">
+              휴대폰 번호 <span className="text-amber-500">*</span>
+            </label>
+            <input
+              id="phoneNumber"
+              type="tel"
+              placeholder="01012345678"
+              value={phoneNumber}
+              onChange={(e) => setPhoneNumber(e.target.value.replace(/[^0-9-]/g, ''))}
+              className="w-full px-4 py-3 rounded-xl bg-slate-800/60 border border-slate-700/50 text-slate-200 text-sm placeholder:text-slate-600 focus:outline-none focus:border-amber-500/50 focus:ring-1 focus:ring-amber-500/30 transition-all"
+            />
+          </div>
+
           <button
             onClick={handleSubscribe}
             disabled={loading}
