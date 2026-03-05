@@ -1,6 +1,8 @@
 import type { Metadata } from 'next'
 import { Noto_Sans_KR } from 'next/font/google'
 import { Toaster } from 'sonner'
+import { Suspense } from 'react'
+import PostHogProvider from '@/components/providers/PostHogProvider'
 import './globals.css'
 
 const notoSansKR = Noto_Sans_KR({
@@ -33,7 +35,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="ko">
       <body className={`${notoSansKR.variable} font-sans antialiased`}>
-        {children}
+        <Suspense fallback={null}>
+          <PostHogProvider>
+            {children}
+          </PostHogProvider>
+        </Suspense>
         <Toaster
           theme="dark"
           position="top-center"

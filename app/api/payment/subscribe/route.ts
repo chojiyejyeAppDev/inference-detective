@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient, createServiceClient } from '@/lib/supabase/server'
 import { chargeBillingKey, PLANS, type PlanKey } from '@/lib/payment/portone'
+import { sendEmail } from '@/lib/email/resend'
+import { subscriptionConfirmEmail } from '@/lib/email/templates'
 
 export async function POST(req: NextRequest) {
   const supabase = await createClient()
@@ -71,6 +73,20 @@ export async function POST(req: NextRequest) {
         subscription_expires_at: expiresAt.toISOString(),
       })
       .eq('id', user.id)
+
+    // 구독 완료 이메일 발송
+    try {
+      if (user.email) {
+        const mail = subscriptionConfirmEmail(
+          profile?.nickname || '사용자',
+          planInfo.name,
+          expiresAt.toISOString(),
+        )
+        await sendEmail({ to: user.email, ...mail })
+      }
+    } catch {
+      // 이메일 발송 실패해도 구독은 정상 처리
+    }
 
     return NextResponse.json({ success: true, plan, expires_at: expiresAt })
   } catch (err) {

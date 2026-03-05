@@ -1,0 +1,39 @@
+import posthog from 'posthog-js'
+
+export const POSTHOG_KEY = process.env.NEXT_PUBLIC_POSTHOG_KEY ?? ''
+export const POSTHOG_HOST = process.env.NEXT_PUBLIC_POSTHOG_HOST ?? 'https://us.i.posthog.com'
+
+export function initPostHog() {
+  if (typeof window === 'undefined') return
+  if (!POSTHOG_KEY) return
+
+  posthog.init(POSTHOG_KEY, {
+    api_host: POSTHOG_HOST,
+    person_profiles: 'identified_only',
+    capture_pageview: false, // Next.js SPA에서 수동 관리
+    capture_pageleave: true,
+    loaded: (ph) => {
+      // 개발 환경에서는 디버그 모드
+      if (process.env.NODE_ENV === 'development') {
+        ph.debug()
+      }
+    },
+  })
+}
+
+export function identifyUser(userId: string, properties?: Record<string, unknown>) {
+  if (!POSTHOG_KEY) return
+  posthog.identify(userId, properties)
+}
+
+export function trackEvent(event: string, properties?: Record<string, unknown>) {
+  if (!POSTHOG_KEY) return
+  posthog.capture(event, properties)
+}
+
+export function resetUser() {
+  if (!POSTHOG_KEY) return
+  posthog.reset()
+}
+
+export { posthog }

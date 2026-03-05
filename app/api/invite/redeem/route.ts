@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient, createServiceClient } from '@/lib/supabase/server'
 import { INVITE_BONUS_QUESTIONS } from '@/lib/game/levelConfig'
+import { sendEmail } from '@/lib/email/resend'
+import { inviteSuccessToInviter, inviteSuccessToInvitee } from '@/lib/email/templates'
 
 export async function POST(req: NextRequest) {
   const supabase = await createClient()
@@ -68,6 +70,40 @@ export async function POST(req: NextRequest) {
       invited_by: inviter.id,
     })
     .eq('id', user.id)
+
+  // 이메일 알림 발송 (비동기, 실패해도 응답에 영향 없음)
+  try {
+    // 초대자 이메일 조회
+    const { data: inviterAuth } = await service.auth.admin.getUserById(inviter.id)
+    const { data: inviterProfile } = await service
+      .from('profiles')
+      .select('nickname')
+      .eq('id', inviter.id)
+      .single()
+
+    const { data: inviteeProfile } = await service
+      .from('profiles')
+      .select('nickname')
+      .eq('id', user.id)
+      .single()
+
+    const inviterNickname = inviterProfile?.nickname || '사용자'
+    const inviteeNickname = inviteeProfile?.nickname || '신규 사용자'
+
+    // 초대자에게 알림
+    if (inviterAuth?.user?.email) {
+      const mail = inviteSuccessToInviter(inviterNickname, inviteeNickname, INVITE_BONUS_QUESTIONS)
+      await sendEmail({ to: inviterAuth.user.email, ...mail })
+    }
+
+    // 가입자에게 보너스 알림
+    if (user.email) {
+      const mail = inviteSuccessToInvitee(inviteeNickname, INVITE_BONUS_QUESTIONS)
+      await sendEmail({ to: user.email, ...mail })
+    }
+  } catch {
+    // 이메일 발송 실패해도 초대 기능은 정상 동작
+  }
 
   return NextResponse.json({
     success: true,
