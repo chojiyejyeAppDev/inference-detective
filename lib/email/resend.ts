@@ -1,6 +1,18 @@
 import { Resend } from 'resend'
 
-const resend = new Resend(process.env.RESEND_API_KEY)
+// 지연 초기화 — CI 빌드 시 API 키 없어도 에러 방지
+let resend: Resend | null = null
+
+function getResend(): Resend | null {
+  if (!process.env.RESEND_API_KEY) {
+    console.warn('[Resend] RESEND_API_KEY not set, skipping email')
+    return null
+  }
+  if (!resend) {
+    resend = new Resend(process.env.RESEND_API_KEY)
+  }
+  return resend
+}
 
 // 발신 주소 — Resend 도메인 인증 후 변경 가능
 const FROM_EMAIL = 'iruda <onboarding@resend.dev>'
@@ -12,8 +24,13 @@ interface SendEmailOptions {
 }
 
 export async function sendEmail({ to, subject, html }: SendEmailOptions) {
+  const client = getResend()
+  if (!client) {
+    return { success: false, error: 'Resend not configured' }
+  }
+
   try {
-    const { data, error } = await resend.emails.send({
+    const { data, error } = await client.emails.send({
       from: FROM_EMAIL,
       to,
       subject,
