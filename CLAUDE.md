@@ -62,9 +62,13 @@ supabase/migrations/       # DB 스키마
 NEXT_PUBLIC_SUPABASE_URL=https://dnfravwzyxiqpuawuyjh.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=<anon key>
 SUPABASE_SERVICE_ROLE_KEY=<service role key>
-NEXT_PUBLIC_PORTONE_STORE_ID=placeholder-store-id         # ⚠️ 실제 키로 교체 필요
-NEXT_PUBLIC_PORTONE_CHANNEL_KEY=placeholder-channel-key   # ⚠️ 실제 키로 교체 필요
-PORTONE_API_SECRET=placeholder-api-secret                 # ⚠️ 실제 키로 교체 필요
+NEXT_PUBLIC_PORTONE_STORE_ID=<store id>                   # ✅ 설정 완료
+NEXT_PUBLIC_PORTONE_CHANNEL_KEY=<channel key>             # ✅ 설정 완료
+PORTONE_API_SECRET=<api secret>                           # ✅ 설정 완료
+RESEND_API_KEY=<resend api key>                           # ✅ 설정 완료
+NEXT_PUBLIC_POSTHOG_KEY=<posthog project key>             # ✅ 설정 완료
+NEXT_PUBLIC_POSTHOG_HOST=https://us.i.posthog.com         # ✅ 설정 완료
+NEXT_PUBLIC_SENTRY_DSN=<sentry dsn>                       # ⚠️ Sentry 프로젝트 생성 후 설정
 NEXT_PUBLIC_APP_URL=http://localhost:3000
 ```
 
@@ -79,24 +83,27 @@ NEXT_PUBLIC_APP_URL=http://localhost:3000
 - [x] 힌트 시스템 (4단계)
 - [x] 서버사이드 일일 제한 API (무료 5문제)
 - [x] 레벨업 로직 (3세션 80% 이상)
-- [x] PortOne V2 결제 시스템 (빌링키 발급 + 정기결제)
+- [x] PortOne V2 결제 시스템 (KG이니시스 빌링키 발급 + 정기결제) ✅
 - [x] 초대 코드 시스템 API
 - [x] 성장 대시보드 컴포넌트 (Recharts)
 - [x] 랜딩 페이지 (Framer Motion 애니메이션)
 - [x] Vercel 프로덕션 배포
-- [x] 문제 데이터 시딩 (레벨1×3, 레벨2×2, 레벨3×1 = 총 6문제)
+- [x] 문제 데이터 시딩 (레벨 1~7 전체, 문제 뱅크 + Cron 자동 생성)
+- [x] LevelUpAnimation 컴포넌트 (Framer Motion 축하 애니메이션)
+- [x] 이메일 알림 시스템 (Resend — 환영/초대/구독 이메일)
+- [x] 에러 모니터링 (Sentry — DSN 설정 시 자동 활성화)
+- [x] 관리자 패널 /admin (문제 CRUD, 사용자 관리, 구독 현황)
+- [x] 분석 도구 (PostHog — 페이지뷰, 이벤트 추적)
+- [x] SEO (sitemap.xml, robots.txt, OG 이미지 API)
+- [x] PWA 지원 (next-pwa, manifest.json, 서비스워커)
+- [x] PG 심사 요건 (사업자정보 푸터, 이용약관/개인정보/환불 정책 페이지)
 
-### ❌ 미완성 / 우선 작업 대상
-- [ ] **[P0] 문제 데이터 부족** — 레벨4~7 문제 없음. 레벨당 최소 10문제 필요
-- [ ] **[P0] PortOne 실결제** — 플레이스홀더 키. 실제 키 설정 후 결제 플로우 테스트
-- [ ] **[P1] 레벨업 애니메이션** — LevelUpAnimation 컴포넌트 미구현
-- [ ] **[P1] 이메일 알림** — 초대 성공 시 이메일 발송 (Resend 추천)
-- [ ] **[P1] 에러 모니터링** — Sentry 연동
-- [ ] **[P2] 관리자 패널** — 문제 CRUD, 사용자 관리
+### ⏳ 미완성 / 우선 작업 대상
+- [ ] **[P1] Sentry DSN** — sentry.io에서 프로젝트 생성 후 `NEXT_PUBLIC_SENTRY_DSN` 설정 필요
 - [ ] **[P2] 커스텀 도메인** — Vercel에서 도메인 연결
-- [ ] **[P2] 분석 도구** — Mixpanel 또는 PostHog 연동
-- [ ] **[P3] 모바일 최적화** — 태블릿/폰 반응형 개선
-- [ ] **[P3] PWA 지원** — 오프라인 캐싱
+- [ ] **[P2] Resend 도메인 인증** — 현재 `onboarding@resend.dev` 사용 중, 자체 도메인 인증 권장
+- [ ] **[P3] 모바일 최적화** — 480px 이하 레이아웃 개선
+- [ ] **[P3] 소셜 공유** — 결과 카드 이미지 생성 후 카카오/트위터 공유
 
 ---
 
@@ -199,39 +206,29 @@ npx vercel --prod --yes
 
 에이전트는 아래 순서대로 작업하고, 각 작업 완료 시 이 파일의 체크박스를 업데이트하세요.
 
-### P0 — 즉시 필요 (서비스 운영 불가)
-1. **문제 데이터 확장**: 레벨 4~7 각각 10문제 이상 생성 후 시딩
-   - 수능 비문학 주제: 인문/사회/과학/기술/예술
-   - `scripts/seed-questions.ts`에 추가 후 시딩 스크립트 실행
-2. **PortOne 연동 완성**: `NEXT_PUBLIC_PORTONE_STORE_ID`, `NEXT_PUBLIC_PORTONE_CHANNEL_KEY`, `PORTONE_API_SECRET` 실제 키 설정
-   - `lib/payment/portone.ts` 검토 및 실결제 테스트
+### ✅ P0 — 완료
+1. ~~**문제 데이터 확장**~~ ✅ 레벨 1~7 전체 문제 뱅크 + Cron 자동 생성
+2. ~~**PortOne 연동 완성**~~ ✅ KG이니시스 V2 빌링키 발급, 실제 키 Vercel 설정
 
-### P1 — 핵심 UX
-3. **LevelUpAnimation 컴포넌트** 구현
-   - `components/level/LevelUpAnimation.tsx` 생성
-   - Framer Motion으로 레벨업 시 전화면 축하 애니메이션
-4. **이메일 알림** (Resend API)
-   - 회원가입 환영 이메일
-   - 초대 성공 알림 이메일
-5. **에러 모니터링** (Sentry)
-   - `npm install @sentry/nextjs`
-   - `SENTRY_DSN` 환경변수 추가
+### ✅ P1 — 완료
+3. ~~**LevelUpAnimation 컴포넌트**~~ ✅ Framer Motion 파티클 축하 애니메이션
+4. ~~**이메일 알림 (Resend)**~~ ✅ 환영/초대/구독 이메일 4종 템플릿
+5. ~~**에러 모니터링 (Sentry)**~~ ✅ 설치 완료, `NEXT_PUBLIC_SENTRY_DSN` 설정 시 활성화
 
-### P2 — 프로덕션 완성도
-6. **관리자 패널** `/admin`
-   - 문제 목록 조회/추가/수정/삭제
-   - 사용자 목록 및 구독 현황
-   - Supabase RLS로 admin 역할만 접근 가능
-7. **분석 도구** (PostHog 추천 — 무료 플랜)
-   - 페이지뷰, 퍼널(가입→결제) 추적
-8. **SEO 개선**
-   - `app/sitemap.ts` 생성
-   - OG 이미지 동적 생성 (`/api/og`)
+### ✅ P2 — 완료
+6. ~~**관리자 패널 /admin**~~ ✅ 문제 CRUD, 사용자/구독 관리
+7. ~~**분석 도구 (PostHog)**~~ ✅ 페이지뷰 자동 추적, 이벤트 API
+8. ~~**SEO 개선**~~ ✅ sitemap.xml, robots.txt, OG 이미지 API
 
-### P3 — 고도화
-9. **PWA** — `next-pwa` 설치, 서비스워커 설정
-10. **모바일 최적화** — 480px 이하 레이아웃 개선
-11. **소셜 공유** — 결과 카드 이미지 생성 후 카카오/트위터 공유
+### ⏳ P2 — 남은 작업
+9. **Sentry DSN 설정** — sentry.io에서 프로젝트 생성 후 DSN 환경변수 추가
+10. **커스텀 도메인** — Vercel에서 도메인 연결
+11. **Resend 도메인 인증** — 자체 발신 주소로 변경 (현재 `onboarding@resend.dev`)
+
+### ⏳ P3 — 고도화
+12. ~~**PWA**~~ ✅ next-pwa 설치, manifest.json, 서비스워커 설정 완료
+13. **모바일 최적화** — 480px 이하 레이아웃 개선
+14. **소셜 공유** — 결과 카드 이미지 생성 후 카카오/트위터 공유
 
 ---
 
