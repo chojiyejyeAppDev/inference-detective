@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion, type Variants } from 'framer-motion'
 import { Check, Zap, BookOpen, BarChart3, ArrowLeft } from 'lucide-react'
-import { PLANS } from '@/lib/payment/toss'
+import { PLANS } from '@/lib/payment/portone'
 
 const PLAN_FEATURES = {
   monthly: {
@@ -57,16 +57,44 @@ export default function PricingPage() {
   async function handleSubscribe() {
     setLoading(true)
     try {
-      const { loadTossPayments } = await import('@tosspayments/payment-sdk')
-      const tossPayments = await loadTossPayments(
-        process.env.NEXT_PUBLIC_TOSS_CLIENT_KEY!
-      )
-      const customerKey = `user_${Date.now()}`
-      await tossPayments.requestBillingAuth('카드', {
-        customerKey,
-        successUrl: `${window.location.origin}/api/payment/subscribe?plan=${selectedPlan}&customerKey=${customerKey}`,
-        failUrl: `${window.location.origin}/pricing?error=billing_auth_failed`,
+      const PortOne = await import('@portone/browser-sdk/v2')
+
+      const response = await PortOne.requestIssueBillingKey({
+        storeId: process.env.NEXT_PUBLIC_PORTONE_STORE_ID!,
+        channelKey: process.env.NEXT_PUBLIC_PORTONE_CHANNEL_KEY!,
+        billingKeyMethod: 'CARD',
+        issueId: `issue_${Date.now()}`,
+        issueName: PLANS[selectedPlan].name,
+        customer: {
+          customerId: `user_${Date.now()}`,
+        },
       })
+
+      if (!response || response.code != null) {
+        // 사용자 취소 또는 오류
+        console.error('빌링키 발급 실패:', response?.message)
+        setLoading(false)
+        return
+      }
+
+      // 빌링키 발급 성공 → 서버에서 결제 실행
+      const res = await fetch('/api/payment/subscribe', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          billingKey: response.billingKey,
+          plan: selectedPlan,
+        }),
+      })
+
+      if (!res.ok) {
+        const data = await res.json()
+        throw new Error(data.error ?? '결제 처리 실패')
+      }
+
+      // 결제 성공 → 레벨 페이지로 이동
+      router.push('/levels')
+      router.refresh()
     } catch (err) {
       console.error('결제 오류:', err)
       setLoading(false)
@@ -211,7 +239,7 @@ export default function PricingPage() {
             disabled={loading}
             className="animate-cta-glow w-full py-4 rounded-2xl bg-amber-500 text-slate-900 font-black text-base hover:bg-amber-400 transition-colors disabled:opacity-50 shadow-xl shadow-amber-500/25"
           >
-            {loading ? '결제 페이지 이동 중...' : '카드 등록하고 구독 시작'}
+            {loading ? '결제 진행 중...' : '카드 등록하고 구독 시작'}
           </button>
 
           <p className="text-center text-xs text-slate-600 mt-4">

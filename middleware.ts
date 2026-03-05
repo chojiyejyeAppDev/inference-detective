@@ -38,7 +38,7 @@ export async function middleware(request: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser()
 
   // 인증 필요 경로
-  const protectedPaths = ['/levels', '/play', '/dashboard']
+  const protectedPaths = ['/levels', '/play', '/dashboard', '/admin']
   const isProtected = protectedPaths.some((p) => pathname.startsWith(p))
 
   if (isProtected && !user) {

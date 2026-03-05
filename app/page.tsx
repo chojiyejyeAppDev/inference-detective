@@ -62,9 +62,9 @@ export default function LandingPage() {
         <div className="max-w-5xl mx-auto px-6 h-14 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
             <div className="w-7 h-7 rounded-lg bg-amber-500 flex items-center justify-center shadow-lg shadow-amber-500/30">
-              <span className="text-slate-900 font-black text-xs">탐</span>
+              <span className="text-slate-900 font-black text-xs">르</span>
             </div>
-            <span className="font-bold text-base tracking-tight">추론 탐정</span>
+            <span className="font-bold text-base tracking-tight">이:르다</span>
           </div>
           <div className="flex items-center gap-3">
             <Link href="/login" className="text-sm text-slate-400 hover:text-slate-200 transition-colors px-3 py-1.5">
@@ -161,7 +161,7 @@ export default function LandingPage() {
               <div className="w-3 h-3 rounded-full bg-red-500/60" />
               <div className="w-3 h-3 rounded-full bg-amber-500/60" />
               <div className="w-3 h-3 rounded-full bg-emerald-500/60" />
-              <span className="text-xs text-slate-600 ml-2 font-mono">inference-detective.vercel.app/play</span>
+              <span className="text-xs text-slate-600 ml-2 font-mono">iruda.vercel.app/play</span>
             </div>
             <div className="grid grid-cols-2 gap-5">
               {/* Passage */}
@@ -418,9 +418,9 @@ export default function LandingPage() {
         <div className="max-w-5xl mx-auto px-6 flex items-center justify-between text-xs text-slate-600">
           <div className="flex items-center gap-2">
             <div className="w-5 h-5 rounded bg-amber-500/80 flex items-center justify-center">
-              <span className="text-slate-900 font-black text-[9px]">탐</span>
+              <span className="text-slate-900 font-black text-[9px]">르</span>
             </div>
-            <span>© 2025 추론 탐정</span>
+            <span>© 2025 이:르다</span>
           </div>
           <div className="flex gap-5">
             <span className="hover:text-slate-400 cursor-pointer transition-colors">이용약관</span>

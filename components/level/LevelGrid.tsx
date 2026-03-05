@@ -75,9 +75,9 @@ export default function LevelGrid({
         <div className="flex items-center justify-between mb-1">
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-lg bg-amber-500 flex items-center justify-center shadow-lg shadow-amber-500/30">
-              <span className="text-slate-900 font-black text-xs">탐</span>
+              <span className="text-slate-900 font-black text-xs">르</span>
             </div>
-            <h1 className="text-2xl font-black text-white tracking-tight">추론 탐정</h1>
+            <h1 className="text-2xl font-black text-white tracking-tight">이:르다</h1>
           </div>
           <div className="flex items-center gap-4 text-sm">
             <div className="flex items-center gap-1.5 text-amber-400">

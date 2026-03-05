@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient, createServiceClient } from '@/lib/supabase/server'
+import { deleteBillingKey } from '@/lib/payment/portone'
 
 export async function POST() {
   const supabase = await createClient()
@@ -22,19 +23,28 @@ export async function POST() {
     return NextResponse.json({ error: 'No active subscription' }, { status: 404 })
   }
 
-  // Toss Payments는 billing key 비활성화 필요 시 API 호출
-  // 현재는 DB에서만 취소 처리 (만료일까지 서비스 제공)
+  // PortOne에서 빌링키 비활성화
+  if (subscription.billing_key) {
+    try {
+      await deleteBillingKey(subscription.billing_key)
+    } catch (err) {
+      // 빌링키 삭제 실패해도 DB 취소는 진행
+      console.error('Billing key deletion failed:', err)
+    }
+  }
+
+  // DB 구독 상태 업데이트
   await service
     .from('subscriptions')
-    .update({ status: 'cancelled' })
+    .update({
+      status: 'cancelled',
+      cancelled_at: new Date().toISOString(),
+      billing_key: null,
+    })
     .eq('id', subscription.id)
 
-  // 프로필의 subscription_status는 만료일 이후 webhook에서 처리
-  // 즉시 취소 원할 경우 아래 주석 해제
-  // await service
-  //   .from('profiles')
-  //   .update({ subscription_status: 'cancelled' })
-  //   .eq('id', user.id)
+  // 프로필의 subscription_status는 만료일 이후 웹훅에서 처리
+  // 만료일까지 서비스 제공
 
   return NextResponse.json({
     message: '구독이 취소되었어요. 만료일까지 서비스를 이용할 수 있어요.',

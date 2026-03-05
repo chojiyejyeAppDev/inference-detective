@@ -61,7 +61,7 @@ export default function LoginPage() {
       >
         {/* Logo */}
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-white mb-1">추론 탐정</h1>
+          <h1 className="text-3xl font-bold text-white mb-1">이:르다</h1>
           <p className="text-slate-400 text-sm">수능 비문학 추론 훈련</p>
         </div>
 

@@ -1,6 +1,6 @@
 'use client'
 
-import { RadialBarChart, RadialBar, ResponsiveContainer, Legend } from 'recharts'
+// SVG-based gauge used instead of Recharts radial chart
 
 interface HintDependencyChartProps {
   totalQuestions: number

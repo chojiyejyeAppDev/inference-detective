@@ -23,7 +23,7 @@ export default function PassageViewer({ passage, conclusion, topic }: PassageVie
       initial={{ opacity: 0, x: -20 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ duration: 0.4 }}
-      className="w-[45%] flex flex-col gap-3 min-w-0"
+      className="w-full md:w-[45%] flex flex-col gap-3 min-w-0"
     >
       {/* Header */}
       <div className="flex items-center gap-2 px-1">
@@ -34,7 +34,7 @@ export default function PassageViewer({ passage, conclusion, topic }: PassageVie
       </div>
 
       {/* Passage */}
-      <div className="flex-1 overflow-y-auto rounded-xl border border-slate-700 bg-slate-900/50 backdrop-blur-sm">
+      <div className="flex-1 max-h-[40vh] md:max-h-none overflow-y-auto rounded-xl border border-slate-700 bg-slate-900/50 backdrop-blur-sm">
         <div className="p-5">
           <p
             className="text-sm leading-[1.95] text-slate-200 break-words"

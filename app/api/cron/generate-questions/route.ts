@@ -1,8 +1,9 @@
 /**
- * Vercel Cron Job: Daily Question Generator
+ * Vercel Cron Job: Daily Question Pool Health Check
  *
- * Generates 10 questions per difficulty level (7 levels = 70 questions)
- * and inserts them into Supabase.
+ * Checks question counts per difficulty level and reports stats.
+ * Questions are served directly from the DB by /api/game/question,
+ * so this cron ensures adequate question pool coverage.
  *
  * Schedule: Every day at 7:00 AM KST (22:00 UTC previous day)
  * Endpoint: GET /api/cron/generate-questions
@@ -530,6 +531,8 @@ function pickQuestionsForLevel(
   return shuffled.slice(0, Math.min(count, shuffled.length))
 }
 
+const MIN_QUESTIONS_PER_LEVEL = 5
+
 // ── Main handler ───────────────────────────────
 export async function GET(request: Request) {
   // Verify the request is from Vercel Cron
@@ -554,53 +557,49 @@ export async function GET(request: Request) {
   }
 
   const supabase = createClient(supabaseUrl, supabaseKey)
-  const today = new Date()
 
-  const results: { level: number; inserted: number; errors: number }[] = []
-  let totalInserted = 0
-  let totalErrors = 0
+  // Check question counts per difficulty level
+  const levelStats: { level: number; count: number; healthy: boolean }[] = []
+  const warnings: string[] = []
 
   for (let level = 1; level <= 7; level++) {
-    const questions = pickQuestionsForLevel(level, 10, today)
+    const { count, error } = await supabase
+      .from('questions')
+      .select('*', { count: 'exact', head: true })
+      .eq('difficulty_level', level)
 
-    if (questions.length === 0) {
-      results.push({ level, inserted: 0, errors: 0 })
+    if (error) {
+      console.error(`[Cron] Failed to count level ${level} questions:`, error.message)
+      levelStats.push({ level, count: 0, healthy: false })
+      warnings.push(`Level ${level}: query failed`)
       continue
     }
 
-    const rows = questions.map((q) => ({
-      difficulty_level: q.difficulty_level,
-      topic: q.topic,
-      passage: q.passage,
-      sentences: q.sentences,
-      conclusion: q.conclusion,
-      correct_chain: q.correct_chain,
-      hints: q.hints,
-    }))
+    const questionCount = count ?? 0
+    const healthy = questionCount >= MIN_QUESTIONS_PER_LEVEL
 
-    const { data, error } = await supabase
-      .from('questions')
-      .insert(rows)
-      .select('id')
+    levelStats.push({ level, count: questionCount, healthy })
 
-    if (error) {
-      console.error(`[Cron] Level ${level} insert error:`, error.message)
-      results.push({ level, inserted: 0, errors: questions.length })
-      totalErrors += questions.length
-    } else {
-      const count = data?.length ?? 0
-      results.push({ level, inserted: count, errors: 0 })
-      totalInserted += count
+    if (!healthy) {
+      warnings.push(`Level ${level}: only ${questionCount} questions (min: ${MIN_QUESTIONS_PER_LEVEL})`)
     }
   }
 
-  console.log(`[Cron] Daily question generation complete: ${totalInserted} inserted, ${totalErrors} errors`)
+  const totalQuestions = levelStats.reduce((sum, s) => sum + s.count, 0)
+  const allHealthy = warnings.length === 0
+
+  if (!allHealthy) {
+    console.warn(`[Cron] Question pool warnings:`, warnings.join('; '))
+  }
+
+  console.log(`[Cron] Daily health check: ${totalQuestions} total questions, ${allHealthy ? 'all levels healthy' : `${warnings.length} warnings`}`)
 
   return NextResponse.json({
     success: true,
-    date: today.toISOString().slice(0, 10),
-    total_inserted: totalInserted,
-    total_errors: totalErrors,
-    details: results,
+    date: new Date().toISOString().slice(0, 10),
+    total_questions: totalQuestions,
+    all_healthy: allHealthy,
+    levels: levelStats,
+    warnings,
   })
 }

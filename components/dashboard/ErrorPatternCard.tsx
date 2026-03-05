@@ -12,7 +12,12 @@ interface ErrorPatternCardProps {
   patterns: ErrorPattern[]
 }
 
-function CustomTooltip({ active, payload }: any) {
+interface TooltipPayloadItem {
+  value: number
+  payload: { label: string }
+}
+
+function CustomTooltip({ active, payload }: { active?: boolean; payload?: TooltipPayloadItem[] }) {
   if (active && payload?.length) {
     return (
       <div className="rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-xs shadow-xl">

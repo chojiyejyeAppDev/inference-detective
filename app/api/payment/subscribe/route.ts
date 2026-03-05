@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient, createServiceClient } from '@/lib/supabase/server'
-import { issueBillingKey, chargeBilling, PLANS, PlanKey } from '@/lib/payment/toss'
+import { chargeBillingKey, PLANS, type PlanKey } from '@/lib/payment/portone'
 
 export async function POST(req: NextRequest) {
   const supabase = await createClient()
@@ -10,14 +10,13 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  const { authKey, customerKey, plan } = await req.json() as {
-    authKey: string
-    customerKey: string
+  const { billingKey, plan } = await req.json() as {
+    billingKey: string
     plan: PlanKey
   }
 
-  if (!PLANS[plan]) {
-    return NextResponse.json({ error: 'Invalid plan' }, { status: 400 })
+  if (!billingKey || !PLANS[plan]) {
+    return NextResponse.json({ error: 'Invalid request' }, { status: 400 })
   }
 
   const service = await createServiceClient()
@@ -30,24 +29,24 @@ export async function POST(req: NextRequest) {
     .single()
 
   try {
-    // 1. Billing Key 발급
-    const { billingKey } = await issueBillingKey(authKey, customerKey)
-
-    // 2. 첫 결제 실행
+    // 1. 빌링키로 즉시 결제
     const planInfo = PLANS[plan]
-    const orderId = `order_${user.id}_${Date.now()}`
+    const paymentId = `payment_${user.id}_${Date.now()}`
 
-    await chargeBilling({
+    await chargeBillingKey({
       billingKey,
-      customerKey,
-      orderId,
+      paymentId,
       orderName: planInfo.name,
       amount: planInfo.amount,
-      customerEmail: user.email ?? '',
-      customerName: profile?.nickname ?? '사용자',
+      currency: 'KRW',
+      customer: {
+        id: user.id,
+        name: profile?.nickname ?? '사용자',
+        email: user.email,
+      },
     })
 
-    // 3. 구독 정보 저장
+    // 2. 구독 정보 저장
     const expiresAt = new Date()
     if (plan === 'yearly') {
       expiresAt.setFullYear(expiresAt.getFullYear() + 1)
@@ -58,13 +57,13 @@ export async function POST(req: NextRequest) {
     await service.from('subscriptions').upsert({
       user_id: user.id,
       plan,
-      toss_billing_key: billingKey,
-      toss_customer_key: customerKey,
+      billing_key: billingKey,
+      customer_key: user.id,
       status: 'active',
       expires_at: expiresAt.toISOString(),
     })
 
-    // 4. 프로필 구독 상태 업데이트
+    // 3. 프로필 구독 상태 업데이트
     await service
       .from('profiles')
       .update({

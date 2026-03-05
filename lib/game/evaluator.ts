@@ -74,7 +74,7 @@ function generateSlotHint(
 function buildExplanation(
   accuracy: number,
   feedback: SlotFeedback[],
-  question: Question,
+  _question: Question,
 ): string {
   if (accuracy >= 1.0) {
     return '완벽합니다! 모든 추론 경로를 올바르게 완성했어요.'

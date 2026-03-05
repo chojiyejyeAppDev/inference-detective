@@ -1,5 +1,5 @@
 /**
- * Daily Question Generator for Inference Detective
+ * Daily Question Generator for 이:르다
  *
  * Generates 10 propositions and conclusions for each of the 7 difficulty levels
  * (70 total) and seeds them into Supabase.
@@ -180,17 +180,17 @@ const TOPIC_THEMES: Record<Topic, string[]> = {
 // Sentence ID labels (for up to 9 sentences)
 // ────────────────────────────────────────────────
 
-const SENTENCE_IDS = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i']
+const _SENTENCE_IDS = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i']
 
 // ────────────────────────────────────────────────
 // Random helpers
 // ────────────────────────────────────────────────
 
-function pickRandom<T>(arr: T[]): T {
+function _pickRandom<T>(arr: T[]): T {
   return arr[Math.floor(Math.random() * arr.length)]
 }
 
-function shuffleArray<T>(arr: T[]): T[] {
+function _shuffleArray<T>(arr: T[]): T[] {
   const shuffled = [...arr]
   for (let i = shuffled.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1))
@@ -214,7 +214,7 @@ function getDateSeed(): string {
 // Level 1: Simple cause-and-effect (3 slots, direct hints)
 function generateLevel1(topic: Topic, themeIndex: number): Question {
   const themes = TOPIC_THEMES[topic]
-  const theme = themes[themeIndex % themes.length]
+  const _theme = themes[themeIndex % themes.length]
 
   const templates: Record<Topic, () => Question> = {
     humanities: () => ({
@@ -321,9 +321,9 @@ function generateQuestion(level: number, topic: Topic, themeIndex: number): Ques
 
   const config = LEVEL_CONFIG[level]
   const themes = TOPIC_THEMES[topic]
-  const theme = themes[themeIndex % themes.length]
-  const slots = config.slots
-  const distractorCount = level <= 4 ? 1 : 2
+  const _theme = themes[themeIndex % themes.length]
+  const _slots = config.slots
+  const _distractorCount = level <= 4 ? 1 : 2
 
   // Generate a passage and logical chain based on level/topic
   // We use structured templates for each level tier
