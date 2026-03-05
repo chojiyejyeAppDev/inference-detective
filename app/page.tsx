@@ -3,6 +3,7 @@
 import { motion, type Variants } from 'framer-motion'
 import Link from 'next/link'
 import { ArrowRight, Brain, Target, TrendingUp, Zap, Users, ChevronRight } from 'lucide-react'
+import Footer from '@/components/common/Footer'
 
 const FEATURES = [
   {
@@ -414,20 +415,7 @@ export default function LandingPage() {
       </section>
 
       {/* ── Footer ── */}
-      <footer className="border-t border-white/[0.06] py-8">
-        <div className="max-w-5xl mx-auto px-6 flex items-center justify-between text-xs text-slate-600">
-          <div className="flex items-center gap-2">
-            <div className="w-5 h-5 rounded bg-amber-500/80 flex items-center justify-center">
-              <span className="text-slate-900 font-black text-[9px]">르</span>
-            </div>
-            <span>© 2025 이:르다</span>
-          </div>
-          <div className="flex gap-5">
-            <span className="hover:text-slate-400 cursor-pointer transition-colors">이용약관</span>
-            <span className="hover:text-slate-400 cursor-pointer transition-colors">개인정보처리방침</span>
-          </div>
-        </div>
-      </footer>
+      <Footer />
     </div>
   )
 }
