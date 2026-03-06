@@ -28,28 +28,32 @@ export default function RefundPage() {
             <p className="mb-3">
               유료 구독 서비스는 결제 완료 시점부터 아래 기간 동안 제공됩니다.
             </p>
-            <div className="rounded-xl border border-white/[0.07] bg-white/[0.02] p-4">
+            <div className="rounded-xl border border-white/[0.07] bg-white/[0.02] p-4 space-y-4">
               <table className="w-full text-sm">
                 <thead>
                   <tr className="text-slate-500 text-xs">
                     <th className="text-left pb-2 font-medium">구독 플랜</th>
                     <th className="text-left pb-2 font-medium">금액</th>
-                    <th className="text-left pb-2 font-medium">제공 기간</th>
+                    <th className="text-left pb-2 font-medium">서비스 제공 기간</th>
                   </tr>
                 </thead>
                 <tbody className="text-slate-400">
                   <tr className="border-t border-white/[0.04]">
                     <td className="py-2">월간 구독</td>
-                    <td className="py-2">9,900원</td>
-                    <td className="py-2">결제일로부터 30일 (자동 갱신)</td>
+                    <td className="py-2">9,900원/월</td>
+                    <td className="py-2">결제일로부터 1개월(30일) 이용 후 자동 갱신</td>
                   </tr>
                   <tr className="border-t border-white/[0.04]">
                     <td className="py-2">일주일 이용권</td>
                     <td className="py-2">3,900원</td>
-                    <td className="py-2">결제일로부터 7일 (일회성)</td>
+                    <td className="py-2">결제일로부터 7일간 서비스 제공 (일회성)</td>
                   </tr>
                 </tbody>
               </table>
+              <div className="text-xs text-slate-500 space-y-1 border-t border-white/[0.04] pt-3">
+                <p>· 월간 구독: 매월 동일한 날짜에 자동 결제되며, 해지 시 다음 결제일부터 자동결제가 중단됩니다.</p>
+                <p>· 일주일 이용권: 자동 갱신 없음. 7일 경과 후 자동으로 무료 회원으로 전환됩니다.</p>
+              </div>
             </div>
           </section>
 
