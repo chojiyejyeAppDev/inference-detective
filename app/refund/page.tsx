@@ -51,7 +51,7 @@ export default function RefundPage() {
                 </tbody>
               </table>
               <div className="text-xs text-slate-500 space-y-1 border-t border-white/[0.04] pt-3">
-                <p>· 월간 구독: 매월 동일한 날짜에 자동 결제되며, 해지 시 다음 결제일부터 자동결제가 중단됩니다.</p>
+                <p>· 월간 구독: 해지 시 다음 결제일부터 자동결제가 중단됩니다.</p>
                 <p>· 일주일 이용권: 자동 갱신 없음. 7일 경과 후 자동으로 무료 회원으로 전환됩니다.</p>
               </div>
             </div>

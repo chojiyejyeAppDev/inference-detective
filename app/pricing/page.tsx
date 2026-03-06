@@ -378,7 +378,7 @@ export default function PricingPage() {
               <div>
                 <p className="font-semibold text-slate-200">월간 구독 (₩9,900/월)</p>
                 <p className="text-slate-400 text-xs mt-0.5">
-                  결제일로부터 1개월(30일) 이용 후 자동 갱신 / 매월 동일한 날짜에 자동 결제
+                  결제일로부터 1개월(30일) 이용 후 자동 갱신
                 </p>
               </div>
             </div>
