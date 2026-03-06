@@ -47,9 +47,8 @@ export default function TermsPage() {
             <h2 className="text-lg font-bold text-white mb-3">제3조 (서비스 제공 기간)</h2>
             <ul className="list-disc pl-5 space-y-1 text-slate-400">
               <li><strong className="text-slate-300">무료 회원:</strong> 회원 탈퇴 시까지 (일일 5문제 제한)</li>
-              <li><strong className="text-slate-300">월간 구독:</strong> 결제일로부터 30일</li>
-              <li><strong className="text-slate-300">연간 구독:</strong> 결제일로부터 365일</li>
-              <li><strong className="text-slate-300">학생 구독:</strong> 결제일로부터 30일</li>
+              <li><strong className="text-slate-300">월간 구독:</strong> 결제일로부터 30일 (자동 갱신)</li>
+              <li><strong className="text-slate-300">일주일 이용권:</strong> 결제일로부터 7일 (자동 갱신 없음)</li>
             </ul>
           </section>
 
@@ -65,12 +64,11 @@ export default function TermsPage() {
           <section>
             <h2 className="text-lg font-bold text-white mb-3">제5조 (이용 요금)</h2>
             <ul className="list-disc pl-5 space-y-1 text-slate-400">
-              <li>월간 구독: 9,900원/월</li>
-              <li>연간 구독: 79,200원/년</li>
-              <li>학생 구독: 6,900원/월</li>
+              <li>월간 구독: 9,900원/월 (카드 자동결제)</li>
+              <li>일주일 이용권: 3,900원/7일 (일회성 결제, 자동 갱신 없음)</li>
             </ul>
             <p className="mt-3">
-              요금은 사전 고지 후 변경될 수 있으며, 변경된 요금은 다음 결제 주기부터 적용됩니다.
+              요금은 사전 고지 후 변경될 수 있으며, 월간 구독의 경우 변경된 요금은 다음 결제 주기부터 적용됩니다.
             </p>
           </section>
 

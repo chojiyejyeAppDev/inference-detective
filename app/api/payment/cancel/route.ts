@@ -23,8 +23,10 @@ export async function POST() {
     return NextResponse.json({ error: 'No active subscription' }, { status: 404 })
   }
 
-  // PortOne에서 빌링키 비활성화
-  if (subscription.billing_key) {
+  const isSubscription = !!subscription.billing_key
+
+  // 구독 플랜: PortOne에서 빌링키 비활성화
+  if (isSubscription) {
     try {
       await deleteBillingKey(subscription.billing_key)
     } catch (err) {
@@ -39,15 +41,17 @@ export async function POST() {
     .update({
       status: 'cancelled',
       cancelled_at: new Date().toISOString(),
-      billing_key: null,
+      ...(isSubscription ? { billing_key: null } : {}),
     })
     .eq('id', subscription.id)
 
-  // 프로필의 subscription_status는 만료일 이후 웹훅에서 처리
+  // 프로필의 subscription_status는 만료일 이후 처리
   // 만료일까지 서비스 제공
 
   return NextResponse.json({
-    message: '구독이 취소되었어요. 만료일까지 서비스를 이용할 수 있어요.',
+    message: isSubscription
+      ? '구독이 취소되었어요. 만료일까지 서비스를 이용할 수 있어요.'
+      : '이용권이 취소되었어요. 만료일까지 서비스를 이용할 수 있어요.',
     expires_at: subscription.expires_at,
   })
 }

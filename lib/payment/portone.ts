@@ -84,12 +84,11 @@ export async function getPayment(paymentId: string): Promise<PortOnePayment> {
 }
 
 // ──────────────────────────────────────────────────
-// 구독 플랜
+// 결제 플랜
 // ──────────────────────────────────────────────────
 export const PLANS = {
-  monthly: { name: '월간 구독', amount: 9900 },
-  yearly: { name: '연간 구독', amount: 79200 },
-  student: { name: '학생 구독', amount: 6900 },
+  monthly: { name: '월간 구독', amount: 9900, days: 30, type: 'subscription' as const },
+  weekly:  { name: '일주일 이용권', amount: 3900, days: 7, type: 'onetime' as const },
 } as const
 
 export type PlanKey = keyof typeof PLANS

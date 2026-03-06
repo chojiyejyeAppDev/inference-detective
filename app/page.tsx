@@ -370,7 +370,7 @@ export default function LandingPage() {
                 ₩9,900
                 <span className="text-base font-normal text-slate-400">/월</span>
               </p>
-              <p className="text-xs text-slate-500 mb-6">연간 구독 시 33% 절약</p>
+              <p className="text-xs text-slate-500 mb-6">일주일 체험 ₩3,900부터</p>
               <ul className="text-sm text-slate-300 space-y-2.5 mb-8">
                 <li className="flex items-center gap-2"><span className="text-amber-400">✓</span> 하루 무제한 문제</li>
                 <li className="flex items-center gap-2"><span className="text-amber-400">✓</span> 레벨 1-7 전체</li>

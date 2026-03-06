@@ -5,30 +5,32 @@ import { useRouter } from 'next/navigation'
 import { motion, type Variants } from 'framer-motion'
 import { Check, Zap, BookOpen, BarChart3, ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
-import { PLANS } from '@/lib/payment/portone'
+import { PLANS, type PlanKey } from '@/lib/payment/portone'
 import { createClient } from '@/lib/supabase/client'
 
-const PLAN_FEATURES = {
+const PLAN_FEATURES: Record<PlanKey, {
+  label: string
+  price: string
+  period: string
+  badge: string | null
+  popular: boolean
+  description: string
+}> = {
   monthly: {
     label: '월간 구독',
     price: '9,900',
     period: '/ 월',
     badge: null,
     popular: true,
+    description: '매월 자동 갱신',
   },
-  yearly: {
-    label: '연간 구독',
-    price: '79,200',
-    period: '/ 년',
-    badge: '33% 절약',
+  weekly: {
+    label: '일주일 이용권',
+    price: '3,900',
+    period: '/ 7일',
+    badge: '체험',
     popular: false,
-  },
-  student: {
-    label: '학생 할인',
-    price: '6,900',
-    period: '/ 월',
-    badge: '학생 전용',
-    popular: false,
+    description: '자동 갱신 없음',
   },
 }
 
@@ -53,12 +55,15 @@ const item: Variants = {
 
 export default function PricingPage() {
   const router = useRouter()
-  const [selectedPlan, setSelectedPlan] = useState<keyof typeof PLANS>('monthly')
+  const [selectedPlan, setSelectedPlan] = useState<PlanKey>('monthly')
   const [loading, setLoading] = useState(false)
   const [userEmail, setUserEmail] = useState<string | null>(null)
   const [userId, setUserId] = useState<string | null>(null)
   const [userName, setUserName] = useState<string>('')
   const [phoneNumber, setPhoneNumber] = useState<string>('')
+
+  const planInfo = PLANS[selectedPlan]
+  const isSubscription = planInfo.type === 'subscription'
 
   useEffect(() => {
     const supabase = createClient()
@@ -66,7 +71,6 @@ export default function PricingPage() {
       if (user) {
         setUserEmail(user.email ?? null)
         setUserId(user.id)
-        // 프로필에서 닉네임 가져오기
         supabase
           .from('profiles')
           .select('nickname')
@@ -79,16 +83,9 @@ export default function PricingPage() {
     })
   }, [])
 
-  async function handleSubscribe() {
+  async function handlePayment() {
     if (!userEmail || !userId) {
       router.push('/login?redirect=/pricing')
-      return
-    }
-
-    // 전화번호 형식 검증
-    const cleanPhone = phoneNumber.replace(/[^0-9]/g, '')
-    if (!cleanPhone || cleanPhone.length < 10) {
-      alert('휴대폰 번호를 정확히 입력해주세요.')
       return
     }
 
@@ -96,43 +93,88 @@ export default function PricingPage() {
     try {
       const PortOne = await import('@portone/browser-sdk/v2')
 
-      const response = await PortOne.requestIssueBillingKey({
-        storeId: process.env.NEXT_PUBLIC_PORTONE_STORE_ID!,
-        channelKey: process.env.NEXT_PUBLIC_PORTONE_CHANNEL_KEY!,
-        billingKeyMethod: 'CARD',
-        issueId: `issue_${Date.now()}`,
-        issueName: PLANS[selectedPlan].name,
-        customer: {
-          customerId: userId,
-          fullName: userName || '이용자',
-          email: userEmail,
-          phoneNumber: cleanPhone,
-        },
-      })
+      if (isSubscription) {
+        // ── 빌링키 플로우 (월간 구독) ──
+        const cleanPhone = phoneNumber.replace(/[^0-9]/g, '')
+        if (!cleanPhone || cleanPhone.length < 10) {
+          alert('휴대폰 번호를 정확히 입력해주세요.')
+          setLoading(false)
+          return
+        }
 
-      if (!response || response.code != null) {
-        // 사용자 취소 또는 오류
-        console.error('빌링키 발급 실패:', response?.message)
-        setLoading(false)
-        return
+        const response = await PortOne.requestIssueBillingKey({
+          storeId: process.env.NEXT_PUBLIC_PORTONE_STORE_ID!,
+          channelKey: process.env.NEXT_PUBLIC_PORTONE_CHANNEL_KEY!,
+          billingKeyMethod: 'CARD',
+          issueId: `issue_${Date.now()}`,
+          issueName: planInfo.name,
+          customer: {
+            customerId: userId,
+            fullName: userName || '이용자',
+            email: userEmail,
+            phoneNumber: cleanPhone,
+          },
+        })
+
+        if (!response || response.code != null) {
+          console.error('빌링키 발급 실패:', response?.message)
+          setLoading(false)
+          return
+        }
+
+        const res = await fetch('/api/payment/subscribe', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            billingKey: response.billingKey,
+            plan: selectedPlan,
+          }),
+        })
+
+        if (!res.ok) {
+          const data = await res.json()
+          throw new Error(data.error ?? '결제 처리 실패')
+        }
+      } else {
+        // ── 일회성 결제 플로우 (주간 이용권) ──
+        const paymentId = `payment_${userId}_${Date.now()}`
+
+        const response = await PortOne.requestPayment({
+          storeId: process.env.NEXT_PUBLIC_PORTONE_STORE_ID!,
+          channelKey: process.env.NEXT_PUBLIC_PORTONE_CHANNEL_KEY!,
+          paymentId,
+          orderName: planInfo.name,
+          totalAmount: planInfo.amount,
+          currency: 'CURRENCY_KRW',
+          payMethod: 'CARD',
+          customer: {
+            customerId: userId,
+            fullName: userName || '이용자',
+            email: userEmail,
+          },
+        })
+
+        if (!response || response.code != null) {
+          console.error('결제 실패:', response?.message)
+          setLoading(false)
+          return
+        }
+
+        const res = await fetch('/api/payment/subscribe', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            paymentId,
+            plan: selectedPlan,
+          }),
+        })
+
+        if (!res.ok) {
+          const data = await res.json()
+          throw new Error(data.error ?? '결제 처리 실패')
+        }
       }
 
-      // 빌링키 발급 성공 → 서버에서 결제 실행
-      const res = await fetch('/api/payment/subscribe', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          billingKey: response.billingKey,
-          plan: selectedPlan,
-        }),
-      })
-
-      if (!res.ok) {
-        const data = await res.json()
-        throw new Error(data.error ?? '결제 처리 실패')
-      }
-
-      // 결제 성공 → 레벨 페이지로 이동
       router.push('/levels')
       router.refresh()
     } catch (err) {
@@ -169,9 +211,9 @@ export default function PricingPage() {
         {/* Header */}
         <motion.div variants={item} className="text-center mb-12">
           <p className="text-xs font-bold text-amber-500 uppercase tracking-[0.15em] mb-3">Pricing</p>
-          <h1 className="text-4xl font-black text-white tracking-tight mb-3">구독 플랜</h1>
+          <h1 className="text-4xl font-black text-white tracking-tight mb-3">프리미엄 플랜</h1>
           <p className="text-slate-400 text-base">
-            무료로 하루 5문제, 구독하면{' '}
+            무료로 하루 5문제, 프리미엄이면{' '}
             <span className="text-amber-400 font-bold">무제한</span>으로
           </p>
         </motion.div>
@@ -218,7 +260,7 @@ export default function PricingPage() {
           <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-5">플랜 선택</p>
 
           <div className="space-y-3">
-            {(Object.keys(PLAN_FEATURES) as Array<keyof typeof PLAN_FEATURES>).map((key) => {
+            {(Object.keys(PLAN_FEATURES) as PlanKey[]).map((key) => {
               const plan = PLAN_FEATURES[key]
               const isSelected = selectedPlan === key
               return (
@@ -255,11 +297,14 @@ export default function PricingPage() {
                           </span>
                         )}
                       </div>
-                      {plan.badge && (
-                        <span className="text-[10px] font-bold text-emerald-400 bg-emerald-500/15 px-1.5 py-0.5 rounded-full">
-                          {plan.badge}
-                        </span>
-                      )}
+                      <div className="flex items-center gap-2 mt-0.5">
+                        {plan.badge && (
+                          <span className="text-[10px] font-bold text-emerald-400 bg-emerald-500/15 px-1.5 py-0.5 rounded-full">
+                            {plan.badge}
+                          </span>
+                        )}
+                        <span className="text-[11px] text-slate-500">{plan.description}</span>
+                      </div>
                     </div>
                   </div>
                   <div className="text-right">
@@ -272,32 +317,43 @@ export default function PricingPage() {
           </div>
         </motion.div>
 
-        {/* 결제 정보 입력 */}
+        {/* 결제 정보 입력 + 버튼 */}
         <motion.div variants={item}>
-          <div className="mb-4">
-            <label htmlFor="phoneNumber" className="block text-xs text-slate-500 mb-1.5">
-              휴대폰 번호 <span className="text-amber-500">*</span>
-            </label>
-            <input
-              id="phoneNumber"
-              type="tel"
-              placeholder="01012345678"
-              value={phoneNumber}
-              onChange={(e) => setPhoneNumber(e.target.value.replace(/[^0-9-]/g, ''))}
-              className="w-full px-4 py-3 rounded-xl bg-slate-800/60 border border-slate-700/50 text-slate-200 text-sm placeholder:text-slate-600 focus:outline-none focus:border-amber-500/50 focus:ring-1 focus:ring-amber-500/30 transition-all"
-            />
-          </div>
+          {/* 전화번호: 구독(빌링키)일 때만 표시 */}
+          {isSubscription && (
+            <div className="mb-4">
+              <label htmlFor="phoneNumber" className="block text-xs text-slate-500 mb-1.5">
+                휴대폰 번호 <span className="text-amber-500">*</span>
+              </label>
+              <input
+                id="phoneNumber"
+                type="tel"
+                placeholder="01012345678"
+                value={phoneNumber}
+                onChange={(e) => setPhoneNumber(e.target.value.replace(/[^0-9-]/g, ''))}
+                className="w-full px-4 py-3 rounded-xl bg-slate-800/60 border border-slate-700/50 text-slate-200 text-sm placeholder:text-slate-600 focus:outline-none focus:border-amber-500/50 focus:ring-1 focus:ring-amber-500/30 transition-all"
+              />
+            </div>
+          )}
 
           <button
-            onClick={handleSubscribe}
+            onClick={handlePayment}
             disabled={loading}
             className="animate-cta-glow w-full py-4 rounded-2xl bg-amber-500 text-slate-900 font-black text-base hover:bg-amber-400 transition-colors disabled:opacity-50 shadow-xl shadow-amber-500/25"
           >
-            {loading ? '결제 진행 중...' : '카드 등록하고 구독 시작'}
+            {loading
+              ? '결제 진행 중...'
+              : isSubscription
+                ? '카드 등록하고 구독 시작'
+                : '결제하기'
+            }
           </button>
 
           <p className="text-center text-xs text-slate-600 mt-4">
-            언제든지 해지 가능 · 해지 후 만료일까지 서비스 이용 가능
+            {isSubscription
+              ? '언제든지 해지 가능 · 해지 후 만료일까지 서비스 이용 가능'
+              : `${planInfo.days}일 이용권 · 자동 갱신 없음`
+            }
           </p>
           <p className="text-center text-[11px] text-slate-700 mt-2 space-x-3">
             <Link href="/terms" className="hover:text-slate-400 underline transition-colors">이용약관</Link>

@@ -44,7 +44,7 @@ export default function PrivacyPage() {
               </div>
               <div>
                 <p className="text-xs font-bold text-slate-400 mb-1">결제 시</p>
-                <p className="text-slate-400">결제 수단 정보(카드 빌링키 — PortOne을 통해 암호화 처리)</p>
+                <p className="text-slate-400">결제 정보(구독 시 카드 빌링키 포함 — PortOne을 통해 암호화 처리)</p>
               </div>
               <div>
                 <p className="text-xs font-bold text-slate-400 mb-1">자동 수집 항목</p>
@@ -101,7 +101,7 @@ export default function PrivacyPage() {
                   </tr>
                   <tr className="border-t border-white/[0.04]">
                     <td className="py-2">포트원(PortOne)</td>
-                    <td className="py-2">결제 처리 및 빌링키 관리</td>
+                    <td className="py-2">결제 처리 및 결제 정보 관리</td>
                   </tr>
                   <tr className="border-t border-white/[0.04]">
                     <td className="py-2">Vercel Inc.</td>

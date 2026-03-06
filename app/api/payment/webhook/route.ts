@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServiceClient } from '@/lib/supabase/server'
-import { getPayment } from '@/lib/payment/portone'
+import { getPayment, PLANS, type PlanKey } from '@/lib/payment/portone'
 
 // PortOne V2 웹훅 body
 interface PortOneWebhookBody {
@@ -52,8 +52,18 @@ export async function POST(req: NextRequest) {
     case 'Transaction.Paid': {
       if (paymentStatus !== 'PAID') break
 
+      // 구독 정보에서 플랜 조회 → days 기반 만료일 계산
+      const { data: sub } = await service
+        .from('subscriptions')
+        .select('plan')
+        .eq('user_id', userId)
+        .single()
+
+      const plan = (sub?.plan as PlanKey) ?? 'monthly'
+      const days = PLANS[plan]?.days ?? 30
+
       const expiresAt = new Date()
-      expiresAt.setMonth(expiresAt.getMonth() + 1)
+      expiresAt.setDate(expiresAt.getDate() + days)
 
       await service
         .from('subscriptions')

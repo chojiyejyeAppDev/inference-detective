@@ -41,17 +41,12 @@ export default function RefundPage() {
                   <tr className="border-t border-white/[0.04]">
                     <td className="py-2">월간 구독</td>
                     <td className="py-2">9,900원</td>
-                    <td className="py-2">결제일로부터 30일</td>
+                    <td className="py-2">결제일로부터 30일 (자동 갱신)</td>
                   </tr>
                   <tr className="border-t border-white/[0.04]">
-                    <td className="py-2">연간 구독</td>
-                    <td className="py-2">79,200원</td>
-                    <td className="py-2">결제일로부터 365일</td>
-                  </tr>
-                  <tr className="border-t border-white/[0.04]">
-                    <td className="py-2">학생 구독</td>
-                    <td className="py-2">6,900원</td>
-                    <td className="py-2">결제일로부터 30일</td>
+                    <td className="py-2">일주일 이용권</td>
+                    <td className="py-2">3,900원</td>
+                    <td className="py-2">결제일로부터 7일 (일회성)</td>
                   </tr>
                 </tbody>
               </table>
