@@ -3,7 +3,7 @@
 import { useState, useCallback, useEffect } from 'react'
 import { DragDropContext, Droppable, DropResult } from '@hello-pangea/dnd'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Lightbulb, Send, RefreshCw, ChevronRight, Trophy, Undo2 } from 'lucide-react'
+import { Lightbulb, Send, RefreshCw, ChevronRight, Trophy, Undo2, Flame, HelpCircle } from 'lucide-react'
 import { Question, Sentence, EvaluationResult, LevelConfig } from '@/types'
 import { buildConnectionMap } from '@/lib/game/connectionStrength'
 import PassageViewer from './PassageViewer'
@@ -19,6 +19,7 @@ interface GameBoardProps {
   levelConfig: LevelConfig
   hintPoints: number
   isSubmitting: boolean
+  isHintLoading: boolean
   evaluationResult: EvaluationResult | null
   onSubmit: (chain: (string | null)[]) => void
   onHintRequest: () => void
@@ -31,6 +32,7 @@ export default function GameBoard({
   levelConfig,
   hintPoints,
   isSubmitting,
+  isHintLoading,
   evaluationResult,
   onSubmit,
   onHintRequest,
@@ -44,6 +46,7 @@ export default function GameBoard({
   const [showLevelUp, setShowLevelUp] = useState(false)
   const [showCorrectAnswer, setShowCorrectAnswer] = useState(false)
   const [history, setHistory] = useState<{ chain: (string | null)[]; pool: Sentence[] }[]>([])
+  const [showTutorial, setShowTutorial] = useState(false)
 
   // Reset when question changes
   useEffect(() => {
@@ -138,10 +141,19 @@ export default function GameBoard({
             <span className="text-slate-600 hidden sm:inline">·</span>
             <span className="text-xs text-slate-500 shrink-0">{levelConfig.slots}단계</span>
           </div>
-          <div className="flex items-center gap-1.5 sm:gap-2 text-xs text-slate-400 shrink-0">
-            <Lightbulb size={12} className="text-amber-400" />
-            <span className="text-amber-400 font-semibold">{hintPoints}</span>
-            <span className="hidden sm:inline">힌트 포인트</span>
+          <div className="flex items-center gap-2 sm:gap-3 text-xs text-slate-400 shrink-0">
+            <div className="flex items-center gap-1.5">
+              <Lightbulb size={12} className="text-amber-400" />
+              <span className="text-amber-400 font-semibold">{hintPoints}</span>
+              <span className="hidden sm:inline">힌트 포인트</span>
+            </div>
+            <button
+              onClick={() => setShowTutorial(true)}
+              className="p-1 rounded text-slate-500 hover:text-slate-300 transition-colors"
+              title="도움말"
+            >
+              <HelpCircle size={14} />
+            </button>
           </div>
         </header>
 
@@ -271,6 +283,46 @@ export default function GameBoard({
                     {evaluationResult.explanation}
                   </p>
 
+                  {/* 연속 정답 스트릭 */}
+                  {evaluationResult.is_correct && (evaluationResult.streak ?? 0) >= 2 && (
+                    <div className="mt-2 flex items-center gap-1.5">
+                      <Flame size={13} className="text-orange-400" />
+                      <span className="text-xs font-semibold text-orange-400">
+                        {evaluationResult.streak}연속 정답!
+                      </span>
+                    </div>
+                  )}
+
+                  {/* 레벨업 진행 상황 */}
+                  {evaluationResult.level_progress && !evaluationResult.level_up && levelConfig.level < 7 && (
+                    <div className="mt-3 pt-3 border-t border-slate-700/50">
+                      <div className="flex items-center justify-between mb-1.5">
+                        <span className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider">
+                          레벨업 진행
+                        </span>
+                        <span className="text-[10px] text-slate-400">
+                          {evaluationResult.level_progress.qualified}/{evaluationResult.level_progress.required} 세션 달성
+                        </span>
+                      </div>
+                      <div className="flex gap-1">
+                        {Array.from({ length: evaluationResult.level_progress.required }).map((_, i) => (
+                          <div
+                            key={i}
+                            className={[
+                              'flex-1 h-1.5 rounded-full transition-all',
+                              i < evaluationResult.level_progress!.qualified
+                                ? 'bg-amber-400'
+                                : 'bg-slate-700',
+                            ].join(' ')}
+                          />
+                        ))}
+                      </div>
+                      <p className="text-[10px] text-slate-600 mt-1">
+                        80% 이상 정확도 {evaluationResult.level_progress.required}회 달성 시 레벨업
+                      </p>
+                    </div>
+                  )}
+
                   {/* 정답 보기 토글 (오답일 때만) */}
                   {!evaluationResult.is_correct && (
                     <div className="mt-3">
@@ -320,7 +372,7 @@ export default function GameBoard({
                   <div className="flex gap-2 sm:gap-3">
                     <button
                       onClick={onHintRequest}
-                      disabled={hintPoints <= 0 || levelConfig.level === 7}
+                      disabled={hintPoints <= 0 || levelConfig.level === 7 || isHintLoading}
                       className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg border border-amber-500/30 bg-amber-500/10 text-amber-400 text-sm font-medium hover:bg-amber-500/20 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
                     >
                       <Lightbulb size={14} />
@@ -335,7 +387,12 @@ export default function GameBoard({
                       되돌리기
                     </button>
                     <button
-                      onClick={onReset}
+                      onClick={() => {
+                        setChain(Array(levelConfig.slots).fill(null))
+                        setPool(question.sentences)
+                        setHistory([])
+                        onReset()
+                      }}
                       className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-lg border border-slate-700 text-slate-400 text-sm hover:border-slate-600 transition-colors"
                     >
                       <RefreshCw size={13} />
@@ -374,7 +431,7 @@ export default function GameBoard({
       />
     )}
 
-    <GameTutorialOverlay />
+    <GameTutorialOverlay forceOpen={showTutorial} onClose={() => setShowTutorial(false)} />
     </>
   )
 }

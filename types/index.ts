@@ -56,6 +56,11 @@ export interface EvaluationResult {
   level_up: boolean
   feedback: SlotFeedback[]
   explanation: string
+  streak?: number
+  level_progress?: {
+    qualified: number
+    required: number
+  }
 }
 
 export interface SlotFeedback {

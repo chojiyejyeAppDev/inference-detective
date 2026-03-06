@@ -4,11 +4,12 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
-import { LayoutGrid, BarChart3, CreditCard, LogOut, Menu, X } from 'lucide-react'
+import { LayoutGrid, BarChart3, CreditCard, LogOut, Menu, X, BookMarked } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 
 const NAV_ITEMS = [
   { href: '/levels', label: '레벨', icon: LayoutGrid },
+  { href: '/review', label: '오답 노트', icon: BookMarked },
   { href: '/dashboard', label: '대시보드', icon: BarChart3 },
   { href: '/pricing', label: '구독', icon: CreditCard },
 ]
@@ -169,8 +170,8 @@ export default function GlobalNav() {
         )}
       </AnimatePresence>
 
-      {/* Spacer for desktop fixed nav */}
-      <div className="hidden sm:block h-11" />
+      {/* Spacer for fixed nav */}
+      <div className="h-12 sm:h-11" />
     </>
   )
 }

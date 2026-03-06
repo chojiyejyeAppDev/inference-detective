@@ -6,38 +6,64 @@ import { GripVertical, ArrowDown, MousePointerClick, X } from 'lucide-react'
 
 const TUTORIAL_KEY = 'iruda_tutorial_seen'
 
+import { Brain } from 'lucide-react'
+
 const STEPS = [
   {
+    icon: Brain,
+    title: '왜 추론 조립인가요?',
+    desc: '논리 순서를 직접 구성하면 단순 독해보다 사고력이 깊어집니다. 수능 비문학의 핵심은 "논리 흐름 파악"이에요.',
+  },
+  {
     icon: MousePointerClick,
-    title: '문장 카드를 확인하세요',
-    desc: '지문을 읽고, 추론에 필요한 문장 카드를 파악하세요.',
+    title: '지문을 읽고 카드를 확인하세요',
+    desc: '왼쪽 지문을 읽은 뒤, 오른쪽 문장 카드 중 결론에 이르는 논거를 파악하세요.',
   },
   {
     icon: GripVertical,
-    title: '카드를 드래그하세요',
-    desc: '문장 카드를 길게 누른 채 아래 슬롯으로 끌어다 놓으세요.',
+    title: '카드를 슬롯으로 드래그하세요',
+    desc: '문장 카드를 길게 누른 채 아래 슬롯으로 끌어다 놓으세요. 모바일에서도 동일해요.',
   },
   {
     icon: ArrowDown,
-    title: '올바른 순서로 배치하세요',
-    desc: '결론에 이르는 논리적 추론 순서대로 배치하면 완성!',
+    title: '논리적 순서로 배치하면 완성!',
+    desc: '연결 강도 표시(초록/노랑/빨강)가 배치 힌트를 줍니다. 모든 슬롯을 채우고 제출하세요.',
   },
 ]
 
-export default function GameTutorialOverlay() {
+interface Props {
+  forceOpen?: boolean
+  onClose?: () => void
+}
+
+export default function GameTutorialOverlay({ forceOpen, onClose }: Props) {
   const [visible, setVisible] = useState(false)
   const [step, setStep] = useState(0)
 
   useEffect(() => {
-    const seen = localStorage.getItem(TUTORIAL_KEY)
-    if (!seen) {
+    if (forceOpen) {
       setVisible(true)
+      setStep(0)
+      return
     }
-  }, [])
+    try {
+      const seen = localStorage.getItem(TUTORIAL_KEY)
+      if (!seen) {
+        setVisible(true)
+      }
+    } catch {
+      // localStorage unavailable (e.g., Safari private browsing)
+    }
+  }, [forceOpen])
 
   function dismiss() {
-    localStorage.setItem(TUTORIAL_KEY, 'true')
+    try {
+      localStorage.setItem(TUTORIAL_KEY, 'true')
+    } catch {
+      // localStorage unavailable
+    }
     setVisible(false)
+    onClose?.()
   }
 
   function nextStep() {

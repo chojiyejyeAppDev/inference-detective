@@ -34,8 +34,8 @@ export default function LevelGrid({
       const data = await res.json()
 
       if (res.status === 403 && data.error === 'daily_limit_reached') {
-        toast.error('오늘 풀 수 있는 문제를 모두 풀었어요!', {
-          description: '구독하면 무제한으로 계속 풀 수 있어요.',
+        toast.error('오늘의 추론 훈련을 완료했어요!', {
+          description: '내일 새로운 5문제가 준비됩니다. 더 풀려면 구독해보세요.',
           action: {
             label: '구독하기',
             onClick: () => router.push('/pricing'),
@@ -108,8 +108,8 @@ export default function LevelGrid({
         >
           <div className="absolute inset-0 bg-dot-grid-dense opacity-50 pointer-events-none" />
           <div className="relative">
-            <p className="text-amber-300 font-bold text-sm">오늘 분량을 모두 사용했어요!</p>
-            <p className="text-amber-400/70 text-xs mt-0.5">구독하면 무제한으로 계속 풀 수 있어요.</p>
+            <p className="text-amber-300 font-bold text-sm">오늘의 추론 훈련을 완료했어요!</p>
+            <p className="text-amber-400/70 text-xs mt-0.5">내일 새로운 5문제가 기다리고 있어요. 더 풀고 싶다면 구독해보세요.</p>
           </div>
           <button
             onClick={() => router.push('/pricing')}
@@ -138,6 +138,10 @@ export default function LevelGrid({
             >
               <button
                 onClick={() => {
+                  if (!isUnlocked) {
+                    toast.info(`레벨 ${config.level}은(는) 레벨 ${config.level - 1} 클리어 후 해금돼요.`)
+                    return
+                  }
                   if (isClickable) {
                     handleLevelClick(config.level)
                   }

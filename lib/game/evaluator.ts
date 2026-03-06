@@ -85,14 +85,14 @@ function buildExplanation(
     .map((f) => f.slot_index + 1)
 
   if (accuracy >= 0.8) {
-    return `거의 다 왔어요! ${wrongSlots.join(', ')}번째 슬롯을 확인해보세요.`
+    return `거의 다 맞혔어요! ${wrongSlots.join(', ')}번째 슬롯만 다시 살펴보세요.`
   }
 
   if (accuracy >= 0.5) {
-    return `절반 이상 맞았어요. 논리 흐름을 처음부터 다시 따라가 보세요.`
+    return `좋은 출발이에요! 지문의 논리 흐름을 처음부터 천천히 따라가 보세요.`
   }
 
-  return `아직 많이 틀렸어요. 지문에서 인과관계를 나타내는 접속어를 찾아보세요.`
+  return `추론이 쉽지 않죠! 지문에서 "따라서", "왜냐하면" 같은 접속어에 주목해보세요.`
 }
 
 export function checkLevelUp(recentAccuracies: number[]): boolean {
