@@ -11,6 +11,7 @@ import { SubscriptionStatus } from '@/types'
 interface LevelGridProps {
   currentLevel: number
   subscriptionStatus: SubscriptionStatus
+  subscriptionExpiresAt: string | null
   dailyUsed: number
   hintPoints: number
 }
@@ -18,12 +19,19 @@ interface LevelGridProps {
 export default function LevelGrid({
   currentLevel,
   subscriptionStatus,
+  subscriptionExpiresAt,
   dailyUsed,
   hintPoints,
 }: LevelGridProps) {
   const router = useRouter()
   const isFree = subscriptionStatus !== 'active'
   const remaining = isFree ? Math.max(0, FREE_DAILY_LIMIT - dailyUsed) : null
+
+  // 구독 만료 임박 감지 (3일 이내)
+  const daysUntilExpiry = subscriptionExpiresAt
+    ? Math.ceil((new Date(subscriptionExpiresAt).getTime() - Date.now()) / (1000 * 60 * 60 * 24))
+    : null
+  const isExpiringSoon = subscriptionStatus === 'active' && daysUntilExpiry !== null && daysUntilExpiry <= 3 && daysUntilExpiry > 0
   const [loadingLevel, setLoadingLevel] = useState<number | null>(null)
 
   async function handleLevelClick(level: number) {
@@ -116,6 +124,31 @@ export default function LevelGrid({
             className="relative px-4 py-2 rounded-xl bg-amber-500 text-slate-900 text-xs font-black hover:bg-amber-400 transition-colors shadow-lg shadow-amber-500/25"
           >
             구독하기
+          </button>
+        </motion.div>
+      )}
+
+      {/* Subscription expiring soon banner */}
+      {isExpiringSoon && (
+        <motion.div
+          initial={{ opacity: 0, scale: 0.98 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="relative mb-6 rounded-2xl border border-amber-500/35 bg-amber-500/[0.07] p-4 flex items-center justify-between overflow-hidden"
+        >
+          <div className="absolute inset-0 bg-dot-grid-dense opacity-50 pointer-events-none" />
+          <div className="relative">
+            <p className="text-amber-300 font-bold text-sm">
+              구독이 {daysUntilExpiry}일 후 만료돼요
+            </p>
+            <p className="text-amber-400/70 text-xs mt-0.5">
+              월간 구독으로 전환하면 더 저렴하게 이용할 수 있어요.
+            </p>
+          </div>
+          <button
+            onClick={() => router.push('/pricing')}
+            className="relative px-4 py-2 rounded-xl bg-amber-500 text-slate-900 text-xs font-black hover:bg-amber-400 transition-colors shadow-lg shadow-amber-500/25"
+          >
+            플랜 변경
           </button>
         </motion.div>
       )}

@@ -48,13 +48,28 @@ export async function POST(req: NextRequest) {
     bonus_granted: true,
   })
 
-  // 초대자 보너스: 일일 한도에서 차감 (음수 허용으로 추가 문제 효과)
-  await service
+  // 초대자 보너스: 구독 상태에 따라 다른 보상
+  const { data: inviterFull } = await service
     .from('profiles')
-    .update({
-      daily_questions_used: Math.max(0, inviter.daily_questions_used - INVITE_BONUS_QUESTIONS),
-    })
+    .select('subscription_status, hint_points')
     .eq('id', inviter.id)
+    .single()
+
+  if (inviterFull?.subscription_status === 'active') {
+    // 유료 사용자: 힌트 포인트 +5 보너스
+    await service
+      .from('profiles')
+      .update({ hint_points: (inviterFull.hint_points ?? 0) + 5 })
+      .eq('id', inviter.id)
+  } else {
+    // 무료 사용자: 일일 한도에서 차감 (추가 문제 효과)
+    await service
+      .from('profiles')
+      .update({
+        daily_questions_used: Math.max(0, inviter.daily_questions_used - INVITE_BONUS_QUESTIONS),
+      })
+      .eq('id', inviter.id)
+  }
 
   // 신규 가입자 보너스
   const { data: myProfile } = await service

@@ -10,7 +10,7 @@ export default async function LevelsPage() {
 
   const { data: profile } = await supabase
     .from('profiles')
-    .select('current_level, subscription_status, daily_questions_used, hint_points, role')
+    .select('current_level, subscription_status, subscription_expires_at, daily_questions_used, hint_points, role')
     .eq('id', user.id)
     .single()
 
@@ -20,6 +20,7 @@ export default async function LevelsPage() {
     <LevelGrid
       currentLevel={isAdmin ? 7 : (profile?.current_level ?? 1)}
       subscriptionStatus={isAdmin ? 'active' : (profile?.subscription_status ?? 'free')}
+      subscriptionExpiresAt={profile?.subscription_expires_at ?? null}
       dailyUsed={isAdmin ? 0 : (profile?.daily_questions_used ?? 0)}
       hintPoints={profile?.hint_points ?? 10}
     />

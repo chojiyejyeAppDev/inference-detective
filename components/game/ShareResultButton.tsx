@@ -51,9 +51,9 @@ export default function ShareResultButton(props: ShareResultButtonProps) {
   }
 
   function shareKakao() {
-    // 카카오톡 공유 — 모바일에서 카카오톡 앱으로 연결
-    const kakaoUrl = `https://story.kakao.com/share?url=${encodeURIComponent(appUrl)}&text=${encodeURIComponent(shareText)}`
-    window.open(kakaoUrl, '_blank', 'noopener,noreferrer,width=600,height=400')
+    // 카카오톡 공유 — sharer URL scheme (SDK 불필요)
+    const kakaoUrl = `https://sharer.kakao.com/talk/friends/picker/link?url=${encodeURIComponent(appUrl)}&text=${encodeURIComponent(shareText)}`
+    window.open(kakaoUrl, '_blank', 'noopener,noreferrer,width=600,height=600')
     setIsOpen(false)
   }
 
@@ -126,7 +126,7 @@ export default function ShareResultButton(props: ShareResultButtonProps) {
               className="w-full flex items-center gap-2.5 px-4 py-2.5 text-xs text-slate-300 hover:bg-slate-700/60 transition-colors"
             >
               <MessageCircle size={13} className="text-yellow-400" />
-              카카오스토리에 공유
+              카카오톡에 공유
             </button>
             <div className="h-px bg-slate-700/60" />
             <button

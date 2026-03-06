@@ -221,7 +221,7 @@ export default function PricingPage() {
       setPaymentStep('done')
       toast.success('구독이 완료되었어요!')
       setTimeout(() => {
-        router.push('/levels')
+        router.push('/subscription-complete')
         router.refresh()
       }, 800)
     } catch (err) {
