@@ -63,9 +63,15 @@ export default function PricingPage() {
   const [userId, setUserId] = useState<string | null>(null)
   const [userName, setUserName] = useState<string>('')
   const [phoneNumber, setPhoneNumber] = useState<string>('')
+  const [currentSubscription, setCurrentSubscription] = useState<{
+    status: string
+    expiresAt: string | null
+  } | null>(null)
 
+  const [cancelLoading, setCancelLoading] = useState(false)
   const planInfo = PLANS[selectedPlan]
   const isSubscription = planInfo.type === 'subscription'
+  const isAlreadySubscribed = currentSubscription?.status === 'active'
 
   useEffect(() => {
     const supabase = createClient()
@@ -75,15 +81,42 @@ export default function PricingPage() {
         setUserId(user.id)
         supabase
           .from('profiles')
-          .select('nickname')
+          .select('nickname, subscription_status, subscription_expires_at')
           .eq('id', user.id)
           .single()
           .then(({ data: profile }) => {
             if (profile?.nickname) setUserName(profile.nickname)
+            if (profile) {
+              setCurrentSubscription({
+                status: profile.subscription_status,
+                expiresAt: profile.subscription_expires_at,
+              })
+            }
           })
       }
     })
   }, [])
+
+  async function handleCancel() {
+    if (!confirm('정말 구독을 취소하시겠어요? 만료일까지는 계속 이용할 수 있어요.')) return
+    setCancelLoading(true)
+    try {
+      const res = await fetch('/api/payment/cancel', { method: 'POST' })
+      if (!res.ok) {
+        const data = await res.json().catch(() => null)
+        throw new Error(data?.error ?? '취소 처리 실패')
+      }
+      const data = await res.json()
+      toast.success(data.message)
+      setCurrentSubscription((prev) =>
+        prev ? { ...prev, status: 'cancelled' } : prev,
+      )
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : '구독 취소 중 오류가 발생했어요.')
+    } finally {
+      setCancelLoading(false)
+    }
+  }
 
   async function handlePayment() {
     if (!userEmail || !userId) {
@@ -333,6 +366,34 @@ export default function PricingPage() {
           </div>
         </motion.div>
 
+        {/* 서비스 제공 기간 안내 (PG 심사 필수 항목) */}
+        <motion.div
+          variants={item}
+          className="rounded-2xl border border-white/[0.08] bg-[#111C30]/60 p-5 mb-5"
+        >
+          <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4">서비스 제공 기간</p>
+          <div className="space-y-3 text-sm">
+            <div className="flex items-start gap-3">
+              <span className="shrink-0 mt-0.5 w-1.5 h-1.5 rounded-full bg-amber-400" />
+              <div>
+                <p className="font-semibold text-slate-200">월간 구독 (₩9,900/월)</p>
+                <p className="text-slate-400 text-xs mt-0.5">
+                  결제일로부터 1개월(30일) 이용 후 자동 갱신 / 매월 동일한 날짜에 자동 결제
+                </p>
+              </div>
+            </div>
+            <div className="flex items-start gap-3">
+              <span className="shrink-0 mt-0.5 w-1.5 h-1.5 rounded-full bg-emerald-400" />
+              <div>
+                <p className="font-semibold text-slate-200">일주일 이용권 (₩3,900)</p>
+                <p className="text-slate-400 text-xs mt-0.5">
+                  결제일로부터 7일간 서비스 제공 / 자동 갱신 없음 (일회성 결제)
+                </p>
+              </div>
+            </div>
+          </div>
+        </motion.div>
+
         {/* 결제 정보 입력 + 버튼 */}
         <motion.div variants={item}>
           {/* 전화번호: 구독(빌링키)일 때만 표시 */}
@@ -352,18 +413,36 @@ export default function PricingPage() {
             </div>
           )}
 
-          <button
-            onClick={handlePayment}
-            disabled={loading}
-            className="animate-cta-glow w-full py-4 rounded-2xl bg-amber-500 text-slate-900 font-black text-base hover:bg-amber-400 transition-colors disabled:opacity-50 shadow-xl shadow-amber-500/25"
-          >
-            {loading
-              ? '결제 진행 중...'
-              : isSubscription
-                ? '카드 등록하고 구독 시작'
-                : '결제하기'
-            }
-          </button>
+          {isAlreadySubscribed ? (
+            <div className="w-full py-4 rounded-2xl bg-emerald-500/15 border border-emerald-500/30 text-center">
+              <p className="text-emerald-400 font-bold text-sm">현재 구독 중이에요</p>
+              {currentSubscription?.expiresAt && (
+                <p className="text-emerald-400/70 text-xs mt-1">
+                  만료일: {new Date(currentSubscription.expiresAt).toLocaleDateString('ko-KR')}
+                </p>
+              )}
+              <button
+                onClick={handleCancel}
+                disabled={cancelLoading}
+                className="mt-3 text-xs text-slate-500 hover:text-red-400 transition-colors underline underline-offset-2 disabled:opacity-50"
+              >
+                {cancelLoading ? '처리 중...' : '구독 취소'}
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={handlePayment}
+              disabled={loading}
+              className="animate-cta-glow w-full py-4 rounded-2xl bg-amber-500 text-slate-900 font-black text-base hover:bg-amber-400 transition-colors disabled:opacity-50 shadow-xl shadow-amber-500/25"
+            >
+              {loading
+                ? '결제 진행 중...'
+                : isSubscription
+                  ? '카드 등록하고 구독 시작'
+                  : '결제하기'
+              }
+            </button>
+          )}
 
           <p className="text-center text-xs text-slate-600 mt-4">
             {isSubscription
