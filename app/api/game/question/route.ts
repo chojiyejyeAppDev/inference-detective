@@ -34,8 +34,12 @@ export async function GET(req: NextRequest) {
     profile.daily_reset_at = today
   }
 
-  // 무료 사용자 일일 제한
+  // 관리자는 모든 제한 면제
+  const isAdmin = profile.role === 'admin'
+
+  // 무료 사용자 일일 제한 (관리자 제외)
   if (
+    !isAdmin &&
     profile.subscription_status !== 'active' &&
     profile.daily_questions_used >= FREE_DAILY_LIMIT
   ) {
@@ -87,7 +91,7 @@ export async function GET(req: NextRequest) {
   return NextResponse.json({
     question,
     daily_used: profile.daily_questions_used,
-    daily_limit: profile.subscription_status === 'active' ? null : FREE_DAILY_LIMIT,
-    subscription_status: profile.subscription_status,
+    daily_limit: isAdmin || profile.subscription_status === 'active' ? null : FREE_DAILY_LIMIT,
+    subscription_status: isAdmin ? 'active' : profile.subscription_status,
   })
 }
