@@ -3,6 +3,7 @@ import { Noto_Sans_KR } from 'next/font/google'
 import { Toaster } from 'sonner'
 import { Suspense } from 'react'
 import PostHogProvider from '@/components/providers/PostHogProvider'
+import GlobalNav from '@/components/layout/GlobalNav'
 import './globals.css'
 
 const notoSansKR = Noto_Sans_KR({
@@ -37,6 +38,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className={`${notoSansKR.variable} font-sans antialiased`}>
         <Suspense fallback={null}>
           <PostHogProvider>
+            <GlobalNav />
             {children}
           </PostHogProvider>
         </Suspense>

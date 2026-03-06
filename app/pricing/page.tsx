@@ -3,8 +3,9 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion, type Variants } from 'framer-motion'
-import { Check, Zap, BookOpen, BarChart3, ArrowLeft } from 'lucide-react'
+import { Check, Zap, BookOpen, BarChart3, ArrowLeft, Loader2, CreditCard, ShieldCheck } from 'lucide-react'
 import Link from 'next/link'
+import { toast } from 'sonner'
 import { PLANS, type PlanKey } from '@/lib/payment/portone'
 import { createClient } from '@/lib/supabase/client'
 
@@ -57,6 +58,7 @@ export default function PricingPage() {
   const router = useRouter()
   const [selectedPlan, setSelectedPlan] = useState<PlanKey>('monthly')
   const [loading, setLoading] = useState(false)
+  const [paymentStep, setPaymentStep] = useState<'idle' | 'card' | 'processing' | 'done'>('idle')
   const [userEmail, setUserEmail] = useState<string | null>(null)
   const [userId, setUserId] = useState<string | null>(null)
   const [userName, setUserName] = useState<string>('')
@@ -90,6 +92,7 @@ export default function PricingPage() {
     }
 
     setLoading(true)
+    setPaymentStep('card')
     try {
       const PortOne = await import('@portone/browser-sdk/v2')
 
@@ -97,8 +100,9 @@ export default function PricingPage() {
         // ── 빌링키 플로우 (월간 구독) ──
         const cleanPhone = phoneNumber.replace(/[^0-9]/g, '')
         if (!cleanPhone || cleanPhone.length < 10) {
-          alert('휴대폰 번호를 정확히 입력해주세요.')
+          toast.error('휴대폰 번호를 정확히 입력해주세요.')
           setLoading(false)
+          setPaymentStep('idle')
           return
         }
 
@@ -118,10 +122,13 @@ export default function PricingPage() {
 
         if (!response || response.code != null) {
           console.error('빌링키 발급 실패:', response?.message)
+          toast.error('카드 등록에 실패했어요. 다시 시도해주세요.')
           setLoading(false)
+          setPaymentStep('idle')
           return
         }
 
+        setPaymentStep('processing')
         const res = await fetch('/api/payment/subscribe', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -156,10 +163,13 @@ export default function PricingPage() {
 
         if (!response || response.code != null) {
           console.error('결제 실패:', response?.message)
+          toast.error('결제에 실패했어요. 다시 시도해주세요.')
           setLoading(false)
+          setPaymentStep('idle')
           return
         }
 
+        setPaymentStep('processing')
         const res = await fetch('/api/payment/subscribe', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -175,11 +185,17 @@ export default function PricingPage() {
         }
       }
 
-      router.push('/levels')
-      router.refresh()
+      setPaymentStep('done')
+      toast.success('구독이 완료되었어요!')
+      setTimeout(() => {
+        router.push('/levels')
+        router.refresh()
+      }, 800)
     } catch (err) {
       console.error('결제 오류:', err)
+      toast.error('결제 처리 중 오류가 발생했어요.')
       setLoading(false)
+      setPaymentStep('idle')
     }
   }
 
@@ -362,6 +378,43 @@ export default function PricingPage() {
           </p>
         </motion.div>
       </motion.div>
+
+      {/* Payment processing overlay */}
+      {paymentStep !== 'idle' && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="fixed inset-0 z-[100] bg-black/70 backdrop-blur-sm flex items-center justify-center px-4"
+        >
+          <motion.div
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            className="w-full max-w-xs rounded-2xl border border-slate-700 bg-slate-800 p-6 text-center shadow-2xl"
+          >
+            {paymentStep === 'card' && (
+              <>
+                <CreditCard size={28} className="text-amber-400 mx-auto mb-3" />
+                <p className="text-sm font-semibold text-white mb-1">카드 정보 입력 중</p>
+                <p className="text-xs text-slate-400">결제창에서 카드 정보를 입력해주세요</p>
+              </>
+            )}
+            {paymentStep === 'processing' && (
+              <>
+                <Loader2 size={28} className="text-amber-400 mx-auto mb-3 animate-spin" />
+                <p className="text-sm font-semibold text-white mb-1">결제 처리 중</p>
+                <p className="text-xs text-slate-400">잠시만 기다려주세요...</p>
+              </>
+            )}
+            {paymentStep === 'done' && (
+              <>
+                <ShieldCheck size={28} className="text-emerald-400 mx-auto mb-3" />
+                <p className="text-sm font-semibold text-white mb-1">결제 완료!</p>
+                <p className="text-xs text-slate-400">곧 이동합니다...</p>
+              </>
+            )}
+          </motion.div>
+        </motion.div>
+      )}
     </div>
   )
 }

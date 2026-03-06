@@ -2,6 +2,7 @@
 
 import { useState, useEffect, use } from 'react'
 import { useRouter } from 'next/navigation'
+import { toast } from 'sonner'
 import GameBoard from '@/components/game/GameBoard'
 import { Question, EvaluationResult, LevelConfig } from '@/types'
 import { getLevelConfig } from '@/lib/game/levelConfig'
@@ -80,7 +81,7 @@ export default function PlayPage({ params }: { params: Promise<{ questionId: str
         setLevelConfig(getLevelConfig(levelConfig.level + 1))
       }
     } catch {
-      setError('평가 중 오류가 발생했어요.')
+      toast.error('평가 중 오류가 발생했어요. 다시 시도해주세요.')
     } finally {
       setIsSubmitting(false)
     }
@@ -98,16 +99,61 @@ export default function PlayPage({ params }: { params: Promise<{ questionId: str
     if (res.ok) {
       const data = await res.json()
       setHintPoints(data.hint_points_remaining)
-      // Hint text will be shown via a toast or inline — handled by GameBoard
+      if (data.hint_text) {
+        toast.info(data.hint_text, { duration: 6000 })
+      } else {
+        toast.success('힌트가 적용되었어요!')
+      }
+    } else {
+      toast.error('힌트를 불러올 수 없어요.')
     }
   }
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#0F172A] flex items-center justify-center">
-        <div className="flex flex-col items-center gap-3">
-          <div className="w-8 h-8 border-2 border-amber-400 border-t-transparent rounded-full animate-spin" />
-          <p className="text-sm text-slate-400">문제를 불러오는 중...</p>
+      <div className="min-h-screen bg-[#0F172A] flex flex-col">
+        {/* Skeleton header */}
+        <div className="flex items-center justify-between px-4 md:px-6 py-3 border-b border-slate-800">
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-5 bg-slate-700/60 rounded animate-pulse" />
+            <div className="w-20 h-4 bg-slate-700/40 rounded animate-pulse hidden sm:block" />
+          </div>
+          <div className="w-16 h-4 bg-slate-700/40 rounded animate-pulse" />
+        </div>
+        {/* Skeleton body */}
+        <div className="flex-1 flex flex-col md:flex-row gap-4 md:gap-5 p-4 md:p-5">
+          {/* Passage skeleton */}
+          <div className="w-full md:w-[45%] flex flex-col gap-3">
+            <div className="w-24 h-4 bg-slate-700/40 rounded animate-pulse" />
+            <div className="flex-1 rounded-xl border border-slate-700/50 bg-slate-900/30 p-5 space-y-3">
+              {[...Array(6)].map((_, i) => (
+                <div key={i} className="h-4 bg-slate-700/30 rounded animate-pulse" style={{ width: `${85 - i * 8}%` }} />
+              ))}
+            </div>
+            <div className="rounded-xl border border-amber-500/20 bg-amber-500/5 p-4">
+              <div className="w-20 h-3 bg-amber-500/20 rounded animate-pulse mb-2" />
+              <div className="h-4 bg-amber-500/10 rounded animate-pulse w-3/4" />
+            </div>
+          </div>
+          {/* Game area skeleton */}
+          <div className="flex-1 flex flex-col gap-4">
+            <div className="w-40 h-3 bg-slate-700/40 rounded animate-pulse" />
+            <div className="space-y-2">
+              {[...Array(3)].map((_, i) => (
+                <div key={i} className="h-14 rounded-lg border border-slate-700/40 bg-slate-800/40 animate-pulse" />
+              ))}
+            </div>
+            <div className="flex items-center gap-3 my-1">
+              <div className="flex-1 h-px bg-slate-800" />
+              <div className="w-24 h-3 bg-slate-700/40 rounded animate-pulse" />
+              <div className="flex-1 h-px bg-slate-800" />
+            </div>
+            <div className="space-y-3 pl-4">
+              {[...Array(3)].map((_, i) => (
+                <div key={i} className="h-16 rounded-lg border-2 border-dashed border-slate-700/40 bg-slate-800/20 animate-pulse" />
+              ))}
+            </div>
+          </div>
         </div>
       </div>
     )

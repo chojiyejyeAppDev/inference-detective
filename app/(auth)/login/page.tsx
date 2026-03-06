@@ -5,26 +5,26 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { Loader2 } from 'lucide-react'
+import { toast } from 'sonner'
 import { createClient } from '@/lib/supabase/client'
 
 export default function LoginPage() {
   const router = useRouter()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const [googleLoading, setGoogleLoading] = useState(false)
+  const [resetSent, setResetSent] = useState(false)
 
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault()
     setLoading(true)
-    setError(null)
 
     const supabase = createClient()
     const { error } = await supabase.auth.signInWithPassword({ email, password })
 
     if (error) {
-      setError('이메일 또는 비밀번호가 올바르지 않아요.')
+      toast.error('이메일 또는 비밀번호가 올바르지 않아요.')
       setLoading(false)
     } else {
       router.push('/levels')
@@ -34,7 +34,6 @@ export default function LoginPage() {
 
   async function handleGoogleLogin() {
     setGoogleLoading(true)
-    setError(null)
     try {
       const supabase = createClient()
       const { error: oauthError } = await supabase.auth.signInWithOAuth({
@@ -42,13 +41,32 @@ export default function LoginPage() {
         options: { redirectTo: `${window.location.origin}/auth/callback` },
       })
       if (oauthError) {
-        setError('Google 로그인에 실패했어요. 다시 시도해 주세요.')
+        toast.error('Google 로그인에 실패했어요. 다시 시도해 주세요.')
         setGoogleLoading(false)
       }
       // 성공 시 리다이렉트가 발생하므로 setGoogleLoading(false) 불필요
     } catch {
-      setError('Google 로그인 중 오류가 발생했어요. 다시 시도해 주세요.')
+      toast.error('Google 로그인 중 오류가 발생했어요.')
       setGoogleLoading(false)
+    }
+  }
+
+  async function handlePasswordReset() {
+    if (!email) {
+      toast.error('이메일을 먼저 입력해주세요.')
+      return
+    }
+    const supabase = createClient()
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/auth/callback`,
+    })
+    if (error) {
+      toast.error('비밀번호 재설정 이메일 발송에 실패했어요.')
+    } else {
+      setResetSent(true)
+      toast.success('비밀번호 재설정 이메일을 보냈어요!', {
+        description: '메일함을 확인해주세요.',
+      })
     }
   }
 
@@ -82,7 +100,17 @@ export default function LoginPage() {
             </div>
 
             <div>
-              <label className="block text-xs font-medium text-slate-400 mb-1.5">비밀번호</label>
+              <div className="flex items-center justify-between mb-1.5">
+                <label className="text-xs font-medium text-slate-400">비밀번호</label>
+                <button
+                  type="button"
+                  onClick={handlePasswordReset}
+                  disabled={resetSent}
+                  className="text-[11px] text-amber-400/70 hover:text-amber-400 transition-colors disabled:text-slate-600"
+                >
+                  {resetSent ? '메일 발송됨' : '비밀번호 찾기'}
+                </button>
+              </div>
               <input
                 type="password"
                 value={password}
@@ -92,10 +120,6 @@ export default function LoginPage() {
                 placeholder="••••••••"
               />
             </div>
-
-            {error && (
-              <p className="text-xs text-red-400">{error}</p>
-            )}
 
             <button
               type="submit"

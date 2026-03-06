@@ -17,6 +17,9 @@ export default function SentenceCard({ sentence, index, isDimmed = false }: Sent
           ref={provided.innerRef}
           {...provided.draggableProps}
           {...provided.dragHandleProps}
+          role="listitem"
+          aria-label={`문장 카드 ${String.fromCharCode(65 + index)}: ${sentence.text}`}
+          aria-grabbed={snapshot.isDragging}
           className={[
             'group relative flex items-start gap-2 rounded-lg border px-3 py-2.5 cursor-grab active:cursor-grabbing select-none',
             'transition-all duration-150',

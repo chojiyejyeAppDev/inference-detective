@@ -32,6 +32,8 @@ export default function InferenceSlot({
         <div
           ref={provided.innerRef}
           {...provided.droppableProps}
+          role="region"
+          aria-label={`추론 ${slotIndex + 1}단계 슬롯${sentence ? `: ${sentence.text}` : ' (비어있음)'}`}
           className={[
             'relative min-h-[60px] rounded-lg border-2 transition-all duration-200',
             snapshot.isDraggingOver ? 'border-amber-400 bg-amber-500/10 scale-[1.01]' : feedbackColor,

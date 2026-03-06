@@ -3,7 +3,7 @@
 import { useState, useCallback, useEffect } from 'react'
 import { DragDropContext, Droppable, DropResult } from '@hello-pangea/dnd'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Lightbulb, Send, RefreshCw, ChevronRight, Trophy } from 'lucide-react'
+import { Lightbulb, Send, RefreshCw, ChevronRight, Trophy, Undo2 } from 'lucide-react'
 import { Question, Sentence, EvaluationResult, LevelConfig } from '@/types'
 import { buildConnectionMap } from '@/lib/game/connectionStrength'
 import PassageViewer from './PassageViewer'
@@ -12,6 +12,7 @@ import InferenceSlot from './InferenceSlot'
 import ConnectionIndicator from './ConnectionIndicator'
 import LevelUpAnimation from '@/components/level/LevelUpAnimation'
 import ShareResultButton from './ShareResultButton'
+import GameTutorialOverlay from './GameTutorialOverlay'
 
 interface GameBoardProps {
   question: Question
@@ -41,11 +42,15 @@ export default function GameBoard({
   )
   const [pool, setPool] = useState<Sentence[]>(question.sentences)
   const [showLevelUp, setShowLevelUp] = useState(false)
+  const [showCorrectAnswer, setShowCorrectAnswer] = useState(false)
+  const [history, setHistory] = useState<{ chain: (string | null)[]; pool: Sentence[] }[]>([])
 
   // Reset when question changes
   useEffect(() => {
     setChain(Array(levelConfig.slots).fill(null))
     setPool(question.sentences)
+    setShowCorrectAnswer(false)
+    setHistory([])
   }, [question.id, levelConfig.slots, question.sentences])
 
   // Show level up animation when triggered
@@ -65,6 +70,14 @@ export default function GameBoard({
   const isChainComplete = chain.every((id) => id !== null)
   const isEvaluated = evaluationResult !== null
 
+  function handleUndo() {
+    if (history.length === 0) return
+    const prev = history[history.length - 1]
+    setChain(prev.chain)
+    setPool(prev.pool)
+    setHistory(history.slice(0, -1))
+  }
+
   const onDragEnd = (result: DropResult) => {
     if (isEvaluated) return
     const { source, destination, draggableId } = result
@@ -72,6 +85,9 @@ export default function GameBoard({
     const srcId = source.droppableId
     const dstId = destination.droppableId
     if (srcId === dstId && source.index === destination.index) return
+
+    // Save current state for undo
+    setHistory((prev) => [...prev.slice(-19), { chain: [...chain], pool: [...pool] }])
 
     const newChain = [...chain]
     const newPool = [...pool]
@@ -254,6 +270,45 @@ export default function GameBoard({
                   <p className="text-xs text-slate-400 leading-relaxed">
                     {evaluationResult.explanation}
                   </p>
+
+                  {/* 정답 보기 토글 (오답일 때만) */}
+                  {!evaluationResult.is_correct && (
+                    <div className="mt-3">
+                      <button
+                        onClick={() => setShowCorrectAnswer(!showCorrectAnswer)}
+                        className="text-xs text-amber-400/80 hover:text-amber-400 transition-colors font-medium"
+                      >
+                        {showCorrectAnswer ? '정답 숨기기' : '정답 순서 보기'}
+                      </button>
+                      <AnimatePresence>
+                        {showCorrectAnswer && (
+                          <motion.div
+                            initial={{ opacity: 0, height: 0 }}
+                            animate={{ opacity: 1, height: 'auto' }}
+                            exit={{ opacity: 0, height: 0 }}
+                            className="mt-2 flex flex-col gap-1.5 overflow-hidden"
+                          >
+                            {question.correct_chain.map((sentenceId, i) => {
+                              const sentence = getSentenceById(sentenceId)
+                              return (
+                                <div
+                                  key={sentenceId}
+                                  className="flex items-start gap-2 rounded-lg border border-emerald-500/20 bg-emerald-500/5 px-3 py-2"
+                                >
+                                  <span className="shrink-0 w-5 h-5 rounded bg-emerald-500/20 text-emerald-400 text-[10px] font-bold flex items-center justify-center border border-emerald-500/30">
+                                    {i + 1}
+                                  </span>
+                                  <p className="text-xs text-slate-300 leading-relaxed">
+                                    {sentence?.text ?? '(알 수 없는 문장)'}
+                                  </p>
+                                </div>
+                              )
+                            })}
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </div>
+                  )}
                 </motion.div>
               )}
             </AnimatePresence>
@@ -270,6 +325,14 @@ export default function GameBoard({
                     >
                       <Lightbulb size={14} />
                       힌트
+                    </button>
+                    <button
+                      onClick={handleUndo}
+                      disabled={history.length === 0}
+                      className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-lg border border-slate-700 text-slate-400 text-sm hover:border-slate-600 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                    >
+                      <Undo2 size={13} />
+                      되돌리기
                     </button>
                     <button
                       onClick={onReset}
@@ -310,6 +373,8 @@ export default function GameBoard({
         onDismiss={() => setShowLevelUp(false)}
       />
     )}
+
+    <GameTutorialOverlay />
     </>
   )
 }
