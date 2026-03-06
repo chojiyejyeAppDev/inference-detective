@@ -3,6 +3,7 @@ import { createClient, createServiceClient } from '@/lib/supabase/server'
 import AccuracyChart from '@/components/dashboard/AccuracyChart'
 import ErrorPatternCard from '@/components/dashboard/ErrorPatternCard'
 import HintDependencyChart from '@/components/dashboard/HintDependencyChart'
+import TopicAnalysisCard from '@/components/dashboard/TopicAnalysisCard'
 import InviteSection from '@/components/dashboard/InviteSection'
 import Link from 'next/link'
 import { BookOpen } from 'lucide-react'
@@ -26,7 +27,9 @@ export default async function DashboardPage() {
     redirect('/login')
   }
 
-  const isPremium = profile.subscription_status === 'active'
+  const isPremium =
+    profile.subscription_status === 'active' &&
+    (!profile.subscription_expires_at || new Date(profile.subscription_expires_at) > new Date())
 
   // 최근 30일 세션 데이터
   const thirtyDaysAgo = new Date()
@@ -39,10 +42,10 @@ export default async function DashboardPage() {
     .gte('created_at', thirtyDaysAgo.toISOString())
     .order('created_at', { ascending: true })
 
-  // 전체 진행 데이터 (correct_chain 포함하여 슬롯별 비교 가능)
+  // 전체 진행 데이터 (correct_chain, topic 포함)
   const { data: progress } = await service
     .from('user_progress')
-    .select('*, questions(correct_chain)')
+    .select('*, questions(correct_chain, topic)')
     .eq('user_id', user.id)
 
   // 차트 데이터 변환
@@ -78,6 +81,23 @@ export default async function DashboardPage() {
   const withHints = progress?.filter((p) => (p.hints_used ?? 0) > 0).length ?? 0
   const totalHints = progress?.reduce((sum, p) => sum + (p.hints_used ?? 0), 0) ?? 0
   const avgHints = totalQ > 0 ? totalHints / totalQ : 0
+
+  // 주제별 분석
+  const topicMap: Record<string, { total: number; correct: number }> = {}
+  for (const p of progress ?? []) {
+    const topic = (p.questions as { correct_chain: string[]; topic?: string } | null)?.topic
+    if (topic) {
+      if (!topicMap[topic]) topicMap[topic] = { total: 0, correct: 0 }
+      topicMap[topic].total++
+      if (p.is_correct) topicMap[topic].correct++
+    }
+  }
+  const topicData = Object.entries(topicMap).map(([topic, { total, correct }]) => ({
+    topic,
+    total,
+    correct,
+    accuracy: total > 0 ? correct / total : 0,
+  }))
 
   // 전체 정확도
   const totalCorrect = progress?.filter((p) => p.is_correct).length ?? 0
@@ -138,9 +158,9 @@ export default async function DashboardPage() {
           ))}
         </div>
 
-        {/* Charts — blur for free users */}
-        <div className={isPremium ? '' : 'relative'}>
-          {!isPremium && (
+        {/* Charts — blur for free users, empty state for no data */}
+        {!isPremium ? (
+          <div className="relative">
             <div className="absolute inset-0 z-10 backdrop-blur-md rounded-xl flex flex-col items-center justify-center gap-3">
               <p className="text-slate-300 font-semibold text-sm">구독 후 확인 가능</p>
               <Link
@@ -150,35 +170,44 @@ export default async function DashboardPage() {
                 구독 플랜 보기
               </Link>
             </div>
-          )}
-          {totalQ === 0 ? (
-            <div className="rounded-xl border border-slate-700 bg-slate-800/50 p-10 text-center">
-              <div className="w-12 h-12 rounded-full bg-slate-700 flex items-center justify-center mx-auto mb-3">
-                <BookOpen size={20} className="text-slate-500" />
-              </div>
-              <p className="text-slate-400 font-medium text-sm mb-1">아직 풀어본 문제가 없어요</p>
-              <p className="text-slate-600 text-xs mb-4">문제를 풀면 여기서 성장 그래프를 확인할 수 있어요.</p>
-              <Link
-                href="/levels"
-                className="inline-block px-5 py-2 rounded-lg bg-amber-500 text-slate-900 text-xs font-bold hover:bg-amber-400 transition-colors"
-              >
-                문제 풀러 가기
-              </Link>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              <AccuracyChart data={accuracyData} />
+            {/* Placeholder charts behind blur */}
+            <div className="space-y-4 select-none" aria-hidden>
+              <AccuracyChart data={accuracyData.length > 0 ? accuracyData : [{ date: '-', accuracy: 0, level: 1 }]} />
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <ErrorPatternCard patterns={errorPatternData} />
-                <HintDependencyChart
-                  totalQuestions={totalQ}
-                  questionsWithHints={withHints}
-                  avgHintsPerQuestion={avgHints}
-                />
+                <ErrorPatternCard patterns={[]} />
+                <HintDependencyChart totalQuestions={0} questionsWithHints={0} avgHintsPerQuestion={0} />
               </div>
+              <TopicAnalysisCard data={[]} />
             </div>
-          )}
-        </div>
+          </div>
+        ) : totalQ === 0 ? (
+          <div className="rounded-xl border border-slate-700 bg-slate-800/50 p-10 text-center">
+            <div className="w-12 h-12 rounded-full bg-slate-700 flex items-center justify-center mx-auto mb-3">
+              <BookOpen size={20} className="text-slate-500" />
+            </div>
+            <p className="text-slate-400 font-medium text-sm mb-1">아직 풀어본 문제가 없어요</p>
+            <p className="text-slate-600 text-xs mb-4">문제를 풀면 여기서 성장 그래프를 확인할 수 있어요.</p>
+            <Link
+              href="/levels"
+              className="inline-block px-5 py-2 rounded-lg bg-amber-500 text-slate-900 text-xs font-bold hover:bg-amber-400 transition-colors"
+            >
+              문제 풀러 가기
+            </Link>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            <AccuracyChart data={accuracyData} />
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <ErrorPatternCard patterns={errorPatternData} />
+              <HintDependencyChart
+                totalQuestions={totalQ}
+                questionsWithHints={withHints}
+                avgHintsPerQuestion={avgHints}
+              />
+            </div>
+            <TopicAnalysisCard data={topicData} />
+          </div>
+        )}
 
         {/* Invite section */}
         {profile.invite_code && (

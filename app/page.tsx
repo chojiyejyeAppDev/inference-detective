@@ -1,8 +1,9 @@
 'use client'
 
-import { motion, type Variants } from 'framer-motion'
+import { useState, useEffect, useCallback } from 'react'
+import { motion, AnimatePresence, type Variants } from 'framer-motion'
 import Link from 'next/link'
-import { ArrowRight, Brain, Target, TrendingUp, Zap, Users, ChevronRight } from 'lucide-react'
+import { ArrowRight, Brain, Target, TrendingUp, Zap, Users, ChevronRight, GripVertical } from 'lucide-react'
 import Footer from '@/components/common/Footer'
 
 const FEATURES = [
@@ -35,15 +36,72 @@ const STEPS = [
 
 const STATS = [
   { n: '7', label: '추론 레벨', sub: 'Level 1 → 7' },
-  { n: '5', label: '일일 무료 문제', sub: '매일 리셋' },
-  { n: '∞', label: '구독 시 무제한', sub: '₩9,900 / 월' },
+  { n: '5', label: '일일 무료 문제', sub: '매일 자정 리셋' },
+  { n: '100+', label: '문제 은행', sub: '매주 추가' },
 ]
 
-const MOCK_CHAIN = [
-  { text: '정보 수용 방식이 인식에 영향을 준다', correct: true },
-  { text: '인식 체계가 판단력을 결정한다', correct: true },
-  { text: '따라서 리터러시 교육이 필요하다', correct: true },
+const DEMO_CARDS = [
+  { id: 'b', text: '인식 체계가 판단력을 결정한다' },
+  { id: 'a', text: '정보 수용 방식이 인식에 영향을 준다' },
+  { id: 'c', text: '따라서 리터러시 교육이 필요하다' },
 ]
+const DEMO_CORRECT_ORDER = ['a', 'b', 'c']
+const DEMO_LABELS: Record<string, string> = {
+  a: '정보 수용 방식이 인식에 영향을 준다',
+  b: '인식 체계가 판단력을 결정한다',
+  c: '따라서 리터러시 교육이 필요하다',
+}
+
+// Animation phases: idle → drag1 → drag2 → drag3 → evaluate → result → reset
+type DemoPhase = 'idle' | 'drag1' | 'drag2' | 'drag3' | 'evaluate' | 'result' | 'reset'
+
+function useDemoAnimation() {
+  const [phase, setPhase] = useState<DemoPhase>('idle')
+  const [slots, setSlots] = useState<(string | null)[]>([null, null, null])
+  const [activeCard, setActiveCard] = useState<string | null>(null)
+  const [showResult, setShowResult] = useState(false)
+  const [connections, setConnections] = useState<('none' | 'green' | 'yellow')[]>(['none', 'none'])
+
+  const reset = useCallback(() => {
+    setSlots([null, null, null])
+    setActiveCard(null)
+    setShowResult(false)
+    setConnections(['none', 'none'])
+    setPhase('idle')
+  }, [])
+
+  useEffect(() => {
+    const timers: NodeJS.Timeout[] = []
+    const t = (fn: () => void, ms: number) => {
+      timers.push(setTimeout(fn, ms))
+    }
+
+    if (phase === 'idle') {
+      t(() => { setActiveCard('a'); setPhase('drag1') }, 1200)
+    } else if (phase === 'drag1') {
+      t(() => { setSlots(['a', null, null]); setActiveCard(null); setPhase('drag2') }, 800)
+    } else if (phase === 'drag2') {
+      t(() => { setActiveCard('b') }, 600)
+      t(() => { setSlots(['a', 'b', null]); setActiveCard(null); setConnections(['green', 'none']); setPhase('drag3') }, 1400)
+    } else if (phase === 'drag3') {
+      t(() => { setActiveCard('c') }, 600)
+      t(() => { setSlots(['a', 'b', 'c']); setActiveCard(null); setConnections(['green', 'green']); setPhase('evaluate') }, 1400)
+    } else if (phase === 'evaluate') {
+      t(() => { setShowResult(true); setPhase('result') }, 800)
+    } else if (phase === 'result') {
+      t(() => { setPhase('reset') }, 2800)
+    } else if (phase === 'reset') {
+      reset()
+    }
+
+    return () => timers.forEach(clearTimeout)
+  }, [phase, reset])
+
+  const placedIds = new Set(slots.filter(Boolean))
+  const remainingCards = DEMO_CARDS.filter(c => !placedIds.has(c.id))
+
+  return { slots, activeCard, showResult, connections, remainingCards }
+}
 
 const container: Variants = {
   hidden: { opacity: 0 },
@@ -52,6 +110,125 @@ const container: Variants = {
 const item: Variants = {
   hidden: { opacity: 0, y: 22 },
   show:   { opacity: 1, y: 0, transition: { duration: 0.45 } },
+}
+
+function LandingDemo() {
+  const { slots, activeCard, showResult, connections, remainingCards } = useDemoAnimation()
+
+  return (
+    <div className="rounded-2xl border border-white/10 bg-[#111C30]/80 backdrop-blur-sm shadow-2xl shadow-black/40 p-5 max-w-3xl mx-auto text-left">
+      {/* Window chrome */}
+      <div className="flex items-center gap-2 mb-5 pb-4 border-b border-white/[0.07]">
+        <div className="w-3 h-3 rounded-full bg-red-500/60" />
+        <div className="w-3 h-3 rounded-full bg-amber-500/60" />
+        <div className="w-3 h-3 rounded-full bg-emerald-500/60" />
+        <span className="text-xs text-slate-600 ml-2 font-mono">iruda.kr/play</span>
+      </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
+        {/* Passage + remaining cards */}
+        <div className="space-y-3">
+          <div className="flex items-center gap-2">
+            <div className="w-1.5 h-1.5 rounded-full bg-amber-400" />
+            <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">지문</p>
+          </div>
+          <div className="rounded-xl bg-slate-900/70 border border-white/[0.05] p-3.5 text-xs text-slate-400 leading-[1.7]">
+            현대 사회에서 정보는 단순한 사실의 집합이 아니라 의미를 구성하는 체계이다. 특히 디지털 환경에서 정보의 수용과 해석은 개인의 인식 체계와 밀접하게 연결되어 있다.
+          </div>
+          <div className="rounded-xl bg-amber-500/8 border border-amber-500/25 p-3.5 text-xs text-amber-300/90 leading-[1.7]">
+            <span className="font-bold text-amber-400">결론 —</span>{' '}
+            디지털 리터러시는 현대인의 필수 역량이다.
+          </div>
+          {/* Remaining draggable cards */}
+          <div className="space-y-1.5 pt-1">
+            <AnimatePresence mode="popLayout">
+              {remainingCards.map((card) => (
+                <motion.div
+                  key={card.id}
+                  layout
+                  initial={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.8, x: 60 }}
+                  transition={{ duration: 0.35 }}
+                  className={[
+                    'rounded-lg border px-3 py-2 text-xs text-slate-300 flex items-center gap-2 transition-all',
+                    activeCard === card.id
+                      ? 'border-amber-500/50 bg-amber-500/10 shadow-lg shadow-amber-500/10 scale-[1.02]'
+                      : 'border-white/[0.08] bg-white/[0.03]',
+                  ].join(' ')}
+                >
+                  <GripVertical size={10} className="text-slate-600 shrink-0" />
+                  <span className="leading-[1.5]">{card.text}</span>
+                </motion.div>
+              ))}
+            </AnimatePresence>
+          </div>
+        </div>
+
+        {/* Inference chain slots */}
+        <div className="space-y-3">
+          <div className="flex items-center gap-2">
+            <div className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+            <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">추론 체인 (3단계)</p>
+          </div>
+          <div className="space-y-1.5">
+            {slots.map((slotId, i) => (
+              <div key={i}>
+                <motion.div
+                  className={[
+                    'rounded-lg border px-3.5 py-2.5 text-xs min-h-[36px] flex items-start gap-2.5 transition-all',
+                    slotId
+                      ? 'border-emerald-500/25 bg-emerald-500/[0.06] text-slate-300'
+                      : 'border-dashed border-white/10 bg-white/[0.02] text-slate-600',
+                  ].join(' ')}
+                  animate={slotId ? { scale: [1, 1.02, 1] } : {}}
+                  transition={{ duration: 0.3 }}
+                >
+                  <span className={[
+                    'w-4 h-4 rounded-full font-black text-[10px] flex items-center justify-center shrink-0 mt-0.5',
+                    slotId ? 'bg-emerald-500/20 text-emerald-400' : 'bg-white/[0.05] text-slate-600',
+                  ].join(' ')}>
+                    {slotId ? i + 1 : '?'}
+                  </span>
+                  <span className="leading-[1.5]">
+                    {slotId ? DEMO_LABELS[slotId] : `${i + 1}번째 단계를 넣어주세요`}
+                  </span>
+                </motion.div>
+                {/* Connection indicator between slots */}
+                {i < 2 && (
+                  <div className="flex justify-center py-0.5">
+                    <motion.div
+                      className={[
+                        'w-1.5 h-1.5 rounded-full transition-colors',
+                        connections[i] === 'green' ? 'bg-emerald-400 shadow-sm shadow-emerald-400/50'
+                          : connections[i] === 'yellow' ? 'bg-amber-400'
+                          : 'bg-slate-700',
+                      ].join(' ')}
+                      animate={connections[i] !== 'none' ? { scale: [0, 1.3, 1] } : {}}
+                      transition={{ duration: 0.3 }}
+                    />
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+
+          {/* Result */}
+          <AnimatePresence>
+            {showResult && (
+              <motion.div
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0 }}
+                className="flex items-center gap-1.5 text-xs text-emerald-400 font-bold pt-2 border-t border-white/[0.05]"
+              >
+                <span className="w-4 h-4 rounded-full bg-emerald-500/15 flex items-center justify-center">✓</span>
+                정확도 100% — 레벨업!
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+      </div>
+    </div>
+  )
 }
 
 export default function LandingPage() {
@@ -136,10 +313,10 @@ export default function LandingPage() {
               <ArrowRight size={16} />
             </Link>
             <Link
-              href="/levels"
+              href="/demo"
               className="flex items-center gap-2 px-9 py-3.5 rounded-xl border border-white/10 text-slate-300 font-medium text-base hover:border-white/20 hover:bg-white/[0.04] transition-all"
             >
-              레벨 구경하기
+              바로 체험하기
               <ChevronRight size={14} className="text-slate-500" />
             </Link>
           </div>
@@ -149,64 +326,14 @@ export default function LandingPage() {
           </p>
         </motion.div>
 
-        {/* Mock UI Preview */}
+        {/* Animated Demo Preview */}
         <motion.div
           initial={{ opacity: 0, y: 44 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.85, delay: 0.28, ease: [0.25, 0.46, 0.45, 0.94] }}
           className="animate-float-y mt-16 relative z-10"
         >
-          <div className="rounded-2xl border border-white/10 bg-[#111C30]/80 backdrop-blur-sm shadow-2xl shadow-black/40 p-5 max-w-3xl mx-auto text-left">
-            {/* Window chrome */}
-            <div className="flex items-center gap-2 mb-5 pb-4 border-b border-white/[0.07]">
-              <div className="w-3 h-3 rounded-full bg-red-500/60" />
-              <div className="w-3 h-3 rounded-full bg-amber-500/60" />
-              <div className="w-3 h-3 rounded-full bg-emerald-500/60" />
-              <span className="text-xs text-slate-600 ml-2 font-mono">iruda.kr/play</span>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
-              {/* Passage */}
-              <div className="space-y-3">
-                <div className="flex items-center gap-2">
-                  <div className="w-1.5 h-1.5 rounded-full bg-amber-400" />
-                  <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">지문</p>
-                </div>
-                <div className="rounded-xl bg-slate-900/70 border border-white/[0.05] p-3.5 text-xs text-slate-400 leading-[1.7]">
-                  현대 사회에서 정보는 단순한 사실의 집합이 아니라 의미를 구성하는 체계이다. 특히 디지털 환경에서 정보의 수용과 해석은 개인의 인식 체계와 밀접하게 연결되어 있다.
-                </div>
-                <div className="rounded-xl bg-amber-500/8 border border-amber-500/25 p-3.5 text-xs text-amber-300/90 leading-[1.7]">
-                  <span className="font-bold text-amber-400">결론 —</span>{' '}
-                  디지털 리터러시는 현대인의 필수 역량이다.
-                </div>
-              </div>
-              {/* Chain */}
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <div className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-                    <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">추론 체인 (3단계)</p>
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  {MOCK_CHAIN.map((c, i) => (
-                    <div
-                      key={i}
-                      className="rounded-lg border border-emerald-500/25 bg-emerald-500/[0.06] px-3.5 py-2.5 text-xs text-slate-300 flex items-start gap-2.5"
-                    >
-                      <span className="w-4 h-4 rounded-full bg-emerald-500/20 text-emerald-400 font-black text-[10px] flex items-center justify-center shrink-0 mt-0.5">
-                        {i + 1}
-                      </span>
-                      <span className="leading-[1.5]">{c.text}</span>
-                    </div>
-                  ))}
-                </div>
-                <div className="flex items-center gap-1.5 text-xs text-emerald-400 font-bold mt-1 pt-2 border-t border-white/[0.05]">
-                  <span className="w-4 h-4 rounded-full bg-emerald-500/15 flex items-center justify-center">✓</span>
-                  정확도 100% — 레벨업!
-                </div>
-              </div>
-            </div>
-          </div>
+          <LandingDemo />
           {/* Bottom glow reflection */}
           <div
             className="absolute bottom-0 left-1/2 -translate-x-1/2 w-2/3 h-px"
@@ -381,6 +508,65 @@ export default function LandingPage() {
                 구독 시작
               </Link>
             </motion.div>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* ── Testimonials ── */}
+      <section className="border-y border-white/[0.06] bg-white/[0.015] py-24">
+        <div className="max-w-5xl mx-auto px-6">
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5 }}
+            className="text-center mb-14"
+          >
+            <p className="text-xs font-bold text-amber-500 uppercase tracking-[0.15em] mb-3">Reviews</p>
+            <h2 className="text-3xl font-black tracking-tight">학생들의 후기</h2>
+          </motion.div>
+
+          <motion.div
+            variants={container}
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true }}
+            className="grid grid-cols-1 sm:grid-cols-3 gap-5"
+          >
+            {[
+              {
+                name: '고3 수험생',
+                tag: 'Lv.5 도달',
+                text: '비문학 지문이 항상 어려웠는데, 문장 순서를 직접 맞추다 보니 논리 흐름이 자연스럽게 보이기 시작했어요.',
+              },
+              {
+                name: '재수생',
+                tag: 'Lv.7 클리어',
+                text: '하루 5문제씩 꾸준히 풀었더니 모의고사 비문학 정답률이 확실히 올랐어요. 추론 연습이 이렇게 재밌을 줄 몰랐습니다.',
+              },
+              {
+                name: '고2 학생',
+                tag: 'Lv.3 진행 중',
+                text: '드래그로 카드 배치하는 게 게임 같아서 공부 같지 않아요. 매일 아침 등교 전에 5문제 푸는 게 습관이 됐어요.',
+              },
+            ].map((t) => (
+              <motion.div
+                key={t.name}
+                variants={item}
+                className="rounded-2xl border border-white/[0.08] bg-[#111C30]/60 p-6"
+              >
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-9 h-9 rounded-full bg-amber-500/15 border border-amber-500/25 flex items-center justify-center text-amber-400 font-black text-xs">
+                    {t.name[0]}
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-slate-200">{t.name}</p>
+                    <p className="text-[11px] text-amber-400/70">{t.tag}</p>
+                  </div>
+                </div>
+                <p className="text-sm text-slate-400 leading-relaxed">&ldquo;{t.text}&rdquo;</p>
+              </motion.div>
+            ))}
           </motion.div>
         </div>
       </section>
