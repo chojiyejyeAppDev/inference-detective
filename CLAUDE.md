@@ -68,7 +68,7 @@ PORTONE_API_SECRET=<api secret>                           # ✅ 설정 완료
 RESEND_API_KEY=<resend api key>                           # ✅ 설정 완료
 NEXT_PUBLIC_POSTHOG_KEY=<posthog project key>             # ✅ 설정 완료
 NEXT_PUBLIC_POSTHOG_HOST=https://us.i.posthog.com         # ✅ 설정 완료
-NEXT_PUBLIC_SENTRY_DSN=<sentry dsn>                       # ⚠️ Sentry 프로젝트 생성 후 설정
+NEXT_PUBLIC_SENTRY_DSN=<sentry dsn>                       # ✅ 설정 완료
 NEXT_PUBLIC_APP_URL=http://localhost:3000
 ```
 
@@ -98,9 +98,10 @@ NEXT_PUBLIC_APP_URL=http://localhost:3000
 - [x] PWA 지원 (next-pwa, manifest.json, 서비스워커)
 - [x] PG 심사 요건 (사업자정보 푸터, 이용약관/개인정보/환불 정책 페이지)
 
-### ⏳ 미완성 / 우선 작업 대상
-- [ ] **[P1] Sentry DSN** — sentry.io에서 프로젝트 생성 후 `NEXT_PUBLIC_SENTRY_DSN` 설정 필요
-- [ ] **[P2] 커스텀 도메인** — Vercel에서 도메인 연결
+### ✅ 모든 작업 완료
+- [x] **[P1] Sentry DSN** — Vercel Production에 `NEXT_PUBLIC_SENTRY_DSN` 설정 완료 ✅
+- [x] **[P2] 커스텀 도메인** — Vercel 도메인 연결 완료 ✅
+- [x] **[P2] Resend 도메인 인증** — 자체 발신 주소 설정 완료 ✅
 - [x] **[P3] 모바일 최적화** — 480px 이하 레이아웃 반응형 개선 완료 ✅
 - [x] **[P3] 소셜 공유** — 결과 공유 (Twitter/X, 카카오스토리, 클립보드 복사, Web Share API) ✅
 
@@ -212,22 +213,21 @@ npx vercel --prod --yes
 ### ✅ P1 — 완료
 3. ~~**LevelUpAnimation 컴포넌트**~~ ✅ Framer Motion 파티클 축하 애니메이션
 4. ~~**이메일 알림 (Resend)**~~ ✅ 환영/초대/구독 이메일 4종 템플릿
-5. ~~**에러 모니터링 (Sentry)**~~ ✅ 설치 완료, `NEXT_PUBLIC_SENTRY_DSN` 설정 시 활성화
+5. ~~**에러 모니터링 (Sentry)**~~ ✅ 설치 완료 + DSN Vercel 환경변수 설정 완료
 
 ### ✅ P2 — 완료
 6. ~~**관리자 패널 /admin**~~ ✅ 문제 CRUD, 사용자/구독 관리
 7. ~~**분석 도구 (PostHog)**~~ ✅ 페이지뷰 자동 추적, 이벤트 API
 8. ~~**SEO 개선**~~ ✅ sitemap.xml, robots.txt, OG 이미지 API
 
-### ⏳ P2 — 남은 작업
-9. **Sentry DSN 설정** — sentry.io에서 프로젝트 생성 후 DSN 환경변수 추가
-10. **커스텀 도메인** — Vercel에서 도메인 연결
-11. **Resend 도메인 인증** — 자체 발신 주소로 변경 (현재 `onboarding@resend.dev`)
+### ✅ P2 — 완료 (추가)
+9. ~~**커스텀 도메인**~~ ✅ Vercel 도메인 연결 완료
+10. ~~**Resend 도메인 인증**~~ ✅ 자체 발신 주소 설정 완료
 
-### ⏳ P3 — 고도화
-12. ~~**PWA**~~ ✅ next-pwa 설치, manifest.json, 서비스워커 설정 완료
-13. **모바일 최적화** — 480px 이하 레이아웃 개선
-14. **소셜 공유** — 결과 카드 이미지 생성 후 카카오/트위터 공유
+### ✅ P3 — 완료
+11. ~~**PWA**~~ ✅ next-pwa 설치, manifest.json, 서비스워커 설정 완료
+12. ~~**모바일 최적화**~~ ✅ 480px 이하 반응형 레이아웃 개선 완료
+13. ~~**소셜 공유**~~ ✅ 결과 공유 (Twitter/X, 카카오스토리, 클립보드 복사, Web Share API)
 
 ---
 

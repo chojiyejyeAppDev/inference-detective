@@ -2,22 +2,15 @@ import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import OpenAI from 'openai'
 
-const LEVEL_GUIDE = `
-레벨별 난이도 기준:
-| 레벨 | 슬롯(카드)수 | 힌트 유형 | 소재 |
-|------|-------------|-----------|------|
-| 1 | 3 | 직접 | 일상/기초 인과 |
-| 2 | 3 | 직접 | 부분 추상 개념 |
-| 3 | 4 | 반직접 | 수식어/종속절 포함 |
-| 4 | 4 | 반직접 | 모의고사 수준 |
-| 5 | 5 | 간접 | 대조/역전 논리 |
-| 6 | 6 | 간접 | 수능 실전 |
-| 7 | 7 | 없음 | 고난도 추상 |
-
-- 슬롯 수 = 정답 카드 수. 오답 카드는 1~2개 추가.
-- 예: 레벨 3이면 정답 4장 + 오답 1~2장 = 총 5~6장 보기 카드.
-- 힌트는 레벨 1~4는 3개, 레벨 5~6은 1개, 레벨 7은 0개.
-`
+const LEVEL_GUIDE: Record<number, { slots: number; hints: number; passageLen: string; style: string }> = {
+  1: { slots: 3, hints: 3, passageLen: '80~120자 (3문장)', style: '일상/기초 인과. 짧고 명확한 문장.' },
+  2: { slots: 3, hints: 3, passageLen: '80~150자 (3문장)', style: '부분 추상 개념 포함. 약간의 학술 용어.' },
+  3: { slots: 4, hints: 3, passageLen: '150~200자 (4~5문장)', style: '수식어/종속절 포함. 복합 문장 사용.' },
+  4: { slots: 4, hints: 3, passageLen: '250~350자 (5~7문장)', style: '모의고사 수준. 전문 용어와 복합 인과.' },
+  5: { slots: 5, hints: 1, passageLen: '350~500자 (7~9문장)', style: '대조/역전 논리. 반례와 예외 포함.' },
+  6: { slots: 6, hints: 1, passageLen: '450~650자 (9~12문장)', style: '수능 실전 수준. 다층적 논증 구조.' },
+  7: { slots: 7, hints: 0, passageLen: '550~800자 (11~15문장)', style: '고난도 추상. 복잡한 논리 구조와 전문 개념.' },
+}
 
 export async function POST(request: Request) {
   // Auth check: admin only
@@ -62,9 +55,8 @@ export async function POST(request: Request) {
 
   const openai = new OpenAI({ apiKey })
 
-  // Determine slot count and hint count from level
-  const slotCount = level <= 2 ? 3 : level <= 4 ? 4 : level <= 5 ? 5 : level <= 6 ? 6 : 7
-  const hintCount = level <= 4 ? 3 : level <= 6 ? 1 : 0
+  const config = LEVEL_GUIDE[level] ?? LEVEL_GUIDE[3]
+  const { slots: slotCount, hints: hintCount, passageLen, style } = config
 
   const clampedCount = Math.min(Math.max(count, 1), 10)
 
@@ -72,22 +64,38 @@ export async function POST(request: Request) {
 
 아래 텍스트를 읽고, 이 내용에서 인과 관계 추론 문제를 ${clampedCount}개 만들어주세요.
 
-${LEVEL_GUIDE}
-
-지금 만들 문제의 설정:
-- 레벨: ${level} (정답 카드 ${slotCount}장)
+## 이 문제의 설정
+- 레벨: ${level}
 - 주제: ${topic}
-- 힌트 개수: ${hintCount}
+- 지문 길이: ${passageLen}
+- 스타일: ${style}
+- 정답 카드: ${slotCount}장
+- 오답 카드: 1~2장 (정답 카드와 합쳐 총 ${slotCount + 1}~${slotCount + 2}장)
+- 힌트: ${hintCount}개${hintCount === 0 ? ' (빈 배열)' : ''}
 
-## 규칙
-1. passage: 원문 텍스트에서 핵심 논리를 추출하여 3~7문장 지문으로 재구성. 학생이 이해할 수 있는 한국어로.
-2. sentences: 정답 카드 ${slotCount}장 + 오답 카드 1~2장. 각 카드의 id는 알파벳 순서 (a, b, c, d, ...).
-   - 정답 카드들은 논리적 인과 순서로 배열.
-   - 오답 카드는 그럴듯하지만 논리적으로 맞지 않는 내용.
-3. conclusion: 지문의 결론을 한 문장으로.
-4. correct_chain: 정답 카드들의 id를 인과 순서대로 배열.
-5. hints: ${hintCount}개의 힌트. level 1이 가장 쉬운 힌트, 숫자가 클수록 구체적.
-${hintCount === 0 ? '(이 레벨은 힌트 없음 — hints를 빈 배열로)' : ''}
+## 핵심 규칙
+
+### passage (지문)
+- 원문에서 핵심 논리를 추출하여 한국어로 재구성.
+- 반드시 ${passageLen} 범위로 작성.
+- 레벨이 높을수록 복합 문장, 전문 용어, 다층 논증을 사용.
+
+### conclusion (결론) — 중요
+- 결론은 지문에 직접 등장하지 않는 문장이어야 합니다.
+- 지문의 내용을 종합하여 논리적으로 추론할 수 있는 명제를 작성하세요.
+- 즉, 지문을 읽고 추론 카드를 올바르게 배열하면 도달할 수 있는 결론입니다.
+- 지문의 문장을 그대로 복사하거나 요약하는 것은 금지합니다.
+
+### sentences (보기 카드)
+- 정답 카드 ${slotCount}장: 각 카드는 인과 관계의 한 단계. 올바른 순서로 배열하면 결론에 도달.
+- 오답 카드 1~2장: 그럴듯하지만 논리적 인과에 맞지 않는 내용. 학생이 구별해야 하는 함정.
+- id는 알파벳 순서 (a, b, c, d, ...).
+
+### correct_chain (정답 순서)
+- 정답 카드의 id를 인과 순서대로 배열.
+
+### hints (힌트)
+${hintCount > 0 ? `- ${hintCount}개 작성. level 1이 가장 추상적 힌트, 숫자가 클수록 구체적.` : '- 이 레벨은 힌트 없음 — hints를 빈 배열 []로.'}
 
 ## 출력 형식
 반드시 JSON 배열만 출력하세요. 마크다운이나 설명 없이 순수 JSON만.
@@ -99,10 +107,9 @@ ${hintCount === 0 ? '(이 레벨은 힌트 없음 — hints를 빈 배열로)' :
     "passage": "...",
     "sentences": [
       {"id": "a", "text": "..."},
-      {"id": "b", "text": "..."},
-      ...
+      {"id": "b", "text": "..."}
     ],
-    "conclusion": "...",
+    "conclusion": "지문에 없지만 추론 가능한 명제",
     "correct_chain": ["a", "b", "c"${slotCount > 3 ? ', ...' : ''}],
     "hints": [${hintCount > 0 ? '{"level": 1, "text": "..."}, ...' : ''}]
   }
