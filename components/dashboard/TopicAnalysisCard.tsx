@@ -62,7 +62,7 @@ export default function TopicAnalysisCard({ data }: TopicAnalysisCardProps) {
           아직 데이터가 없어요
         </div>
       ) : (
-        <ResponsiveContainer width="100%" height={150}>
+        <ResponsiveContainer width="100%" height={150} aria-label="주제별 정확도 차트">
           <BarChart data={data} margin={{ top: 0, right: 5, bottom: 0, left: -20 }}>
             <XAxis
               dataKey="topic"

@@ -1,6 +1,7 @@
 'use client'
 
 import { motion } from 'framer-motion'
+import { useReducedMotion } from '@/lib/hooks/useReducedMotion'
 
 type Strength = 'strong' | 'medium' | 'weak' | 'empty'
 
@@ -8,39 +9,81 @@ interface ConnectionIndicatorProps {
   strength: Strength
 }
 
-const CONFIG: Record<Strength, { color: string; label: string; pulse: boolean }> = {
-  strong: { color: '#10B981', label: '강한 연결', pulse: true },
-  medium: { color: '#F59E0B', label: '약한 연결', pulse: false },
-  weak: { color: '#EF4444', label: '논리 단절', pulse: false },
-  empty: { color: '#334155', label: '비어있음', pulse: false },
+const CONFIG: Record<Strength, { color: string; label: string; pulse: boolean; icon: 'check' | 'wave' | 'x' | 'dot' }> = {
+  strong: { color: '#10B981', label: '강한 연결', pulse: true, icon: 'check' },
+  medium: { color: '#F59E0B', label: '보통 연결', pulse: false, icon: 'wave' },
+  weak: { color: '#EF4444', label: '약한 연결', pulse: false, icon: 'x' },
+  empty: { color: '#334155', label: '비어있음', pulse: false, icon: 'dot' },
+}
+
+function StrengthIcon({ type, color }: { type: 'check' | 'wave' | 'x' | 'dot'; color: string }) {
+  const size = 14
+  switch (type) {
+    case 'check':
+      return (
+        <svg width={size} height={size} viewBox="0 0 14 14" fill="none">
+          <circle cx="7" cy="7" r="6" stroke={color} strokeWidth="1.5" opacity="0.3" />
+          <path d="M4 7.5L6 9.5L10 5" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      )
+    case 'wave':
+      return (
+        <svg width={size} height={size} viewBox="0 0 14 14" fill="none">
+          <circle cx="7" cy="7" r="6" stroke={color} strokeWidth="1.5" opacity="0.3" />
+          <path d="M3.5 7C4.5 5.5 5.5 8.5 7 7C8.5 5.5 9.5 8.5 10.5 7" stroke={color} strokeWidth="1.5" strokeLinecap="round" />
+        </svg>
+      )
+    case 'x':
+      return (
+        <svg width={size} height={size} viewBox="0 0 14 14" fill="none">
+          <circle cx="7" cy="7" r="6" stroke={color} strokeWidth="1.5" opacity="0.3" />
+          <path d="M5 5L9 9M9 5L5 9" stroke={color} strokeWidth="1.5" strokeLinecap="round" />
+        </svg>
+      )
+    case 'dot':
+      return (
+        <svg width={size} height={size} viewBox="0 0 14 14" fill="none">
+          <circle cx="7" cy="7" r="2" fill={color} opacity="0.4" />
+        </svg>
+      )
+  }
 }
 
 export default function ConnectionIndicator({ strength }: ConnectionIndicatorProps) {
-  const { color, label, pulse } = CONFIG[strength]
+  const reduced = useReducedMotion()
+  const { color, label, pulse: shouldPulse, icon } = CONFIG[strength]
+  const pulse = shouldPulse && !reduced
 
   return (
-    <div className="flex items-center justify-center py-1 relative">
-      {/* Vertical line */}
+    <div className="flex items-center justify-center py-1 relative" aria-label={label} role="img">
+      {/* Vertical line + shape icon */}
       <div className="flex flex-col items-center gap-0.5">
         <motion.div
-          className="w-0.5 h-3 rounded-full"
+          className="w-0.5 h-2 rounded-full"
           style={{ backgroundColor: color }}
           animate={pulse ? { opacity: [1, 0.4, 1] } : {}}
           transition={{ repeat: Infinity, duration: 1.5 }}
         />
+        {/* Shape icon for color-blind accessibility */}
+        <motion.div
+          animate={pulse ? { scale: [1, 1.15, 1] } : {}}
+          transition={{ repeat: Infinity, duration: 1.5 }}
+        >
+          <StrengthIcon type={icon} color={color} />
+        </motion.div>
         {/* Arrow */}
         <motion.svg
-          width="12"
-          height="8"
-          viewBox="0 0 12 8"
+          width="10"
+          height="6"
+          viewBox="0 0 10 6"
           fill="none"
-          animate={pulse ? { y: [0, 2, 0] } : {}}
+          animate={pulse ? { y: [0, 1.5, 0] } : {}}
           transition={{ repeat: Infinity, duration: 1.5 }}
         >
           <path
-            d="M1 1L6 6L11 1"
+            d="M1 1L5 5L9 1"
             stroke={color}
-            strokeWidth="2"
+            strokeWidth="1.5"
             strokeLinecap="round"
             strokeLinejoin="round"
           />

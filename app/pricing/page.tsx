@@ -233,7 +233,7 @@ export default function PricingPage() {
   }
 
   return (
-    <div className="relative min-h-screen bg-[#0C1628] px-4 sm:px-6 py-10 sm:py-12 overflow-hidden">
+    <div className="relative min-h-screen bg-bg-base px-4 sm:px-6 py-10 sm:py-12 overflow-hidden">
       {/* Background */}
       <div className="fixed inset-0 bg-dot-grid opacity-40 pointer-events-none" />
       <div
@@ -304,7 +304,7 @@ export default function PricingPage() {
         {/* Plan selector */}
         <motion.div
           variants={item}
-          className="rounded-2xl border border-white/[0.08] bg-[#111C30]/60 p-6 mb-5"
+          className="rounded-2xl border border-white/[0.08] bg-bg-surface/60 p-6 mb-5"
         >
           <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-5">플랜 선택</p>
 
@@ -357,7 +357,7 @@ export default function PricingPage() {
                     </div>
                   </div>
                   <div className="text-right">
-                    <span className="text-base font-black text-white">₩{plan.price}</span>
+                    <span className="text-base font-black text-white tabular-nums">₩{plan.price}</span>
                     <span className="text-xs text-slate-500 ml-1">{plan.period}</span>
                   </div>
                 </button>
@@ -369,7 +369,7 @@ export default function PricingPage() {
         {/* 서비스 제공 기간 안내 (PG 심사 필수 항목) */}
         <motion.div
           variants={item}
-          className="rounded-2xl border border-white/[0.08] bg-[#111C30]/60 p-5 mb-5"
+          className="rounded-2xl border border-white/[0.08] bg-bg-surface/60 p-5 mb-5"
         >
           <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4">서비스 제공 기간</p>
           <div className="space-y-3 text-sm">

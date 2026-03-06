@@ -49,7 +49,7 @@ export default function AccuracyChart({ data }: AccuracyChartProps) {
           아직 데이터가 없어요. 문제를 풀어보세요!
         </div>
       ) : (
-        <ResponsiveContainer width="100%" height={180}>
+        <ResponsiveContainer width="100%" height={180} aria-label="정확도 추이 차트">
           <LineChart data={data} margin={{ top: 5, right: 5, bottom: 5, left: -20 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="#1E293B" />
             <XAxis

@@ -14,28 +14,34 @@ interface DailyLimitError {
 }
 
 export default function PlayPage({ params }: { params: Promise<{ questionId: string }> }) {
-  const { questionId: _questionId } = use(params)
+  const { questionId } = use(params)
   const router = useRouter()
   const [question, setQuestion] = useState<Question | null>(null)
   const [levelConfig, setLevelConfig] = useState<LevelConfig>(getLevelConfig(1))
   const [hintPoints, setHintPoints] = useState(10)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isHintLoading, setIsHintLoading] = useState(false)
+  const [hintStep, setHintStep] = useState(1)
   const [evaluationResult, setEvaluationResult] = useState<EvaluationResult | null>(null)
+  const [currentQuestionId, setCurrentQuestionId] = useState<string | null>(questionId)
   const [_dailyInfo, setDailyInfo] = useState<{ used: number; limit: number | null } | null>(null)
+  const [isReviewMode, setIsReviewMode] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    fetchQuestion()
+    fetchQuestion(currentQuestionId)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  async function fetchQuestion() {
+  async function fetchQuestion(id?: string | null) {
     setLoading(true)
     setError(null)
     setEvaluationResult(null)
 
     try {
-      const res = await fetch('/api/game/question')
+      const params = id ? `?id=${id}` : ''
+      const res = await fetch(`/api/game/question${params}`)
 
       if (res.status === 403) {
         const data: DailyLimitError = await res.json()
@@ -52,8 +58,14 @@ export default function PlayPage({ params }: { params: Promise<{ questionId: str
 
       const data = await res.json()
       setQuestion(data.question)
+      setCurrentQuestionId(null) // 다음 문제부터는 랜덤
+      setHintStep(1)
+      setIsReviewMode(!!data.is_review)
       setLevelConfig(getLevelConfig(data.question.difficulty_level))
       setDailyInfo({ used: data.daily_used, limit: data.daily_limit })
+      if (data.is_review) {
+        toast.info('이 레벨의 새 문제를 모두 풀었어요! 복습 문제입니다.', { duration: 4000 })
+      }
     } catch (_err) {
       setError('문제를 불러오지 못했어요. 다시 시도해주세요.')
     } finally {
@@ -77,9 +89,7 @@ export default function PlayPage({ params }: { params: Promise<{ questionId: str
       const result: EvaluationResult = await res.json()
       setEvaluationResult(result)
 
-      if (result.level_up) {
-        setLevelConfig(getLevelConfig(levelConfig.level + 1))
-      }
+      // levelConfig 업데이트는 GameBoard에서 결과 표시 후 onNextQuestion에서 처리
     } catch {
       toast.error('평가 중 오류가 발생했어요. 다시 시도해주세요.')
     } finally {
@@ -88,30 +98,43 @@ export default function PlayPage({ params }: { params: Promise<{ questionId: str
   }
 
   async function handleHintRequest() {
-    if (!question) return
+    if (!question || isHintLoading) return
+    setIsHintLoading(true)
 
-    const res = await fetch('/api/game/hint', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ question_id: question.id, hint_level: levelConfig.level }),
-    })
+    try {
+      const res = await fetch('/api/game/hint', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ question_id: question.id, hint_step: hintStep }),
+      })
 
-    if (res.ok) {
-      const data = await res.json()
-      setHintPoints(data.hint_points_remaining)
-      if (data.hint_text) {
-        toast.info(data.hint_text, { duration: 6000 })
+      if (res.ok) {
+        const data = await res.json()
+        setHintPoints(data.hint_points_remaining)
+        if (data.hint) {
+          toast.info(data.hint, { duration: 6000 })
+          setHintStep((prev) => prev + 1)
+        } else {
+          toast.info('이 문제에는 더 이상 힌트가 없어요.')
+        }
       } else {
-        toast.success('힌트가 적용되었어요!')
+        const data = await res.json().catch(() => null)
+        if (data?.error === 'insufficient_hint_points') {
+          toast.error('힌트 포인트가 부족해요.')
+        } else if (data?.error === 'no_more_hints') {
+          toast.info('이 문제에는 더 이상 힌트가 없어요.')
+        } else {
+          toast.error('힌트를 불러올 수 없어요.')
+        }
       }
-    } else {
-      toast.error('힌트를 불러올 수 없어요.')
+    } finally {
+      setIsHintLoading(false)
     }
   }
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#0F172A] flex flex-col">
+      <div className="min-h-screen bg-bg-game flex flex-col">
         {/* Skeleton header */}
         <div className="flex items-center justify-between px-4 md:px-6 py-3 border-b border-slate-800">
           <div className="flex items-center gap-3">
@@ -161,11 +184,11 @@ export default function PlayPage({ params }: { params: Promise<{ questionId: str
 
   if (error || !question) {
     return (
-      <div className="min-h-screen bg-[#0F172A] flex items-center justify-center">
+      <div className="min-h-screen bg-bg-game flex items-center justify-center">
         <div className="text-center">
           <p className="text-slate-400 mb-4">{error ?? '문제를 찾을 수 없어요.'}</p>
           <button
-            onClick={fetchQuestion}
+            onClick={() => fetchQuestion()}
             className="px-4 py-2 rounded-lg bg-amber-500 text-slate-900 text-sm font-semibold"
           >
             다시 시도
@@ -181,10 +204,12 @@ export default function PlayPage({ params }: { params: Promise<{ questionId: str
       levelConfig={levelConfig}
       hintPoints={hintPoints}
       isSubmitting={isSubmitting}
+      isHintLoading={isHintLoading}
+      isReviewMode={isReviewMode}
       evaluationResult={evaluationResult}
       onSubmit={handleSubmit}
       onHintRequest={handleHintRequest}
-      onNextQuestion={fetchQuestion}
+      onNextQuestion={() => fetchQuestion()}
       onReset={() => setEvaluationResult(null)}
     />
   )

@@ -1,10 +1,12 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
+import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence, type Variants } from 'framer-motion'
 import Link from 'next/link'
 import { ArrowRight, Brain, Target, TrendingUp, Zap, Users, ChevronRight, GripVertical } from 'lucide-react'
 import Footer from '@/components/common/Footer'
+import { createClient } from '@/lib/supabase/client'
 
 const FEATURES = [
   {
@@ -116,7 +118,7 @@ function LandingDemo() {
   const { slots, activeCard, showResult, connections, remainingCards } = useDemoAnimation()
 
   return (
-    <div className="rounded-2xl border border-white/10 bg-[#111C30]/80 backdrop-blur-sm shadow-2xl shadow-black/40 p-5 max-w-3xl mx-auto text-left">
+    <div className="rounded-2xl border border-white/10 bg-bg-surface/80 backdrop-blur-sm shadow-2xl shadow-black/40 p-5 max-w-3xl mx-auto text-left">
       {/* Window chrome */}
       <div className="flex items-center gap-2 mb-5 pb-4 border-b border-white/[0.07]">
         <div className="w-3 h-3 rounded-full bg-red-500/60" />
@@ -232,11 +234,20 @@ function LandingDemo() {
 }
 
 export default function LandingPage() {
+  const router = useRouter()
+
+  useEffect(() => {
+    const supabase = createClient()
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (user) router.replace('/levels')
+    })
+  }, [router])
+
   return (
-    <div className="min-h-screen bg-[#0C1628] text-white overflow-x-hidden">
+    <div className="min-h-screen bg-bg-base text-white overflow-x-hidden">
 
       {/* ── Nav ── */}
-      <nav className="sticky top-0 z-50 border-b border-white/[0.06] bg-[#0C1628]/90 backdrop-blur-md">
+      <nav className="sticky top-0 z-50 border-b border-white/[0.06] bg-bg-base/90 backdrop-blur-md">
         <div className="max-w-5xl mx-auto px-6 h-14 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
             <div className="w-7 h-7 rounded-lg bg-amber-500 flex items-center justify-center shadow-lg shadow-amber-500/30">
@@ -393,7 +404,7 @@ export default function LandingPage() {
               <motion.div
                 key={f.title}
                 variants={item}
-                className="group rounded-2xl border border-white/[0.08] bg-[#111C30]/60 p-6 hover:border-amber-500/30 hover:bg-amber-500/[0.04] transition-all duration-300"
+                className="group rounded-2xl border border-white/[0.08] bg-bg-surface/60 p-6 hover:border-amber-500/30 hover:bg-amber-500/[0.04] transition-all duration-300"
               >
                 <div className="w-11 h-11 rounded-xl bg-amber-500/12 border border-amber-500/20 flex items-center justify-center mb-5 group-hover:bg-amber-500/20 group-hover:border-amber-500/40 transition-all">
                   <f.icon size={19} className="text-amber-400" />
@@ -432,7 +443,7 @@ export default function LandingPage() {
                 transition={{ delay: i * 0.1 }}
                 className="text-center relative"
               >
-                <div className="w-10 h-10 rounded-full bg-[#0C1628] border-2 border-amber-500/40 flex items-center justify-center text-xs font-black text-amber-400 mx-auto mb-4 relative z-10">
+                <div className="w-10 h-10 rounded-full bg-bg-base border-2 border-amber-500/40 flex items-center justify-center text-xs font-black text-amber-400 mx-auto mb-4 relative z-10">
                   {s.n}
                 </div>
                 <p className="font-bold text-sm text-slate-200 mb-1.5">{s.title}</p>
@@ -468,10 +479,10 @@ export default function LandingPage() {
             {/* Free */}
             <motion.div
               variants={item}
-              className="rounded-2xl border border-white/[0.08] bg-[#111C30]/60 p-7 text-left"
+              className="rounded-2xl border border-white/[0.08] bg-bg-surface/60 p-7 text-left"
             >
               <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-4">무료</p>
-              <p className="text-4xl font-black text-white mb-6">₩0</p>
+              <p className="text-4xl font-black text-white mb-6 tabular-nums">₩0</p>
               <ul className="text-sm text-slate-500 space-y-2.5 mb-8">
                 <li className="flex items-center gap-2"><span className="text-slate-600">✓</span> 하루 5문제</li>
                 <li className="flex items-center gap-2"><span className="text-slate-600">✓</span> 레벨 1-7 도전</li>
@@ -493,11 +504,11 @@ export default function LandingPage() {
                 <p className="text-xs font-bold text-amber-400 uppercase tracking-wider">프리미엄</p>
                 <span className="text-[10px] font-black text-slate-900 bg-amber-400 px-2 py-0.5 rounded-full">인기</span>
               </div>
-              <p className="text-4xl font-black text-white mb-1">
+              <p className="text-4xl font-black text-white mb-1 tabular-nums">
                 ₩9,900
                 <span className="text-base font-normal text-slate-400">/월</span>
               </p>
-              <p className="text-xs text-slate-500 mb-6">일주일 체험 ₩3,900부터</p>
+              <p className="text-xs text-slate-500 mb-6 tabular-nums">일주일 체험 ₩3,900부터</p>
               <ul className="text-sm text-slate-300 space-y-2.5 mb-8">
                 <li className="flex items-center gap-2"><span className="text-amber-400">✓</span> 하루 무제한 문제</li>
                 <li className="flex items-center gap-2"><span className="text-amber-400">✓</span> 레벨 1-7 전체</li>
@@ -553,7 +564,7 @@ export default function LandingPage() {
               <motion.div
                 key={t.name}
                 variants={item}
-                className="rounded-2xl border border-white/[0.08] bg-[#111C30]/60 p-6"
+                className="rounded-2xl border border-white/[0.08] bg-bg-surface/60 p-6"
               >
                 <div className="flex items-center gap-3 mb-4">
                   <div className="w-9 h-9 rounded-full bg-amber-500/15 border border-amber-500/25 flex items-center justify-center text-amber-400 font-black text-xs">

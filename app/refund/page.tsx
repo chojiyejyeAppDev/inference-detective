@@ -8,7 +8,7 @@ export const metadata = {
 
 export default function RefundPage() {
   return (
-    <div className="min-h-screen bg-[#0C1628] text-slate-300">
+    <div className="min-h-screen bg-bg-base text-slate-300">
       <div className="max-w-2xl mx-auto px-6 py-12">
         <Link
           href="/"

@@ -16,7 +16,7 @@ export default function GlobalError({
 
   return (
     <html lang="ko">
-      <body className="min-h-screen bg-[#0F172A] flex items-center justify-center">
+      <body className="min-h-screen bg-bg-game flex items-center justify-center">
         <div className="text-center px-6">
           <h2 className="text-xl font-bold text-white mb-2">
             문제가 발생했어요

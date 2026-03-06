@@ -7,9 +7,11 @@ interface SentenceCardProps {
   sentence: Sentence
   index: number
   isDimmed?: boolean
+  isSelected?: boolean
+  onSelect?: () => void
 }
 
-export default function SentenceCard({ sentence, index, isDimmed = false }: SentenceCardProps) {
+export default function SentenceCard({ sentence, index, isDimmed = false, isSelected = false, onSelect }: SentenceCardProps) {
   return (
     <Draggable draggableId={sentence.id} index={index}>
       {(provided, snapshot) => (
@@ -18,14 +20,28 @@ export default function SentenceCard({ sentence, index, isDimmed = false }: Sent
           {...provided.draggableProps}
           {...provided.dragHandleProps}
           role="listitem"
+          tabIndex={0}
           aria-label={`문장 카드 ${String.fromCharCode(65 + index)}: ${sentence.text}`}
           aria-grabbed={snapshot.isDragging}
+          aria-selected={isSelected}
+          onClick={(e) => {
+            e.stopPropagation()
+            onSelect?.()
+          }}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault()
+              onSelect?.()
+            }
+          }}
           className={[
-            'group relative flex items-start gap-2 rounded-lg border px-3 py-2.5 cursor-grab active:cursor-grabbing select-none',
-            'transition-all duration-150',
+            'group relative flex items-start gap-2 rounded-lg border px-3 py-2.5 cursor-grab active:cursor-grabbing select-none touch-manipulation',
+            'transition-all duration-150 focus-visible:ring-2 focus-visible:ring-amber-400 focus-visible:outline-none',
             snapshot.isDragging
               ? 'border-amber-400 bg-slate-700 shadow-lg shadow-amber-500/20 scale-[1.02] rotate-1 z-50'
-              : 'border-slate-600 bg-slate-800/80 hover:border-slate-500 hover:bg-slate-700/80',
+              : isSelected
+                ? 'border-amber-400 bg-amber-500/15 ring-2 ring-amber-400/50'
+                : 'border-slate-600 bg-slate-800/80 hover:border-slate-500 hover:bg-slate-700/80',
             isDimmed ? 'opacity-35' : 'opacity-100',
           ].join(' ')}
           style={provided.draggableProps.style}

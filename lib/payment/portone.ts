@@ -67,6 +67,7 @@ interface PortOnePayment {
   id: string
   status: string
   amount: { total: number }
+  customer?: { id?: string }
 }
 
 export async function getPayment(paymentId: string): Promise<PortOnePayment> {

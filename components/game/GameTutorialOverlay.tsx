@@ -3,6 +3,8 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { GripVertical, ArrowDown, MousePointerClick, X } from 'lucide-react'
+import { useFocusTrap } from '@/lib/hooks/useFocusTrap'
+import { useReducedMotion } from '@/lib/hooks/useReducedMotion'
 
 const TUTORIAL_KEY = 'iruda_tutorial_seen'
 
@@ -39,6 +41,7 @@ interface Props {
 export default function GameTutorialOverlay({ forceOpen, onClose }: Props) {
   const [visible, setVisible] = useState(false)
   const [step, setStep] = useState(0)
+  const reduced = useReducedMotion()
 
   useEffect(() => {
     if (forceOpen) {
@@ -55,6 +58,15 @@ export default function GameTutorialOverlay({ forceOpen, onClose }: Props) {
       // localStorage unavailable (e.g., Safari private browsing)
     }
   }, [forceOpen])
+
+  useEffect(() => {
+    if (!visible) return
+    function handleEsc(e: KeyboardEvent) {
+      if (e.key === 'Escape') dismiss()
+    }
+    document.addEventListener('keydown', handleEsc)
+    return () => document.removeEventListener('keydown', handleEsc)
+  })
 
   function dismiss() {
     try {
@@ -74,6 +86,8 @@ export default function GameTutorialOverlay({ forceOpen, onClose }: Props) {
     }
   }
 
+  const trapRef = useFocusTrap<HTMLDivElement>(visible)
+
   if (!visible) return null
 
   const current = STEPS[step]
@@ -82,25 +96,30 @@ export default function GameTutorialOverlay({ forceOpen, onClose }: Props) {
   return (
     <AnimatePresence>
       <motion.div
-        initial={{ opacity: 0 }}
+        initial={reduced ? false : { opacity: 0 }}
         animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
+        exit={reduced ? undefined : { opacity: 0 }}
         className="fixed inset-0 z-[100] bg-black/70 backdrop-blur-sm flex items-center justify-center px-4"
         onClick={(e) => {
           if (e.target === e.currentTarget) dismiss()
         }}
       >
         <motion.div
-          initial={{ opacity: 0, scale: 0.92, y: 20 }}
+          ref={trapRef}
+          role="dialog"
+          aria-modal="true"
+          aria-label="게임 튜토리얼"
+          initial={reduced ? false : { opacity: 0, scale: 0.92, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.92, y: 20 }}
-          transition={{ type: 'spring', duration: 0.5 }}
+          exit={reduced ? undefined : { opacity: 0, scale: 0.92, y: 20 }}
+          transition={reduced ? { duration: 0 } : { type: 'spring', duration: 0.5 }}
           className="relative w-full max-w-sm rounded-2xl border border-slate-700 bg-slate-800 p-6 shadow-2xl shadow-black/60"
         >
           {/* Close button */}
           <button
             onClick={dismiss}
-            className="absolute top-3 right-3 p-1.5 rounded-lg text-slate-500 hover:text-slate-300 hover:bg-slate-700/60 transition-colors"
+            aria-label="튜토리얼 닫기"
+            className="absolute top-2 right-2 p-2.5 rounded-lg text-slate-500 hover:text-slate-300 hover:bg-slate-700/60 transition-colors"
           >
             <X size={16} />
           </button>
@@ -127,10 +146,10 @@ export default function GameTutorialOverlay({ forceOpen, onClose }: Props) {
           <AnimatePresence mode="wait">
             <motion.div
               key={step}
-              initial={{ opacity: 0, x: 20 }}
+              initial={reduced ? false : { opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-              transition={{ duration: 0.2 }}
+              exit={reduced ? undefined : { opacity: 0, x: -20 }}
+              transition={{ duration: reduced ? 0 : 0.2 }}
             >
               <h3 className="text-lg font-bold text-white mb-1.5">{current.title}</h3>
               <p className="text-sm text-slate-400 leading-relaxed">{current.desc}</p>

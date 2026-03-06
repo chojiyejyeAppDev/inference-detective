@@ -120,7 +120,7 @@ export default function DemoPage() {
   const allFilled = chain.every(Boolean)
 
   return (
-    <div className="min-h-screen bg-[#0C1628] px-4 py-8">
+    <div className="min-h-screen bg-bg-base px-4 py-8">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
@@ -149,7 +149,7 @@ export default function DemoPage() {
             {/* Left: Passage + Pool */}
             <div className="space-y-4">
               {/* Passage */}
-              <div className="rounded-xl border border-white/[0.08] bg-[#111C30]/80 p-5">
+              <div className="rounded-xl border border-white/[0.08] bg-bg-surface/80 p-5">
                 <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">지문</p>
                 <p className="text-sm text-slate-300 leading-[1.8]">{DEMO_QUESTION.passage}</p>
               </div>
@@ -161,7 +161,7 @@ export default function DemoPage() {
               </div>
 
               {/* Card Pool */}
-              <div className="rounded-xl border border-white/[0.08] bg-[#111C30]/80 p-4">
+              <div className="rounded-xl border border-white/[0.08] bg-bg-surface/80 p-4">
                 <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">
                   문장 카드 <span className="text-slate-600 normal-case">— 오른쪽 슬롯으로 드래그하세요</span>
                 </p>
@@ -183,7 +183,7 @@ export default function DemoPage() {
 
             {/* Right: Slots */}
             <div className="space-y-4">
-              <div className="rounded-xl border border-white/[0.08] bg-[#111C30]/80 p-5">
+              <div className="rounded-xl border border-white/[0.08] bg-bg-surface/80 p-5">
                 <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-4">
                   추론 체인 ({DEMO_LEVEL.slots}단계)
                 </p>

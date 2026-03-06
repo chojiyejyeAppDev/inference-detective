@@ -70,7 +70,7 @@ export default function LevelGrid({
   }
 
   return (
-    <div className="min-h-screen bg-[#0C1628] px-4 sm:px-6 py-8 sm:py-10">
+    <div className="min-h-screen bg-bg-base px-4 sm:px-6 py-8 sm:py-10">
       {/* Background */}
       <div className="fixed inset-0 bg-dot-grid opacity-40 pointer-events-none" />
 
@@ -187,10 +187,10 @@ export default function LevelGrid({
                       ? 'border-amber-500/60 bg-amber-500/[0.08] hover:bg-amber-500/12 cursor-pointer animate-level-pulse'
                       : isCompleted
                         ? 'border-emerald-500/30 bg-emerald-500/[0.05] hover:border-emerald-500/50 cursor-pointer animate-level-complete'
-                        : 'border-white/[0.08] bg-[#111C30]/60 hover:border-white/15 hover:bg-white/[0.04] cursor-pointer'
+                        : 'border-white/[0.08] bg-bg-surface/60 hover:border-white/15 hover:bg-white/[0.04] cursor-pointer'
                     : isThisLoading
                       ? 'border-amber-500/50 bg-amber-500/[0.08] cursor-wait'
-                      : 'border-white/[0.04] bg-[#0F1A2E]/60 cursor-not-allowed opacity-40',
+                      : 'border-white/[0.04] bg-bg-game/60 cursor-not-allowed opacity-40',
                 ].join(' ')}
               >
                 {/* Level number */}

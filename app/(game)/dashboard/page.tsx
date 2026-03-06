@@ -104,7 +104,7 @@ export default async function DashboardPage() {
   const overallAccuracy = totalQ > 0 ? Math.round((totalCorrect / totalQ) * 100) : 0
 
   return (
-    <div className="min-h-screen bg-[#0F172A] px-4 sm:px-6 py-8 sm:py-10">
+    <div className="min-h-screen bg-bg-game px-4 sm:px-6 py-8 sm:py-10">
       <div className="max-w-3xl mx-auto">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">

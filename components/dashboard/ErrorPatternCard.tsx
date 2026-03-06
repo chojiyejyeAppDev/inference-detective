@@ -42,7 +42,7 @@ export default function ErrorPatternCard({ patterns }: ErrorPatternCardProps) {
           아직 데이터가 없어요
         </div>
       ) : (
-        <ResponsiveContainer width="100%" height={150}>
+        <ResponsiveContainer width="100%" height={150} aria-label="오답 유형 분석 차트">
           <BarChart data={topErrors} margin={{ top: 0, right: 5, bottom: 0, left: -20 }}>
             <XAxis
               dataKey="position"

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { useReducedMotion } from '@/lib/hooks/useReducedMotion'
 
 interface LevelUpAnimationProps {
   fromLevel: number
@@ -31,21 +32,24 @@ function Particle({ delay, x, y }: { delay: number; x: number; y: number }) {
 
 export default function LevelUpAnimation({ fromLevel, toLevel, onDismiss }: LevelUpAnimationProps) {
   const [visible, setVisible] = useState(true)
+  const reduced = useReducedMotion()
 
   useEffect(() => {
     const timer = setTimeout(() => {
       setVisible(false)
-      setTimeout(onDismiss, 400)
-    }, 4000)
+      setTimeout(onDismiss, reduced ? 0 : 400)
+    }, reduced ? 2000 : 4000)
     return () => clearTimeout(timer)
-  }, [onDismiss])
+  }, [onDismiss, reduced])
 
-  const particles = Array.from({ length: 20 }, (_, i) => ({
-    id: i,
-    delay: 0.3 + Math.random() * 0.5,
-    x: (Math.random() - 0.5) * 300,
-    y: (Math.random() - 0.5) * 300,
-  }))
+  const particles = reduced
+    ? []
+    : Array.from({ length: 20 }, (_, i) => ({
+        id: i,
+        delay: 0.3 + Math.random() * 0.5,
+        x: (Math.random() - 0.5) * 300,
+        y: (Math.random() - 0.5) * 300,
+      }))
 
   return (
     <AnimatePresence>
@@ -54,7 +58,7 @@ export default function LevelUpAnimation({ fromLevel, toLevel, onDismiss }: Leve
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          transition={{ duration: 0.3 }}
+          transition={{ duration: reduced ? 0 : 0.3 }}
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm"
           onClick={() => {
             setVisible(false)

@@ -50,7 +50,7 @@ export default function ReviewList({ items }: ReviewListProps) {
   const wrongCount = items.filter((i) => !i.isCorrect).length
 
   return (
-    <div className="min-h-screen bg-[#0C1628] px-4 sm:px-6 py-8 sm:py-10">
+    <div className="min-h-screen bg-bg-base px-4 sm:px-6 py-8 sm:py-10">
       <div className="max-w-2xl mx-auto">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
@@ -129,6 +129,8 @@ export default function ReviewList({ items }: ReviewListProps) {
                 {/* Summary row */}
                 <button
                   onClick={() => setExpandedId(isExpanded ? null : item.id)}
+                  aria-expanded={isExpanded}
+                  aria-label={`Lv.${item.question.difficulty_level} ${item.isCorrect ? '정답' : '오답'} — 정확도 ${accuracy}%`}
                   className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-slate-800/60 transition-colors"
                 >
                   {item.isCorrect ? (

@@ -16,7 +16,7 @@ export async function GET(req: NextRequest) {
   const kstOffset = 9 * 60 * 60 * 1000
   const today = new Date(now.getTime() + kstOffset).toISOString().split('T')[0]
 
-  // 프로필 조회 및 일일 제한 체크
+  // 프로필 조회
   const { data: profile, error: profileError } = await service
     .from('profiles')
     .select('*')
@@ -25,16 +25,6 @@ export async function GET(req: NextRequest) {
 
   if (profileError || !profile) {
     return NextResponse.json({ error: 'Profile not found' }, { status: 404 })
-  }
-
-  // 날짜 리셋 처리
-  if (profile.daily_reset_at !== today) {
-    await service
-      .from('profiles')
-      .update({ daily_questions_used: 0, daily_reset_at: today })
-      .eq('id', user.id)
-    profile.daily_questions_used = 0
-    profile.daily_reset_at = today
   }
 
   // 구독 만료 체크 — 만료 시 자동으로 free로 전환
@@ -52,26 +42,42 @@ export async function GET(req: NextRequest) {
 
   // 관리자는 모든 제한 면제
   const isAdmin = profile.role === 'admin'
+  const isUnlimited = isAdmin || profile.subscription_status === 'active'
 
-  // 무료 사용자 일일 제한 (관리자 제외)
-  if (
-    !isAdmin &&
-    profile.subscription_status !== 'active' &&
-    profile.daily_questions_used >= FREE_DAILY_LIMIT
-  ) {
-    return NextResponse.json(
-      {
-        error: 'daily_limit_reached',
-        used: profile.daily_questions_used,
-        limit: FREE_DAILY_LIMIT,
-      },
-      { status: 403 },
-    )
+  // 무료 사용자: 원자적 일일 제한 체크 + 소비 (race condition 방지)
+  if (!isUnlimited) {
+    const { data: allowed } = await service.rpc('check_and_consume_daily_question', {
+      uid: user.id,
+      lim: FREE_DAILY_LIMIT,
+      today_date: today,
+    })
+
+    if (!allowed) {
+      return NextResponse.json(
+        {
+          error: 'daily_limit_reached',
+          used: FREE_DAILY_LIMIT,
+          limit: FREE_DAILY_LIMIT,
+        },
+        { status: 403 },
+      )
+    }
+  }
+
+  // 무료 사용자는 RPC에서 이미 +1 소비됨 — 현재 사용량 재조회
+  let dailyUsed = profile.daily_questions_used
+  if (!isUnlimited) {
+    const { data: freshProfile } = await service
+      .from('profiles')
+      .select('daily_questions_used')
+      .eq('id', user.id)
+      .single()
+    dailyUsed = freshProfile?.daily_questions_used ?? dailyUsed
   }
 
   const { searchParams } = new URL(req.url)
   const questionId = searchParams.get('id')
-  const level = parseInt(searchParams.get('level') ?? String(profile.current_level))
+  const level = Math.max(1, Math.min(7, parseInt(searchParams.get('level') ?? '0') || profile.current_level))
 
   // 특정 문제 ID로 조회
   if (questionId) {
@@ -92,9 +98,9 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json({
       question: specificQuestion,
-      daily_used: profile.daily_questions_used,
-      daily_limit: isAdmin || profile.subscription_status === 'active' ? null : FREE_DAILY_LIMIT,
-      subscription_status: isAdmin ? 'active' : profile.subscription_status,
+      daily_used: dailyUsed,
+      daily_limit: isUnlimited ? null : FREE_DAILY_LIMIT,
+      subscription_status: isUnlimited ? 'active' : profile.subscription_status,
     })
   }
 
@@ -123,17 +129,36 @@ export async function GET(req: NextRequest) {
 
   const { data: questions, error: qError } = await query.limit(10)
 
+  // 새 문제가 없으면 이미 푼 문제에서 복습 모드로 제공
+  let isReview = false
+  let pool: typeof questions = questions
+
   if (qError || !questions?.length) {
-    return NextResponse.json({ error: 'No questions available' }, { status: 404 })
+    const { data: reviewQuestions } = await service
+      .from('questions')
+      .select('id, difficulty_level, topic, passage, sentences, conclusion, hints')
+      .eq('difficulty_level', level)
+      .limit(10)
+
+    if (!reviewQuestions?.length) {
+      return NextResponse.json({ error: 'No questions available' }, { status: 404 })
+    }
+
+    pool = reviewQuestions
+    isReview = true
   }
 
   // 랜덤 선택
-  const question = questions[Math.floor(Math.random() * questions.length)]
+  if (!pool || pool.length === 0) {
+    return NextResponse.json({ error: '사용 가능한 문제가 없습니다.' }, { status: 404 })
+  }
+  const question = pool[Math.floor(Math.random() * pool.length)]
 
   return NextResponse.json({
     question,
-    daily_used: profile.daily_questions_used,
-    daily_limit: isAdmin || profile.subscription_status === 'active' ? null : FREE_DAILY_LIMIT,
-    subscription_status: isAdmin ? 'active' : profile.subscription_status,
+    is_review: isReview,
+    daily_used: dailyUsed,
+    daily_limit: isUnlimited ? null : FREE_DAILY_LIMIT,
+    subscription_status: isUnlimited ? 'active' : profile.subscription_status,
   })
 }

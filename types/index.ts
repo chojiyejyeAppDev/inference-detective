@@ -54,6 +54,7 @@ export interface EvaluationResult {
   is_correct: boolean
   accuracy: number // 0-1
   level_up: boolean
+  correct_chain?: string[]
   feedback: SlotFeedback[]
   explanation: string
   streak?: number

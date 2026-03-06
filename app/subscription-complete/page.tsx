@@ -33,7 +33,7 @@ const NEXT_STEPS = [
 
 export default function SubscriptionCompletePage() {
   return (
-    <div className="min-h-screen bg-[#0C1628] flex items-center justify-center px-4 py-12">
+    <div className="min-h-screen bg-bg-base flex items-center justify-center px-4 py-12">
       <div className="fixed inset-0 bg-dot-grid opacity-40 pointer-events-none" />
 
       <motion.div

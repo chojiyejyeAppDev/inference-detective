@@ -3,7 +3,7 @@
 import { useState, useCallback, useEffect } from 'react'
 import { DragDropContext, Droppable, DropResult } from '@hello-pangea/dnd'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Lightbulb, Send, RefreshCw, ChevronRight, Trophy, Undo2, Flame, HelpCircle } from 'lucide-react'
+import { Lightbulb, Send, RefreshCw, ChevronRight, Trophy, Undo2, Flame, HelpCircle, CheckCircle2, XCircle } from 'lucide-react'
 import { Question, Sentence, EvaluationResult, LevelConfig } from '@/types'
 import { buildConnectionMap } from '@/lib/game/connectionStrength'
 import PassageViewer from './PassageViewer'
@@ -20,6 +20,7 @@ interface GameBoardProps {
   hintPoints: number
   isSubmitting: boolean
   isHintLoading: boolean
+  isReviewMode?: boolean
   evaluationResult: EvaluationResult | null
   onSubmit: (chain: (string | null)[]) => void
   onHintRequest: () => void
@@ -33,6 +34,7 @@ export default function GameBoard({
   hintPoints,
   isSubmitting,
   isHintLoading,
+  isReviewMode,
   evaluationResult,
   onSubmit,
   onHintRequest,
@@ -47,6 +49,7 @@ export default function GameBoard({
   const [showCorrectAnswer, setShowCorrectAnswer] = useState(false)
   const [history, setHistory] = useState<{ chain: (string | null)[]; pool: Sentence[] }[]>([])
   const [showTutorial, setShowTutorial] = useState(false)
+  const [selectedCardId, setSelectedCardId] = useState<string | null>(null)
 
   // Reset when question changes
   useEffect(() => {
@@ -80,6 +83,77 @@ export default function GameBoard({
     setPool(prev.pool)
     setHistory(history.slice(0, -1))
   }
+
+  // Keyboard-accessible: click-to-select, click-to-place
+  function handleCardSelect(sentenceId: string) {
+    if (isEvaluated) return
+    setSelectedCardId((prev) => (prev === sentenceId ? null : sentenceId))
+  }
+
+  function handleSlotClick(slotIndex: number) {
+    if (isEvaluated) return
+
+    // If a card is selected, place it in this slot
+    if (selectedCardId) {
+      setHistory((prev) => [...prev.slice(-19), { chain: [...chain], pool: [...pool] }])
+
+      const newChain = [...chain]
+      const newPool = [...pool]
+
+      const isFromPool = newPool.some((s) => s.id === selectedCardId)
+      const sourceSlotIdx = newChain.indexOf(selectedCardId)
+
+      if (isFromPool) {
+        // Pool → Slot: displace existing card if any
+        if (newChain[slotIndex]) {
+          const displaced = getSentenceById(newChain[slotIndex]!)
+          if (displaced) newPool.push(displaced)
+        }
+        newChain[slotIndex] = selectedCardId
+        const poolIdx = newPool.findIndex((s) => s.id === selectedCardId)
+        if (poolIdx !== -1) newPool.splice(poolIdx, 1)
+      } else if (sourceSlotIdx !== -1) {
+        // Slot → Slot: swap
+        ;[newChain[sourceSlotIdx], newChain[slotIndex]] = [newChain[slotIndex], newChain[sourceSlotIdx]]
+      }
+
+      setChain(newChain)
+      setPool(newPool)
+      setSelectedCardId(null)
+      return
+    }
+
+    // No card selected: if slot has a card, select it
+    if (chain[slotIndex]) {
+      setSelectedCardId(chain[slotIndex])
+    }
+  }
+
+  function handleReturnToPool(sentenceId: string) {
+    if (isEvaluated) return
+    const slotIdx = chain.indexOf(sentenceId)
+    if (slotIdx === -1) return
+
+    setHistory((prev) => [...prev.slice(-19), { chain: [...chain], pool: [...pool] }])
+    const newChain = [...chain]
+    const newPool = [...pool]
+    const sentence = getSentenceById(sentenceId)
+    if (sentence) newPool.push(sentence)
+    newChain[slotIdx] = null
+    setChain(newChain)
+    setPool(newPool)
+    setSelectedCardId(null)
+  }
+
+  // Clear selection on Escape
+  useEffect(() => {
+    if (!selectedCardId) return
+    function handleEsc(e: KeyboardEvent) {
+      if (e.key === 'Escape') setSelectedCardId(null)
+    }
+    document.addEventListener('keydown', handleEsc)
+    return () => document.removeEventListener('keydown', handleEsc)
+  }, [selectedCardId])
 
   const onDragEnd = (result: DropResult) => {
     if (isEvaluated) return
@@ -124,12 +198,13 @@ export default function GameBoard({
 
     setChain(newChain)
     setPool(newPool)
+    setSelectedCardId(null)
   }
 
   return (
     <>
     <DragDropContext onDragEnd={onDragEnd}>
-      <div className="min-h-screen bg-[#0F172A] flex flex-col">
+      <div className="min-h-screen bg-bg-game flex flex-col">
         {/* Header */}
         <header className="flex items-center justify-between px-3 sm:px-4 md:px-6 py-3 border-b border-slate-800 gap-2">
           <div className="flex items-center gap-2 sm:gap-3 min-w-0">
@@ -140,6 +215,11 @@ export default function GameBoard({
             <span className="text-sm text-slate-400 truncate hidden sm:inline">{levelConfig.name}</span>
             <span className="text-slate-600 hidden sm:inline">·</span>
             <span className="text-xs text-slate-500 shrink-0">{levelConfig.slots}단계</span>
+            {isReviewMode && (
+              <span className="text-[10px] font-bold text-blue-400 bg-blue-500/15 px-1.5 py-0.5 rounded-full border border-blue-500/30">
+                복습
+              </span>
+            )}
           </div>
           <div className="flex items-center gap-2 sm:gap-3 text-xs text-slate-400 shrink-0">
             <div className="flex items-center gap-1.5">
@@ -149,8 +229,8 @@ export default function GameBoard({
             </div>
             <button
               onClick={() => setShowTutorial(true)}
-              className="p-1 rounded text-slate-500 hover:text-slate-300 transition-colors"
-              title="도움말"
+              className="p-2.5 -m-1.5 rounded-lg text-slate-500 hover:text-slate-300 transition-colors"
+              aria-label="도움말"
             >
               <HelpCircle size={14} />
             </button>
@@ -171,7 +251,7 @@ export default function GameBoard({
             {/* Sentence pool */}
             <div>
               <p className="text-[10px] font-semibold text-slate-500 tracking-widest uppercase mb-2 px-1">
-                문장 카드 — 끌어서 슬롯에 배치
+                문장 카드 — 끌어서 배치하거나 클릭하여 선택
               </p>
               <Droppable droppableId="pool" direction="vertical">
                 {(provided, snapshot) => (
@@ -189,7 +269,13 @@ export default function GameBoard({
                       </div>
                     ) : (
                       pool.map((sentence, i) => (
-                        <SentenceCard key={sentence.id} sentence={sentence} index={i} />
+                        <SentenceCard
+                          key={sentence.id}
+                          sentence={sentence}
+                          index={i}
+                          isSelected={selectedCardId === sentence.id}
+                          onSelect={() => handleCardSelect(sentence.id)}
+                        />
                       ))
                     )}
                     {provided.placeholder}
@@ -216,6 +302,10 @@ export default function GameBoard({
                     sentence={sentenceId ? getSentenceById(sentenceId) : null}
                     feedback={evaluationResult?.feedback[i]}
                     isEvaluated={isEvaluated}
+                    hasSelection={!!selectedCardId}
+                    isSelected={selectedCardId === sentenceId}
+                    onSlotClick={() => handleSlotClick(i)}
+                    onReturnToPool={sentenceId ? () => handleReturnToPool(sentenceId) : undefined}
                   />
                   {i < chain.length - 1 && (
                     <ConnectionIndicator strength={connections[i + 1]?.strength ?? 'empty'} />
@@ -256,9 +346,9 @@ export default function GameBoard({
                       {evaluationResult.level_up ? (
                         <Trophy size={16} className="text-amber-400" />
                       ) : evaluationResult.is_correct ? (
-                        <span className="text-emerald-400">✓</span>
+                        <CheckCircle2 size={16} className="text-emerald-400" />
                       ) : (
-                        <span className="text-red-400">✗</span>
+                        <XCircle size={16} className="text-red-400" />
                       )}
                       <span className={[
                         'text-sm font-semibold',
@@ -324,7 +414,7 @@ export default function GameBoard({
                   )}
 
                   {/* 정답 보기 토글 (오답일 때만) */}
-                  {!evaluationResult.is_correct && (
+                  {!evaluationResult.is_correct && evaluationResult.correct_chain && (
                     <div className="mt-3">
                       <button
                         onClick={() => setShowCorrectAnswer(!showCorrectAnswer)}
@@ -340,7 +430,7 @@ export default function GameBoard({
                             exit={{ opacity: 0, height: 0 }}
                             className="mt-2 flex flex-col gap-1.5 overflow-hidden"
                           >
-                            {question.correct_chain.map((sentenceId, i) => {
+                            {evaluationResult.correct_chain.map((sentenceId, i) => {
                               const sentence = getSentenceById(sentenceId)
                               return (
                                 <div

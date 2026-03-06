@@ -2,7 +2,7 @@ import Link from 'next/link'
 
 export default function Footer() {
   return (
-    <footer className="border-t border-white/[0.06] bg-[#0C1628]">
+    <footer className="border-t border-white/[0.06] bg-bg-base">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8 sm:py-10">
         {/* 상단: 로고 + 정책 링크 */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 sm:gap-0 mb-8">

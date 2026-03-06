@@ -6,6 +6,7 @@ import { usePathname } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { LayoutGrid, BarChart3, CreditCard, LogOut, Menu, X, BookMarked } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
+import { useFocusTrap } from '@/lib/hooks/useFocusTrap'
 
 const NAV_ITEMS = [
   { href: '/levels', label: '레벨', icon: LayoutGrid },
@@ -18,6 +19,7 @@ export default function GlobalNav() {
   const pathname = usePathname()
   const [isOpen, setIsOpen] = useState(false)
   const [isLoggedIn, setIsLoggedIn] = useState(false)
+  const drawerRef = useFocusTrap<HTMLDivElement>(isOpen)
 
   // Hide nav on landing, auth pages
   const hiddenPaths = ['/', '/login', '/signup', '/admin']
@@ -35,6 +37,15 @@ export default function GlobalNav() {
       setIsLoggedIn(!!data.user)
     })
   }, [])
+
+  useEffect(() => {
+    if (!isOpen) return
+    function handleEsc(e: KeyboardEvent) {
+      if (e.key === 'Escape') setIsOpen(false)
+    }
+    document.addEventListener('keydown', handleEsc)
+    return () => document.removeEventListener('keydown', handleEsc)
+  }, [isOpen])
 
   if (isHidden || !isLoggedIn) return null
 
@@ -61,7 +72,7 @@ export default function GlobalNav() {
   return (
     <>
       {/* Desktop nav */}
-      <nav className="hidden sm:flex fixed top-0 left-0 right-0 z-50 items-center justify-between px-6 py-2.5 border-b border-slate-800/80 bg-[#0C1628]/90 backdrop-blur-md">
+      <nav aria-label="메인 네비게이션" className="hidden sm:flex fixed top-0 left-0 right-0 z-50 items-center justify-between px-6 py-2.5 border-b border-slate-800/80 bg-bg-base/90 backdrop-blur-md">
         <Link href="/levels" className="flex items-center gap-2">
           <div className="w-7 h-7 rounded-lg bg-amber-500 flex items-center justify-center shadow-md shadow-amber-500/20">
             <span className="text-slate-900 font-black text-[10px]">르</span>
@@ -91,6 +102,7 @@ export default function GlobalNav() {
           <div className="w-px h-4 bg-slate-700 mx-1" />
           <button
             onClick={handleLogout}
+            aria-label="로그아웃"
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs text-slate-500 hover:text-red-400 hover:bg-red-500/10 transition-colors"
           >
             <LogOut size={13} />
@@ -102,7 +114,8 @@ export default function GlobalNav() {
       {/* Mobile nav trigger */}
       <button
         onClick={() => setIsOpen(true)}
-        className="sm:hidden fixed top-3 right-3 z-50 p-2 rounded-lg border border-slate-700/80 bg-slate-800/90 backdrop-blur-sm text-slate-400 shadow-lg shadow-black/30"
+        aria-label="네비게이션 열기"
+        className="sm:hidden fixed top-3 right-3 z-50 p-2.5 rounded-lg border border-slate-700/80 bg-slate-800/90 backdrop-blur-sm text-slate-400 shadow-lg shadow-black/30"
       >
         <Menu size={18} />
       </button>
@@ -119,6 +132,10 @@ export default function GlobalNav() {
               onClick={() => setIsOpen(false)}
             />
             <motion.div
+              ref={drawerRef}
+              role="dialog"
+              aria-modal="true"
+              aria-label="네비게이션 메뉴"
               initial={{ x: '100%' }}
               animate={{ x: 0 }}
               exit={{ x: '100%' }}
@@ -129,7 +146,8 @@ export default function GlobalNav() {
                 <span className="text-base font-black text-white">이:르다</span>
                 <button
                   onClick={() => setIsOpen(false)}
-                  className="p-1.5 rounded-lg text-slate-500 hover:text-slate-300 hover:bg-slate-800 transition-colors"
+                  aria-label="네비게이션 닫기"
+                  className="p-2.5 rounded-lg text-slate-500 hover:text-slate-300 hover:bg-slate-800 transition-colors"
                 >
                   <X size={18} />
                 </button>

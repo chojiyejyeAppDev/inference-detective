@@ -1,4 +1,4 @@
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import { Noto_Sans_KR } from 'next/font/google'
 import { Toaster } from 'sonner'
 import { Suspense } from 'react'
@@ -11,6 +11,10 @@ const notoSansKR = Noto_Sans_KR({
   weight: ['400', '500', '600', '700'],
   variable: '--font-noto-sans-kr',
 })
+
+export const viewport: Viewport = {
+  viewportFit: 'cover',
+}
 
 export const metadata: Metadata = {
   title: '이:르다 — 수능 비문학 추론 훈련',
@@ -34,12 +38,15 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="ko">
+    <html lang="ko" className="dark">
       <body className={`${notoSansKR.variable} font-sans antialiased`}>
+        <a href="#main-content" className="skip-nav">본문으로 건너뛰기</a>
         <Suspense fallback={null}>
           <PostHogProvider>
             <GlobalNav />
-            {children}
+            <main id="main-content">
+              {children}
+            </main>
           </PostHogProvider>
         </Suspense>
         <Toaster
