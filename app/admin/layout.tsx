@@ -27,6 +27,9 @@ export default async function AdminLayout({ children }: { children: React.ReactN
           <Link href="/admin/questions" className="text-xs text-slate-400 hover:text-slate-200 transition-colors">
             문제 관리
           </Link>
+          <Link href="/admin/questions/generate" className="text-xs text-slate-400 hover:text-slate-200 transition-colors">
+            AI 생성
+          </Link>
           <Link href="/admin/users" className="text-xs text-slate-400 hover:text-slate-200 transition-colors">
             사용자
           </Link>

@@ -60,12 +60,20 @@ export default function QuestionsPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-slate-100">문제 관리</h1>
-        <Link
-          href="/admin/questions/new"
-          className="px-4 py-2 rounded-lg bg-amber-500 text-slate-900 text-sm font-semibold hover:bg-amber-400 transition-colors"
-        >
-          + 새 문제
-        </Link>
+        <div className="flex gap-2">
+          <Link
+            href="/admin/questions/generate"
+            className="px-4 py-2 rounded-lg border border-amber-500/50 text-amber-400 text-sm font-semibold hover:bg-amber-500/10 transition-colors"
+          >
+            AI 생성
+          </Link>
+          <Link
+            href="/admin/questions/new"
+            className="px-4 py-2 rounded-lg bg-amber-500 text-slate-900 text-sm font-semibold hover:bg-amber-400 transition-colors"
+          >
+            + 새 문제
+          </Link>
+        </div>
       </div>
 
       {/* Filters */}
