@@ -1,33 +1,40 @@
 'use client'
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { Suspense, useState } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { createClient } from '@/lib/supabase/client'
 
-export default function LoginPage() {
+function LoginForm() {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const refCode = searchParams.get('ref')
+  const redirectTo = searchParams.get('redirect') ?? '/levels'
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [googleLoading, setGoogleLoading] = useState(false)
   const [resetSent, setResetSent] = useState(false)
+  const [resetLoading, setResetLoading] = useState(false)
 
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault()
     setLoading(true)
 
     const supabase = createClient()
-    const { error } = await supabase.auth.signInWithPassword({ email, password })
+    const { error } = await supabase.auth.signInWithPassword({
+      email: email.trim().toLowerCase(),
+      password,
+    })
 
     if (error) {
       toast.error('이메일 또는 비밀번호가 올바르지 않아요.')
       setLoading(false)
     } else {
-      router.push('/levels')
+      router.push(redirectTo)
       router.refresh()
     }
   }
@@ -38,7 +45,7 @@ export default function LoginPage() {
       const supabase = createClient()
       const { error: oauthError } = await supabase.auth.signInWithOAuth({
         provider: 'google',
-        options: { redirectTo: `${window.location.origin}/auth/callback` },
+        options: { redirectTo: `${window.location.origin}/auth/callback${refCode ? `?ref=${refCode}` : ''}` },
       })
       if (oauthError) {
         toast.error('Google 로그인에 실패했어요. 다시 시도해 주세요.')
@@ -52,14 +59,17 @@ export default function LoginPage() {
   }
 
   async function handlePasswordReset() {
-    if (!email) {
+    if (!email.trim()) {
       toast.error('이메일을 먼저 입력해주세요.')
       return
     }
+    if (resetLoading || resetSent) return
+    setResetLoading(true)
     const supabase = createClient()
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/auth/callback`,
+    const { error } = await supabase.auth.resetPasswordForEmail(email.trim().toLowerCase(), {
+      redirectTo: `${window.location.origin}/auth/reset-password`,
     })
+    setResetLoading(false)
     if (error) {
       toast.error('비밀번호 재설정 이메일 발송에 실패했어요.')
     } else {
@@ -71,7 +81,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0F172A] flex items-center justify-center px-4">
+    <div className="min-h-screen bg-bg-game flex items-center justify-center px-4">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -124,7 +134,7 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-2.5 rounded-lg bg-amber-500 text-slate-900 text-sm font-bold hover:bg-amber-400 transition-colors disabled:opacity-50"
+              className="w-full py-2.5 rounded-xl bg-amber-500 text-slate-900 text-sm font-bold hover:bg-amber-400 transition-colors disabled:opacity-50"
             >
               {loading ? '로그인 중...' : '로그인'}
             </button>
@@ -163,5 +173,17 @@ export default function LoginPage() {
         </div>
       </motion.div>
     </div>
+  )
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-bg-game flex items-center justify-center">
+        <div className="w-6 h-6 rounded-full border-2 border-amber-500 border-t-transparent animate-spin" />
+      </div>
+    }>
+      <LoginForm />
+    </Suspense>
   )
 }

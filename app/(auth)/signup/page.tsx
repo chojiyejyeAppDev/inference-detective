@@ -24,6 +24,12 @@ function SignupForm() {
     setLoading(true)
     setError(null)
 
+    if (!nickname.trim()) {
+      setError('닉네임을 입력해주세요.')
+      setLoading(false)
+      return
+    }
+
     if (password.length < 8) {
       setError('비밀번호는 8자 이상이어야 해요.')
       setLoading(false)
@@ -32,11 +38,11 @@ function SignupForm() {
 
     const supabase = createClient()
     const { error } = await supabase.auth.signUp({
-      email,
+      email: email.trim().toLowerCase(),
       password,
       options: {
         data: {
-          nickname,
+          nickname: nickname.trim(),
           ref_code: refCode ?? undefined,
         },
       },
@@ -78,7 +84,7 @@ function SignupForm() {
 
   if (done) {
     return (
-      <div className="min-h-screen bg-[#0F172A] flex items-center justify-center px-4">
+      <div className="min-h-screen bg-bg-game flex items-center justify-center px-4">
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -105,7 +111,7 @@ function SignupForm() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0F172A] flex items-center justify-center px-4">
+    <div className="min-h-screen bg-bg-game flex items-center justify-center px-4">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -172,7 +178,7 @@ function SignupForm() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-2.5 rounded-lg bg-amber-500 text-slate-900 text-sm font-bold hover:bg-amber-400 transition-colors disabled:opacity-50"
+              className="w-full py-2.5 rounded-xl bg-amber-500 text-slate-900 text-sm font-bold hover:bg-amber-400 transition-colors disabled:opacity-50"
             >
               {loading ? '가입 중...' : '가입하기'}
             </button>
@@ -229,7 +235,7 @@ function SignupForm() {
 export default function SignupPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen bg-[#0F172A] flex items-center justify-center">
+      <div className="min-h-screen bg-bg-game flex items-center justify-center">
         <div className="w-6 h-6 rounded-full border-2 border-amber-500 border-t-transparent animate-spin" />
       </div>
     }>

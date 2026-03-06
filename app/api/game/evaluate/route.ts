@@ -2,8 +2,12 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient, createServiceClient } from '@/lib/supabase/server'
 import { evaluateChain, checkLevelUp } from '@/lib/game/evaluator'
 import { LEVEL_UP_SESSIONS, LEVEL_UP_ACCURACY } from '@/lib/game/levelConfig'
+import { checkCsrf } from '@/lib/api/csrf'
 
 export async function POST(req: NextRequest) {
+  const csrfError = checkCsrf(req)
+  if (csrfError) return csrfError
+
   const supabase = await createClient()
   const { data: { user }, error: authError } = await supabase.auth.getUser()
 
@@ -11,12 +15,13 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  const body = await req.json()
-  const { question_id, submitted_chain, hints_used: rawHintsUsed = 0 } = body as {
-    question_id: string
-    submitted_chain: (string | null)[]
-    hints_used: number
+  let body: { question_id: string; submitted_chain: (string | null)[]; hints_used?: number }
+  try {
+    body = await req.json()
+  } catch {
+    return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
   }
+  const { question_id, submitted_chain, hints_used: rawHintsUsed = 0 } = body
 
   // 입력 검증
   if (!question_id || typeof question_id !== 'string') {
@@ -41,6 +46,19 @@ export async function POST(req: NextRequest) {
 
   if (qError || !question) {
     return NextResponse.json({ error: 'Question not found' }, { status: 404 })
+  }
+
+  // 중복 제출 방지: 같은 문제를 이미 제출한 경우
+  const { data: existingSubmission } = await service
+    .from('user_progress')
+    .select('id')
+    .eq('user_id', user.id)
+    .eq('question_id', question_id)
+    .limit(1)
+    .maybeSingle()
+
+  if (existingSubmission) {
+    return NextResponse.json({ error: 'Already submitted this question' }, { status: 409 })
   }
 
   // 평가
@@ -73,8 +91,7 @@ export async function POST(req: NextRequest) {
     accuracy: evaluation.accuracy,
   })
 
-  // 일일 사용 횟수 원자적 증가
-  await service.rpc('increment_daily_questions', { user_id_param: user.id })
+  // 일일 사용 횟수는 question API에서 원자적으로 처리됨 (check_and_consume_daily_question RPC)
 
   // 레벨업 체크 + 진행 상황
   let levelUp = false
@@ -119,6 +136,7 @@ export async function POST(req: NextRequest) {
 
   return NextResponse.json({
     ...evaluation,
+    correct_chain: question.correct_chain,
     level_up: levelUp,
     streak,
     level_progress: {

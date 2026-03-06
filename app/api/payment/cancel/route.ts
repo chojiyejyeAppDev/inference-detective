@@ -1,8 +1,11 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { createClient, createServiceClient } from '@/lib/supabase/server'
 import { deleteBillingKey } from '@/lib/payment/portone'
+import { checkCsrf } from '@/lib/api/csrf'
 
-export async function POST() {
+export async function POST(req: NextRequest) {
+  const csrfError = checkCsrf(req)
+  if (csrfError) return csrfError
   const supabase = await createClient()
   const { data: { user }, error: authError } = await supabase.auth.getUser()
 

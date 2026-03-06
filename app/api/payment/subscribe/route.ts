@@ -3,8 +3,12 @@ import { createClient, createServiceClient } from '@/lib/supabase/server'
 import { chargeBillingKey, getPayment, PLANS, type PlanKey } from '@/lib/payment/portone'
 import { sendEmail } from '@/lib/email/resend'
 import { subscriptionConfirmEmail } from '@/lib/email/templates'
+import { checkCsrf } from '@/lib/api/csrf'
 
 export async function POST(req: NextRequest) {
+  const csrfError = checkCsrf(req)
+  if (csrfError) return csrfError
+
   const supabase = await createClient()
   const { data: { user }, error: authError } = await supabase.auth.getUser()
 
@@ -61,7 +65,11 @@ export async function POST(req: NextRequest) {
 
       // 구독 정보 저장 (빌링키 포함)
       const expiresAt = new Date()
-      expiresAt.setDate(expiresAt.getDate() + planInfo.days)
+      if (plan === 'monthly') {
+        expiresAt.setMonth(expiresAt.getMonth() + 1)
+      } else {
+        expiresAt.setDate(expiresAt.getDate() + planInfo.days)
+      }
 
       await service.from('subscriptions').upsert({
         user_id: user.id,
@@ -105,6 +113,11 @@ export async function POST(req: NextRequest) {
 
       if (payment.amount.total !== planInfo.amount) {
         return NextResponse.json({ error: '결제 금액이 일치하지 않습니다' }, { status: 402 })
+      }
+
+      // 결제 소유자 검증
+      if (payment.customer?.id && payment.customer.id !== user.id) {
+        return NextResponse.json({ error: '결제 정보가 일치하지 않습니다' }, { status: 403 })
       }
 
       // 이용권 정보 저장 (빌링키 없음)

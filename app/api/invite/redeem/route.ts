@@ -3,8 +3,12 @@ import { createClient, createServiceClient } from '@/lib/supabase/server'
 import { INVITE_BONUS_QUESTIONS } from '@/lib/game/levelConfig'
 import { sendEmail } from '@/lib/email/resend'
 import { inviteSuccessToInviter, inviteSuccessToInvitee } from '@/lib/email/templates'
+import { checkCsrf } from '@/lib/api/csrf'
 
 export async function POST(req: NextRequest) {
+  const csrfError = checkCsrf(req)
+  if (csrfError) return csrfError
+
   const supabase = await createClient()
   const { data: { user }, error: authError } = await supabase.auth.getUser()
 
@@ -12,7 +16,13 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  const { invite_code } = await req.json() as { invite_code: string }
+  let body: { invite_code: string }
+  try {
+    body = await req.json()
+  } catch {
+    return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
+  }
+  const { invite_code } = body
   const service = await createServiceClient()
 
   // 이미 초대 코드 사용 여부 체크
