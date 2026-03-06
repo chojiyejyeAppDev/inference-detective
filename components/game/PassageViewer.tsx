@@ -34,7 +34,7 @@ export default function PassageViewer({ passage, conclusion, topic }: PassageVie
       </div>
 
       {/* Passage */}
-      <div className="flex-1 max-h-[30vh] sm:max-h-[40vh] md:max-h-none overflow-y-auto rounded-xl border border-slate-700 bg-slate-900/50 backdrop-blur-sm">
+      <div className="flex-1 max-h-[40vh] sm:max-h-[45vh] md:max-h-none overflow-y-auto rounded-xl border border-slate-700 bg-slate-900/50 backdrop-blur-sm">
         <div className="p-3 sm:p-5">
           <p
             className="text-sm leading-[1.95] text-slate-200 break-words"

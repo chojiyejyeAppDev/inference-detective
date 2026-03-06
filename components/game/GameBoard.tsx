@@ -463,14 +463,16 @@ export default function GameBoard({
                     <button
                       onClick={onHintRequest}
                       disabled={hintPoints <= 0 || levelConfig.level === 7 || isHintLoading}
+                      aria-label={`힌트 사용 (남은 포인트: ${hintPoints})`}
                       className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg border border-amber-500/30 bg-amber-500/10 text-amber-400 text-sm font-medium hover:bg-amber-500/20 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
                     >
                       <Lightbulb size={14} />
-                      힌트
+                      {isHintLoading ? '로딩...' : '힌트'}
                     </button>
                     <button
                       onClick={handleUndo}
                       disabled={history.length === 0}
+                      aria-label="마지막 동작 되돌리기"
                       className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-lg border border-slate-700 text-slate-400 text-sm hover:border-slate-600 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
                     >
                       <Undo2 size={13} />
@@ -483,6 +485,7 @@ export default function GameBoard({
                         setHistory([])
                         onReset()
                       }}
+                      aria-label="모든 배치 초기화"
                       className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-lg border border-slate-700 text-slate-400 text-sm hover:border-slate-600 transition-colors"
                     >
                       <RefreshCw size={13} />
@@ -492,9 +495,15 @@ export default function GameBoard({
                   <button
                     onClick={() => onSubmit(chain)}
                     disabled={!isChainComplete || isSubmitting}
+                    aria-label="추론 경로 제출"
+                    aria-busy={isSubmitting}
                     className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-amber-500 text-slate-900 text-sm font-bold hover:bg-amber-400 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                   >
-                    <Send size={14} />
+                    {isSubmitting ? (
+                      <div className="w-4 h-4 rounded-full border-2 border-slate-900 border-t-transparent animate-spin" />
+                    ) : (
+                      <Send size={14} />
+                    )}
                     {isSubmitting ? '평가 중...' : '추론 경로 제출'}
                   </button>
                 </>

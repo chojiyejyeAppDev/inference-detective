@@ -348,7 +348,9 @@ input:-webkit-autofill:focus {
   .animate-counter-in,
   .animate-slide-up,
   .animate-badge-pop,
-  .animate-hero-glow {
+  .animate-hero-glow,
+  .animate-pulse,
+  .animate-spin {
     animation: none;
   }
   .text-shimmer {
