@@ -52,6 +52,13 @@ export default function LevelGrid({
         return
       }
 
+      if (res.status === 404) {
+        toast.info('이 레벨의 문제를 모두 풀었어요!', {
+          description: '다른 레벨을 시도하거나 나중에 새 문제가 추가되면 다시 도전해보세요.',
+        })
+        return
+      }
+
       if (!res.ok || !data.question?.id) {
         toast.error('문제를 불러오지 못했어요.', {
           description: '잠시 후 다시 시도해 주세요.',
@@ -150,6 +157,23 @@ export default function LevelGrid({
           >
             플랜 변경
           </button>
+        </motion.div>
+      )}
+
+      {/* Level 7 master banner */}
+      {currentLevel === 7 && (
+        <motion.div
+          initial={{ opacity: 0, scale: 0.98 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="relative mb-6 rounded-2xl border border-emerald-500/35 bg-emerald-500/[0.07] p-5 text-center overflow-hidden"
+        >
+          <div className="absolute inset-0 bg-dot-grid-dense opacity-50 pointer-events-none" />
+          <div className="relative">
+            <p className="text-emerald-300 font-black text-base mb-1">최고 레벨 도달!</p>
+            <p className="text-emerald-400/70 text-xs">
+              모든 레벨을 해금했어요. 아래에서 원하는 레벨을 자유롭게 선택해 연습하세요.
+            </p>
+          </div>
         </motion.div>
       )}
 
@@ -256,6 +280,13 @@ export default function LevelGrid({
                     />
                   ))}
                 </div>
+
+                {/* Level-up condition (current level only) */}
+                {isCurrent && config.level < 7 && (
+                  <p className="mt-2 text-[10px] text-slate-500">
+                    레벨업 조건: 80% 이상 정확도 3회 달성
+                  </p>
+                )}
               </button>
             </motion.div>
           )

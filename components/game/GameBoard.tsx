@@ -18,6 +18,7 @@ interface GameBoardProps {
   question: Question
   levelConfig: LevelConfig
   hintPoints: number
+  dailyRemaining?: number | null
   isSubmitting: boolean
   isHintLoading: boolean
   isReviewMode?: boolean
@@ -32,6 +33,7 @@ export default function GameBoard({
   question,
   levelConfig,
   hintPoints,
+  dailyRemaining,
   isSubmitting,
   isHintLoading,
   isReviewMode,
@@ -222,6 +224,11 @@ export default function GameBoard({
             )}
           </div>
           <div className="flex items-center gap-2 sm:gap-3 text-xs text-slate-400 shrink-0">
+            {dailyRemaining != null && (
+              <span className={`font-semibold ${dailyRemaining === 0 ? 'text-red-400' : 'text-slate-400'}`}>
+                {dailyRemaining}개 남음
+              </span>
+            )}
             <div className="flex items-center gap-1.5">
               <Lightbulb size={12} className="text-amber-400" />
               <span className="text-amber-400 font-semibold">{hintPoints}</span>
@@ -463,7 +470,20 @@ export default function GameBoard({
                     <button
                       onClick={onHintRequest}
                       disabled={hintPoints <= 0 || levelConfig.level === 7 || isHintLoading}
-                      aria-label={`힌트 사용 (남은 포인트: ${hintPoints})`}
+                      aria-label={
+                        levelConfig.level === 7
+                          ? '레벨 7에서는 힌트를 사용할 수 없습니다'
+                          : hintPoints <= 0
+                            ? '힌트 포인트가 부족합니다'
+                            : `힌트 사용 (남은 포인트: ${hintPoints})`
+                      }
+                      title={
+                        levelConfig.level === 7
+                          ? '최고 레벨 — 힌트 없이 도전!'
+                          : hintPoints <= 0
+                            ? '힌트 포인트 부족'
+                            : undefined
+                      }
                       className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg border border-amber-500/30 bg-amber-500/10 text-amber-400 text-sm font-medium hover:bg-amber-500/20 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
                     >
                       <Lightbulb size={14} />

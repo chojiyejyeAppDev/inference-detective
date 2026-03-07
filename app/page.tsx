@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence, type Variants } from 'framer-motion'
 import Link from 'next/link'
-import { ArrowRight, Brain, Target, TrendingUp, Zap, Users, ChevronRight, GripVertical } from 'lucide-react'
+import { ArrowRight, Brain, Target, TrendingUp, Zap, Users, ChevronRight, GripVertical, Menu, X } from 'lucide-react'
 import Footer from '@/components/common/Footer'
 import { createClient } from '@/lib/supabase/client'
 
@@ -124,7 +124,7 @@ function LandingDemo() {
         <div className="w-3 h-3 rounded-full bg-red-500/60" />
         <div className="w-3 h-3 rounded-full bg-amber-500/60" />
         <div className="w-3 h-3 rounded-full bg-emerald-500/60" />
-        <span className="text-xs text-slate-600 ml-2 font-mono">iruda.kr/play</span>
+        <span className="text-xs text-slate-600 ml-2 font-mono">eruda.today/play</span>
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
         {/* Passage + remaining cards */}
@@ -235,6 +235,7 @@ function LandingDemo() {
 
 export default function LandingPage() {
   const router = useRouter()
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   useEffect(() => {
     const supabase = createClient()
@@ -248,14 +249,15 @@ export default function LandingPage() {
 
       {/* ── Nav ── */}
       <nav className="sticky top-0 z-50 border-b border-white/[0.06] bg-bg-base/90 backdrop-blur-md">
-        <div className="max-w-5xl mx-auto px-6 h-14 flex items-center justify-between">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
             <div className="w-7 h-7 rounded-lg bg-amber-500 flex items-center justify-center shadow-lg shadow-amber-500/30">
               <span className="text-slate-900 font-black text-xs">르</span>
             </div>
             <span className="font-bold text-base tracking-tight">이:르다</span>
           </div>
-          <div className="flex items-center gap-3">
+          {/* Desktop nav */}
+          <div className="hidden sm:flex items-center gap-3">
             <Link href="/login" className="text-sm text-slate-400 hover:text-slate-200 transition-colors px-3 py-1.5">
               로그인
             </Link>
@@ -266,7 +268,45 @@ export default function LandingPage() {
               무료 시작
             </Link>
           </div>
+          {/* Mobile hamburger */}
+          <button
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            aria-label={mobileMenuOpen ? '메뉴 닫기' : '메뉴 열기'}
+            aria-expanded={mobileMenuOpen}
+            className="sm:hidden p-1.5 text-slate-400 hover:text-slate-200 transition-colors"
+          >
+            {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
+          </button>
         </div>
+        {/* Mobile dropdown */}
+        <AnimatePresence>
+          {mobileMenuOpen && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="sm:hidden overflow-hidden border-t border-white/[0.06]"
+            >
+              <div className="px-4 py-3 flex flex-col gap-2">
+                <Link
+                  href="/login"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="text-sm text-slate-300 hover:text-white transition-colors py-2 px-3 rounded-lg hover:bg-white/[0.05]"
+                >
+                  로그인
+                </Link>
+                <Link
+                  href="/signup"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="text-sm text-center py-2 px-4 rounded-lg bg-amber-500 text-slate-900 font-bold hover:bg-amber-400 transition-colors"
+                >
+                  무료 시작
+                </Link>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </nav>
 
       {/* ── Hero ── */}
@@ -302,11 +342,11 @@ export default function LandingPage() {
 
           {/* Headline */}
           <h1 className="text-[2.6rem] sm:text-[3.4rem] font-black leading-[1.12] tracking-tight mb-6">
-            논리의 빈칸을 채우세요.
+            수능 비문학,
             <br />
-            <span className="text-shimmer">추론 체인을 직접 조립하며</span>
+            <span className="text-shimmer">추론을 직접 조립하며</span>
             <br />
-            수능 국어를 정복하세요.
+            정복하세요.
           </h1>
 
           <p className="text-slate-400 text-lg max-w-lg mx-auto mb-10 leading-relaxed">
