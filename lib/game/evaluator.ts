@@ -43,8 +43,9 @@ export function evaluateChain(
   const isCorrect = accuracy >= 1.0
 
   const explanation = buildExplanation(accuracy, feedback, question)
+  const chainExplanations = generateChainExplanations(question)
 
-  return { is_correct: isCorrect, accuracy, feedback, explanation }
+  return { is_correct: isCorrect, accuracy, feedback, explanation, chain_explanations: chainExplanations }
 }
 
 function generateSlotHint(
@@ -93,6 +94,72 @@ function buildExplanation(
   }
 
   return `추론이 쉽지 않죠! 지문에서 "따라서", "왜냐하면" 같은 접속어에 주목해보세요.`
+}
+
+/**
+ * Generate explanations for why each step in the correct chain follows the previous one.
+ * Uses the question's chain_explanations if available, otherwise auto-generates from logical connectors.
+ */
+function generateChainExplanations(question: Question): string[] {
+  // If question has author-provided explanations, use those
+  if (question.chain_explanations && question.chain_explanations.length > 0) {
+    return question.chain_explanations
+  }
+
+  // Auto-generate explanations from the correct chain
+  const chain = question.correct_chain
+  const explanations: string[] = []
+
+  const CONNECTORS: Record<string, string> = {
+    '따라서': '앞의 내용으로부터 결론을 도출하는 연결',
+    '그러므로': '논리적 귀결을 나타내는 연결',
+    '왜냐하면': '앞의 주장에 대한 근거를 제시하는 연결',
+    '그런데': '새로운 관점이나 전환을 도입하는 연결',
+    '즉': '앞의 내용을 구체화하거나 바꿔 말하는 연결',
+    '결론적으로': '전체 논의를 종합하는 연결',
+    '이는': '앞의 내용을 부연 설명하는 연결',
+    '특히': '앞의 내용에서 구체적 사례를 강조하는 연결',
+    '반면': '대조적 관점을 제시하는 연결',
+    '그러나': '반대되는 주장을 도입하는 연결',
+    '이처럼': '앞의 내용을 종합 정리하는 연결',
+    '또한': '추가적인 근거를 보충하는 연결',
+  }
+
+  for (let i = 0; i < chain.length; i++) {
+    const sentence = question.sentences.find((s) => s.id === chain[i])
+    if (!sentence) {
+      explanations.push('')
+      continue
+    }
+
+    if (i === 0) {
+      explanations.push('주제를 도입하고 논의의 배경을 설정하는 출발점이에요.')
+      continue
+    }
+
+    // Check for logical connectors in the sentence
+    let found = false
+    for (const [connector, desc] of Object.entries(CONNECTORS)) {
+      if (sentence.text.includes(connector)) {
+        const prevSentence = question.sentences.find((s) => s.id === chain[i - 1])
+        explanations.push(
+          `"${connector}"${connector.endsWith('면') || connector.endsWith('데') ? '' : '(이)라는'} 표현이 앞 문장${prevSentence ? ` ("${prevSentence.text.slice(0, 20)}…")` : ''}과의 ${desc}이에요.`
+        )
+        found = true
+        break
+      }
+    }
+
+    if (!found) {
+      if (i === chain.length - 1) {
+        explanations.push('앞의 논리를 종합하여 결론으로 이어지는 마지막 단계예요.')
+      } else {
+        explanations.push(`${i}단계의 내용을 받아 논리를 한 단계 더 발전시키는 문장이에요.`)
+      }
+    }
+  }
+
+  return explanations
 }
 
 export function checkLevelUp(recentAccuracies: number[]): boolean {

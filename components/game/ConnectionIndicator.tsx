@@ -9,15 +9,15 @@ interface ConnectionIndicatorProps {
   strength: Strength
 }
 
-const CONFIG: Record<Strength, { color: string; bgClass: string; label: string; tooltip: string; pulse: boolean; icon: 'check' | 'wave' | 'x' | 'dot' }> = {
-  strong: { color: '#16A34A', bgClass: 'bg-green-600', label: '강한 연결', tooltip: '앞뒤 논리가 자연스러워요', pulse: true, icon: 'check' },
-  medium: { color: '#D97706', bgClass: 'bg-amber-500', label: '보통 연결', tooltip: '순서를 다시 확인해 보세요', pulse: false, icon: 'wave' },
-  weak: { color: '#C22D2D', bgClass: 'bg-exam-red', label: '약한 연결', tooltip: '이 배치는 논리가 맞지 않아요', pulse: false, icon: 'x' },
-  empty: { color: '#D6D3D1', bgClass: 'bg-stone-300', label: '비어있음', tooltip: '', pulse: false, icon: 'dot' },
+const CONFIG: Record<Strength, { color: string; label: string; tooltip: string; pulse: boolean; icon: 'check' | 'wave' | 'x' | 'dot' }> = {
+  strong: { color: '#16A34A', label: '✓ 강한 연결', tooltip: '논리 흐름이 자연스럽습니다', pulse: true, icon: 'check' },
+  medium: { color: '#D97706', label: '~ 보통 연결', tooltip: '카드 순서를 바꿔 보세요', pulse: false, icon: 'wave' },
+  weak: { color: '#C22D2D', label: '✗ 약한 연결', tooltip: '이 배치는 논리적으로 맞지 않습니다', pulse: false, icon: 'x' },
+  empty: { color: '#D6D3D1', label: '· · ·', tooltip: '', pulse: false, icon: 'dot' },
 }
 
 function StrengthIcon({ type, color }: { type: 'check' | 'wave' | 'x' | 'dot'; color: string }) {
-  const size = 14
+  const size = 12
   switch (type) {
     case 'check':
       return (
@@ -48,56 +48,39 @@ function StrengthIcon({ type, color }: { type: 'check' | 'wave' | 'x' | 'dot'; c
 
 export default function ConnectionIndicator({ strength }: ConnectionIndicatorProps) {
   const reduced = useReducedMotion()
-  const { color, label, tooltip, pulse: shouldPulse, icon } = CONFIG[strength]
-  const pulse = shouldPulse && !reduced
+  const config = CONFIG[strength]
+  const shouldPulse = config.pulse && !reduced
 
   return (
-    <div className="flex items-center justify-center py-0.5 relative group" aria-label={label} title={tooltip || undefined} role="img">
-      {/* Thin vertical line + shape icon */}
-      <div className="flex flex-col items-center gap-0">
-        <motion.div
-          className="w-px h-2"
-          style={{ backgroundColor: color }}
-          animate={pulse ? { opacity: [1, 0.4, 1] } : {}}
-          transition={{ repeat: Infinity, duration: 1.5 }}
-        />
-        {/* Shape icon for color-blind accessibility */}
-        <motion.div
-          animate={pulse ? { scale: [1, 1.1, 1] } : {}}
-          transition={{ repeat: Infinity, duration: 1.5 }}
-        >
-          <StrengthIcon type={icon} color={color} />
-        </motion.div>
-        {/* Arrow */}
-        <motion.svg
-          width="8"
-          height="5"
-          viewBox="0 0 10 6"
-          fill="none"
-          animate={pulse ? { y: [0, 1, 0] } : {}}
-          transition={{ repeat: Infinity, duration: 1.5 }}
-        >
-          <path
-            d="M1 1L5 5L9 1"
-            stroke={color}
-            strokeWidth="1.5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        </motion.svg>
-      </div>
+    <div className="flex items-center justify-center py-1.5 relative" role="img" aria-label={config.label} title={config.tooltip || undefined}>
+      {/* Vertical connector line */}
+      <div className="absolute left-[calc(50%-0.5px)] w-px h-full" style={{ backgroundColor: config.color + '30' }} />
 
-      {/* Label — always visible on desktop */}
-      {strength !== 'empty' && (
-        <motion.span
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="hidden sm:block absolute left-[calc(50%+18px)] text-[10px] font-medium px-1.5 py-0.5 whitespace-nowrap border"
-          style={{ color, borderColor: `${color}40`, backgroundColor: `${color}0A` }}
-        >
-          {label}
-        </motion.span>
-      )}
+      {/* Bridge badge */}
+      <motion.div
+        className={[
+          'relative z-10 flex items-center gap-1 px-2.5 py-1 text-[10px] font-semibold rounded-full transition-all',
+          strength === 'strong' ? 'text-green-700 bg-green-50 border border-green-200' :
+          strength === 'medium' ? 'text-amber-600 bg-amber-50 border border-amber-200' :
+          strength === 'weak' ? 'text-red-700 bg-red-50 border border-red-200' :
+          'text-stone-300 border border-dashed border-stone-200 bg-white',
+        ].join(' ')}
+        initial={reduced ? false : { scale: 0.8, opacity: 0 }}
+        animate={shouldPulse
+          ? { scale: [1, 1.05, 1], opacity: 1 }
+          : { scale: 1, opacity: 1 }
+        }
+        transition={shouldPulse
+          ? { scale: { repeat: Infinity, duration: 1.5 }, opacity: { duration: 0.3 } }
+          : { type: 'spring', stiffness: 300, damping: 25 }
+        }
+      >
+        {strength === 'strong' && <StrengthIcon type="check" color="#15803D" />}
+        {strength === 'medium' && <StrengthIcon type="wave" color="#D97706" />}
+        {strength === 'weak' && <StrengthIcon type="x" color="#B91C1C" />}
+        {strength === 'empty' && <StrengthIcon type="dot" color="#D6D3D1" />}
+        <span>{config.label}</span>
+      </motion.div>
     </div>
   )
 }

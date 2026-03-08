@@ -2,7 +2,7 @@
 
 import { Droppable, Draggable } from '@hello-pangea/dnd'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Lightbulb } from 'lucide-react'
+import { Lightbulb, X } from 'lucide-react'
 import { Sentence } from '@/types'
 import { SlotFeedback } from '@/types'
 
@@ -62,7 +62,7 @@ export default function InferenceSlot({
             'relative min-h-[48px] sm:min-h-[60px] border-2 transition-all duration-200',
             !isEvaluated && 'cursor-pointer',
             snapshot.isDraggingOver
-              ? 'border-exam-ink bg-bg-base scale-[1.005]'
+              ? 'border-exam-ink bg-amber-50 scale-[1.02] shadow-sm'
               : isSelected
                 ? 'border-exam-ink bg-exam-highlight ring-2 ring-exam-red/20'
                 : hasSelection && !sentence && !isEvaluated
@@ -86,9 +86,23 @@ export default function InferenceSlot({
             </div>
           </div>
 
+          {/* Remove button for filled slots (especially important on mobile) */}
+          {sentence && !isEvaluated && onReturnToPool && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation()
+                onReturnToPool()
+              }}
+              className="absolute top-1.5 right-1.5 z-10 p-1.5 text-stone-400 hover:text-exam-red hover:bg-exam-highlight transition-colors"
+              aria-label="카드를 풀로 되돌리기"
+            >
+              <X size={14} />
+            </button>
+          )}
+
           {/* Content */}
           <motion.div
-            className="px-5 py-2.5 sm:py-3 min-h-[48px] sm:min-h-[60px] flex items-center"
+            className="px-5 py-2.5 sm:py-3 pr-8 min-h-[48px] sm:min-h-[60px] flex items-center"
             animate={sentence ? { scale: [1, 1.01, 1] } : {}}
             transition={{ duration: 0.2 }}
             key={sentence?.id ?? 'empty'}

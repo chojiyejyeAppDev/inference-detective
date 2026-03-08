@@ -21,6 +21,7 @@ export interface Question {
   conclusion: string
   correct_chain: string[] // sentence ids in order
   hints: Hint[]
+  chain_explanations?: string[] // why each step follows the previous
 }
 
 export interface Profile {
@@ -33,6 +34,19 @@ export interface Profile {
   invite_code: string
   daily_questions_used: number
   daily_reset_at: string
+  streak_days: number
+  longest_streak: number
+  last_active_date: string | null
+  streak_freeze_count: number
+}
+
+export interface MockScore {
+  id: string
+  user_id: string
+  exam_date: string
+  score: number
+  notes: string | null
+  created_at: string
 }
 
 export interface UserProgress {
@@ -57,7 +71,9 @@ export interface EvaluationResult {
   correct_chain?: string[]
   feedback: SlotFeedback[]
   explanation: string
+  chain_explanations?: string[]
   streak?: number
+  daily_streak?: number
   hint_points_bonus?: number
   hint_points_remaining?: number | null
   level_progress?: {

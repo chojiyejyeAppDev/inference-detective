@@ -6,7 +6,7 @@ import HintDependencyChart from '@/components/dashboard/HintDependencyChart'
 import TopicAnalysisCard from '@/components/dashboard/TopicAnalysisCard'
 import InviteSection from '@/components/dashboard/InviteSection'
 import Link from 'next/link'
-import { BookOpen, TrendingUp, TrendingDown, Target, Zap } from 'lucide-react'
+import { BookOpen, TrendingUp, TrendingDown, Target, Zap, ClipboardList, Flame } from 'lucide-react'
 
 export default async function DashboardPage() {
   const supabase = await createClient()
@@ -18,7 +18,7 @@ export default async function DashboardPage() {
 
   const { data: profile, error: profileError } = await service
     .from('profiles')
-    .select('*')
+    .select('*, streak_days, longest_streak')
     .eq('id', user.id)
     .single()
 
@@ -161,6 +161,27 @@ export default async function DashboardPage() {
             </Link>
           </div>
         )}
+
+        {/* Daily streak + mock score links */}
+        <div className="grid grid-cols-2 gap-3 mb-6">
+          <div className="border border-exam-rule bg-white p-4 flex items-center gap-3">
+            <Flame size={20} className={profile.streak_days > 0 ? 'text-exam-red' : 'text-stone-300'} />
+            <div>
+              <p className="text-lg font-black text-exam-ink">{profile.streak_days ?? 0}일</p>
+              <p className="text-[11px] text-stone-500">연속 훈련 (최장 {profile.longest_streak ?? 0}일)</p>
+            </div>
+          </div>
+          <Link
+            href="/mock-score"
+            className="border border-exam-rule bg-white p-4 flex items-center gap-3 hover:border-exam-ink transition-colors group"
+          >
+            <ClipboardList size={20} className="text-stone-400 group-hover:text-exam-ink transition-colors" />
+            <div>
+              <p className="text-sm font-bold text-exam-ink">모의고사 기록</p>
+              <p className="text-[11px] text-stone-500">점수 추적 & 상관 분석</p>
+            </div>
+          </Link>
+        </div>
 
         {/* Summary stats */}
         <div className="grid grid-cols-3 gap-2 sm:gap-4 mb-6">

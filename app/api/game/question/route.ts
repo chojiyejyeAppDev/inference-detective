@@ -194,7 +194,7 @@ export async function GET(req: NextRequest) {
     isReview = true
   }
 
-  // 선택: 첫 사용자는 첫 번째(가장 쉬운), 기존 사용자는 랜덤
+  // 선택: 첫 사용자는 첫 번째(가장 쉬운), 기존 사용자는 약점 기반 가중 선택
   if (!pool || pool.length === 0) {
     // C-7: Rollback consumed daily question since no question was served
     if (!isUnlimited) {
@@ -202,15 +202,84 @@ export async function GET(req: NextRequest) {
     }
     return NextResponse.json({ error: '사용 가능한 문제가 없습니다.' }, { status: 404 })
   }
-  const question = isFirstTime ? pool[0] : pool[Math.floor(Math.random() * pool.length)]
+
+  let question = pool[0]
+  let adaptiveHint: string | null = null
+
+  if (isFirstTime) {
+    question = pool[0]
+  } else if (!topic && pool.length > 1) {
+    // Adaptive selection: weight questions toward weak topics
+    const wrongTopics: Record<string, number> = {}
+    for (const s of solved ?? []) {
+      if (!s.is_correct) {
+        // Find topic from pool or solved questions
+        const q = pool.find((p) => p.id === s.question_id)
+        if (q) {
+          wrongTopics[q.topic] = (wrongTopics[q.topic] ?? 0) + 1
+        }
+      }
+    }
+
+    // Also check wrong answers by topic from progress data
+    const { data: recentWrong } = await service
+      .from('user_progress')
+      .select('question_id')
+      .eq('user_id', user.id)
+      .eq('is_correct', false)
+      .order('created_at', { ascending: false })
+      .limit(30)
+
+    if (recentWrong && recentWrong.length > 0) {
+      const wrongQIds = recentWrong.map((r) => r.question_id)
+      const { data: wrongQuestions } = await service
+        .from('questions')
+        .select('topic')
+        .in('id', wrongQIds)
+
+      for (const wq of wrongQuestions ?? []) {
+        wrongTopics[wq.topic] = (wrongTopics[wq.topic] ?? 0) + 1
+      }
+    }
+
+    // Weight pool: questions matching weak topics get higher selection probability
+    if (Object.keys(wrongTopics).length > 0) {
+      const TOPIC_LABELS: Record<string, string> = {
+        humanities: '인문', social: '사회', science: '과학', tech: '기술', arts: '예술',
+      }
+      const weakestTopic = Object.entries(wrongTopics).sort((a, b) => b[1] - a[1])[0]
+      const weakTopicQuestions = pool.filter((p) => p.topic === weakestTopic[0])
+
+      // 40% chance to serve from weak topic if available
+      if (weakTopicQuestions.length > 0 && Math.random() < 0.4) {
+        question = weakTopicQuestions[Math.floor(Math.random() * weakTopicQuestions.length)]
+        adaptiveHint = `약점 영역(${TOPIC_LABELS[weakestTopic[0]] ?? weakestTopic[0]})을 집중 연습해요`
+      } else {
+        question = pool[Math.floor(Math.random() * pool.length)]
+      }
+    } else {
+      question = pool[Math.floor(Math.random() * pool.length)]
+    }
+  }
+
+  // Fetch daily streak info
+  const streakDays = profile.streak_days ?? 0
+  const longestStreak = profile.longest_streak ?? 0
+  const streakFreezeCount = profile.streak_freeze_count ?? 0
 
   return NextResponse.json({
     question,
     is_review: isReview,
+    adaptive_hint: adaptiveHint,
     hint_points: currentHintPoints,
     daily_used: dailyUsed,
     daily_limit: isUnlimited ? null : FREE_DAILY_LIMIT,
     subscription_status: isUnlimited ? 'active' : profile.subscription_status,
     invite_code: profile.invite_code ?? null,
+    streak: {
+      days: streakDays,
+      longest: longestStreak,
+      freeze_count: streakFreezeCount,
+    },
   })
 }

@@ -2,11 +2,12 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { motion } from 'framer-motion'
-import { Lock, ChevronRight, Lightbulb, Loader2, Zap } from 'lucide-react'
+import { motion, AnimatePresence } from 'framer-motion'
+import { Lock, ChevronRight, Lightbulb, Loader2, Zap, Flame, Shield } from 'lucide-react'
 import { toast } from 'sonner'
 import { LEVEL_CONFIGS, FREE_DAILY_LIMIT } from '@/lib/game/levelConfig'
 import { SubscriptionStatus } from '@/types'
+import { createClient } from '@/lib/supabase/client'
 
 interface LevelGridProps {
   currentLevel: number
@@ -15,6 +16,11 @@ interface LevelGridProps {
   dailyUsed: number
   hintPoints: number
   levelProgress?: { qualified: number; required: number }
+  streakDays?: number
+  longestStreak?: number
+  streakFreezeCount?: number
+  streakAtRisk?: boolean
+  streak?: number  // consecutive day streak for hero card
 }
 
 export default function LevelGrid({
@@ -24,6 +30,11 @@ export default function LevelGrid({
   dailyUsed,
   hintPoints,
   levelProgress,
+  streakDays = 0,
+  longestStreak = 0,
+  streakFreezeCount = 0,
+  streakAtRisk = false,
+  streak,
 }: LevelGridProps) {
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -44,6 +55,69 @@ export default function LevelGrid({
       })
     }
   }, [focusTopic])
+
+  // 닉네임 미설정 Google OAuth 사용자 모달
+  const needsNickname = searchParams.get('setup_nickname') === 'true'
+  const [showNicknameModal, setShowNicknameModal] = useState(needsNickname)
+  const [nicknameInput, setNicknameInput] = useState('')
+  const [nicknameSaving, setNicknameSaving] = useState(false)
+  const NICKNAME_RE = /^[가-힣a-zA-Z0-9_ ]+$/
+  const nicknameInputError = nicknameInput.length > 0 && !NICKNAME_RE.test(nicknameInput)
+    ? '한글, 영문, 숫자, 밑줄(_)만 사용할 수 있어요.'
+    : null
+
+  async function handleNicknameSave() {
+    if (!nicknameInput.trim() || nicknameInputError || nicknameSaving) return
+    setNicknameSaving(true)
+    try {
+      const supabase = createClient()
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return
+      const { error } = await supabase
+        .from('profiles')
+        .update({ nickname: nicknameInput.trim() })
+        .eq('id', user.id)
+      if (error) {
+        toast.error('닉네임 저장에 실패했어요. 다시 시도해 주세요.')
+      } else {
+        setShowNicknameModal(false)
+        toast.success(`환영해요, ${nicknameInput.trim()}님!`)
+        // URL에서 setup_nickname 파라미터 제거
+        const url = new URL(window.location.href)
+        url.searchParams.delete('setup_nickname')
+        window.history.replaceState({}, '', url.toString())
+      }
+    } finally {
+      setNicknameSaving(false)
+    }
+  }
+
+  const STREAK_FREEZE_COST = 5 // hint points per freeze
+  const [freezeBuying, setFreezeBuying] = useState(false)
+
+  async function handleBuyFreeze() {
+    if (freezeBuying || hintPoints < STREAK_FREEZE_COST) return
+    setFreezeBuying(true)
+    try {
+      const supabase = createClient()
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return
+      const { data: success } = await supabase.rpc('purchase_streak_freeze', {
+        uid: user.id,
+        cost: STREAK_FREEZE_COST,
+      })
+      if (success) {
+        toast.success('스트릭 보호가 추가되었어요!', {
+          description: '하루 쉬어도 스트릭이 유지됩니다.',
+        })
+        router.refresh()
+      } else {
+        toast.error('힌트 포인트가 부족해요.')
+      }
+    } finally {
+      setFreezeBuying(false)
+    }
+  }
 
   // 구독 만료 임박 감지 (3일 이내)
   const daysUntilExpiry = subscriptionExpiresAt
@@ -131,6 +205,122 @@ export default function LevelGrid({
       </motion.div>
 
       <div className="max-w-4xl mx-auto">
+        {/* Quick Play hero card */}
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-6 border-2 border-exam-ink bg-white p-5 sm:p-6"
+        >
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              {(streak ?? 0) >= 1 && (
+                <div className="flex items-center gap-1.5 mb-1.5">
+                  <Flame size={16} className="text-exam-red" />
+                  <span className="text-sm font-bold text-exam-red">{streak}일 연속</span>
+                </div>
+              )}
+              <p className="text-lg font-exam-serif font-bold text-exam-ink">
+                Lv.{currentLevel} {LEVEL_CONFIGS[currentLevel - 1]?.name}
+              </p>
+              <p className="text-xs text-stone-500 mt-0.5">
+                {isFree
+                  ? `오늘 ${dailyUsed}/5 완료`
+                  : '무제한 모드'}
+              </p>
+            </div>
+            {/* Level-up progress ring */}
+            {levelProgress && currentLevel < 7 && (
+              <div className="text-center">
+                <div className="relative w-14 h-14">
+                  <svg viewBox="0 0 36 36" className="w-14 h-14 -rotate-90">
+                    <path
+                      d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                      fill="none"
+                      stroke="#D6D3CA"
+                      strokeWidth="3"
+                    />
+                    <path
+                      d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                      fill="none"
+                      stroke="#1C1917"
+                      strokeWidth="3"
+                      strokeDasharray={`${(levelProgress.qualified / levelProgress.required) * 100}, 100`}
+                      strokeLinecap="round"
+                    />
+                  </svg>
+                  <span className="absolute inset-0 flex items-center justify-center text-xs font-bold text-exam-ink">
+                    {levelProgress.qualified}/{levelProgress.required}
+                  </span>
+                </div>
+                <p className="text-[9px] text-stone-400 mt-1">레벨업</p>
+              </div>
+            )}
+          </div>
+          <button
+            onClick={() => handleLevelClick(currentLevel)}
+            disabled={loadingLevel !== null || (isFree && remaining !== null && remaining <= 0)}
+            className="w-full flex items-center justify-center gap-2 py-3 bg-exam-ink text-white text-sm font-bold hover:bg-stone-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {loadingLevel === currentLevel ? (
+              <Loader2 size={16} className="animate-spin" />
+            ) : (
+              <>
+                다음 문제
+                <ChevronRight size={16} />
+              </>
+            )}
+          </button>
+        </motion.div>
+
+        {/* Daily streak banner */}
+        {streakDays > 0 && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.98 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className={[
+              'relative mb-4 border bg-white p-4',
+              streakAtRisk ? 'border-exam-red/50 bg-exam-highlight' : 'border-exam-rule',
+            ].join(' ')}
+          >
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="flex items-center justify-center w-10 h-10 border-2 border-exam-ink">
+                  <Flame size={20} className={streakAtRisk ? 'text-exam-red' : 'text-exam-ink'} />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-lg font-black text-exam-ink font-exam-serif">{streakDays}일</span>
+                    <span className="text-xs text-stone-500">연속 훈련</span>
+                    {streakAtRisk && (
+                      <span className="text-[10px] font-bold text-exam-red border border-exam-red/30 bg-exam-highlight px-1.5 py-0.5 animate-pulse">
+                        오늘 안 풀면 초기화!
+                      </span>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-3 text-[11px] text-stone-400 mt-0.5">
+                    <span>최장 {longestStreak}일</span>
+                    <span>·</span>
+                    <span className="flex items-center gap-0.5">
+                      <Shield size={10} />
+                      보호 {streakFreezeCount}개
+                    </span>
+                  </div>
+                </div>
+              </div>
+              {streakFreezeCount === 0 && hintPoints >= STREAK_FREEZE_COST && (
+                <button
+                  onClick={handleBuyFreeze}
+                  disabled={freezeBuying}
+                  className="flex items-center gap-1.5 px-3 py-1.5 border border-exam-rule text-xs font-medium text-stone-600 hover:border-exam-ink hover:text-exam-ink transition-colors disabled:opacity-50"
+                >
+                  <Shield size={11} />
+                  {freezeBuying ? '구매 중...' : `보호 구매 (${STREAK_FREEZE_COST}P)`}
+                </button>
+              )}
+            </div>
+          </motion.div>
+        )}
+
         {/* Daily limit banner */}
         {isFree && remaining === 0 && (
           <motion.div
@@ -362,6 +552,65 @@ export default function LevelGrid({
           </motion.div>
         )}
       </div>
+
+      {/* Nickname setup modal for Google OAuth users */}
+      <AnimatePresence>
+        {showNicknameModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4"
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 10 }}
+              className="w-full max-w-sm border-2 border-exam-ink bg-white p-6"
+            >
+              <h2 className="font-exam-serif text-lg font-bold text-exam-ink mb-1">환영해요!</h2>
+              <p className="text-sm text-stone-500 mb-5">추론 훈련에서 사용할 닉네임을 설정해 주세요.</p>
+              <label className="block text-xs font-medium text-stone-500 mb-1.5">닉네임</label>
+              <input
+                type="text"
+                value={nicknameInput}
+                onChange={(e) => setNicknameInput(e.target.value)}
+                maxLength={20}
+                autoFocus
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') handleNicknameSave()
+                }}
+                className={[
+                  'w-full border bg-white px-3 py-3 text-sm text-exam-ink placeholder-stone-400 focus:outline-none transition-colors',
+                  nicknameInputError ? 'border-exam-red focus:border-exam-red' : 'border-exam-rule focus:border-exam-ink',
+                ].join(' ')}
+                placeholder="탐정 이름 (한글/영문/숫자)"
+              />
+              {nicknameInputError && (
+                <p className="text-[11px] text-exam-red mt-1">{nicknameInputError}</p>
+              )}
+              <button
+                onClick={handleNicknameSave}
+                disabled={!nicknameInput.trim() || !!nicknameInputError || nicknameSaving}
+                className="w-full mt-4 py-3 bg-exam-ink text-white text-sm font-bold hover:bg-stone-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {nicknameSaving ? '저장 중...' : '시작하기'}
+              </button>
+              <button
+                onClick={() => {
+                  setShowNicknameModal(false)
+                  const url = new URL(window.location.href)
+                  url.searchParams.delete('setup_nickname')
+                  window.history.replaceState({}, '', url.toString())
+                }}
+                className="w-full mt-2 py-2 text-xs text-stone-400 hover:text-stone-600 transition-colors"
+              >
+                나중에 설정하기
+              </button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   )
 }
