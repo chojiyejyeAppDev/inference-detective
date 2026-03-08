@@ -92,6 +92,35 @@ export default function GameBoard({
     try { sessionStorage.removeItem(STORAGE_KEY) } catch { /* ignore */ }
   }, [question.id, levelConfig.slots, question.sentences, STORAGE_KEY])
 
+  // Keyboard shortcuts
+  useEffect(() => {
+    if (isReviewMode) return
+    function handleKeyDown(e: KeyboardEvent) {
+      // Ctrl+Z / Cmd+Z: undo
+      if ((e.ctrlKey || e.metaKey) && e.key === 'z' && !isEvaluated) {
+        e.preventDefault()
+        handleUndo()
+        return
+      }
+      // Enter: submit (when chain complete) or next question (when evaluated)
+      if (e.key === 'Enter' && !e.shiftKey) {
+        if (isEvaluated) {
+          onNextQuestion()
+        } else if (isChainComplete && !isSubmitting) {
+          onSubmit(chain)
+        }
+        return
+      }
+      // Escape: deselect card
+      if (e.key === 'Escape') {
+        setSelectedCardId(null)
+        return
+      }
+    }
+    document.addEventListener('keydown', handleKeyDown)
+    return () => document.removeEventListener('keydown', handleKeyDown)
+  })
+
   // Show level up animation when triggered + clear saved state on evaluation
   useEffect(() => {
     if (evaluationResult) {
@@ -576,13 +605,30 @@ export default function GameBoard({
                   </button>
                 </>
               ) : (
-                <button
-                  onClick={onNextQuestion}
-                  className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-amber-500 text-slate-900 text-sm font-bold hover:bg-amber-400 transition-colors"
-                >
-                  다음 문제
-                  <ChevronRight size={14} />
-                </button>
+                <div className="flex gap-2 sm:gap-3">
+                  {!evaluationResult.is_correct && (
+                    <button
+                      onClick={() => {
+                        setChain(Array(levelConfig.slots).fill(null))
+                        setPool(question.sentences)
+                        setHistory([])
+                        setShowCorrectAnswer(false)
+                        onReset()
+                      }}
+                      className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg border border-slate-600 text-slate-300 text-sm font-medium hover:bg-white/[0.04] transition-colors"
+                    >
+                      <RefreshCw size={14} />
+                      다시 풀기
+                    </button>
+                  )}
+                  <button
+                    onClick={onNextQuestion}
+                    className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-amber-500 text-slate-900 text-sm font-bold hover:bg-amber-400 transition-colors"
+                  >
+                    다음 문제
+                    <ChevronRight size={14} />
+                  </button>
+                </div>
               )}
             </div>
           </div>
