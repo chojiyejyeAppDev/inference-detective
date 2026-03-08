@@ -14,7 +14,6 @@ const LEVEL_GUIDE: Record<number, { slots: number; hints: number; passageLen: st
 }
 
 export async function POST(request: Request) {
-  // Auth check: admin only
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) {
@@ -127,7 +126,6 @@ ${text.slice(0, 15000)}`
 
     const content = completion.choices[0]?.message?.content ?? ''
 
-    // Extract JSON from response (handle markdown code blocks)
     let jsonStr = content.trim()
     const jsonMatch = jsonStr.match(/```(?:json)?\s*([\s\S]*?)```/)
     if (jsonMatch) {

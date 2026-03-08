@@ -76,7 +76,6 @@ export default function QuestionsPage() {
         </div>
       </div>
 
-      {/* Filters */}
       <div className="flex gap-3 flex-wrap">
         <select
           value={filterLevel ?? ''}
@@ -100,7 +99,6 @@ export default function QuestionsPage() {
         </select>
       </div>
 
-      {/* Table */}
       {loading ? (
         <p className="text-stone-500 text-sm">로딩 중...</p>
       ) : (

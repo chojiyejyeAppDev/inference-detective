@@ -1,0 +1,32 @@
+@import "tailwindcss";
+
+@theme inline {
+  --color-background: #FAF9F6;
+  --color-foreground: #1C1917;
+  --color-bg-base: #FAF9F6;
+  --color-bg-surface: #FFFFFF;
+  --color-exam-ink: #1C1917;
+  --color-exam-red: #C22D2D;
+  --color-exam-muted: #78716C;
+  --color-exam-rule: #E7E5E0;
+  --font-sans: 'Noto Sans KR', sans-serif;
+}
+
+@layer base {
+  * {
+    @apply border-[#E7E5E0];
+  }
+  body {
+    @apply bg-bg-base text-foreground;
+  }
+}
+
+:focus-visible {
+  outline: 2px solid #1C1917;
+  outline-offset: 2px;
+}
+
+button:not(:disabled),
+[role="button"] {
+  cursor: pointer;
+}
