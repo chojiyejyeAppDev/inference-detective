@@ -244,6 +244,17 @@ export default function LandingPage() {
     })
   }, [router])
 
+  // Close mobile menu on outside click
+  useEffect(() => {
+    if (!mobileMenuOpen) return
+    const handleClick = (e: MouseEvent) => {
+      const nav = (e.target as HTMLElement).closest('nav')
+      if (!nav) setMobileMenuOpen(false)
+    }
+    document.addEventListener('click', handleClick)
+    return () => document.removeEventListener('click', handleClick)
+  }, [mobileMenuOpen])
+
   return (
     <div className="min-h-screen bg-bg-base text-white overflow-x-hidden">
 

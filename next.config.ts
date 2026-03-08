@@ -31,6 +31,9 @@ const nextConfig: NextConfig = {
 const pwaConfig = withPWA({
   dest: "public",
   disable: process.env.NODE_ENV === "development",
+  fallbacks: {
+    document: "/~offline",
+  },
 })(nextConfig);
 
 export default withSentryConfig(pwaConfig, {
