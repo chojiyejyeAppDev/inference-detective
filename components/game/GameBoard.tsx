@@ -92,12 +92,15 @@ export default function GameBoard({
     try { sessionStorage.removeItem(STORAGE_KEY) } catch { /* ignore */ }
   }, [question.id, levelConfig.slots, question.sentences, STORAGE_KEY])
 
-  // Show level up animation when triggered
+  // Show level up animation when triggered + clear saved state on evaluation
   useEffect(() => {
-    if (evaluationResult?.level_up) {
-      setShowLevelUp(true)
+    if (evaluationResult) {
+      try { sessionStorage.removeItem(STORAGE_KEY) } catch { /* ignore */ }
+      if (evaluationResult.level_up) {
+        setShowLevelUp(true)
+      }
     }
-  }, [evaluationResult])
+  }, [evaluationResult, STORAGE_KEY])
 
   const getSentenceById = useCallback(
     (id: string) => question.sentences.find((s) => s.id === id) ?? null,
