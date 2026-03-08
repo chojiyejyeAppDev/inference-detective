@@ -23,6 +23,7 @@ import Anthropic from '@anthropic-ai/sdk'
 import { createClient } from '@supabase/supabase-js'
 import * as fs from 'fs'
 import * as path from 'path'
+import pdfParse from 'pdf-parse'
 
 // ── 환경변수 ──────────────────────────────────────────
 const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY
@@ -101,59 +102,84 @@ function detectLanguage(text: string): 'ko' | 'en' | 'other' {
   return 'other'
 }
 
-function loadPaperKnowledge(): PaperKnowledge[] {
+async function readFileContent(filePath: string): Promise<string> {
+  const ext = path.extname(filePath).toLowerCase()
+
+  if (ext === '.pdf') {
+    const buffer = fs.readFileSync(filePath)
+    const { text } = await pdfParse(buffer)
+    return text
+  }
+
+  // .txt, .md 등 텍스트 파일
+  return fs.readFileSync(filePath, 'utf-8')
+}
+
+function extractExcerpt(content: string, maxLen: number): string {
+  if (content.length <= maxLen) return content
+
+  // 앞 40% (서론) + 뒤 30% (결론) + 중간 30% (랜덤)
+  const frontSize = Math.floor(maxLen * 0.4)
+  const backSize = Math.floor(maxLen * 0.3)
+  const midSize = maxLen - frontSize - backSize
+  const midStart = Math.floor(
+    frontSize + Math.random() * (content.length - frontSize - backSize - midSize),
+  )
+
+  return [
+    content.slice(0, frontSize),
+    '\n[...중략...]\n',
+    content.slice(midStart, midStart + midSize),
+    '\n[...중략...]\n',
+    content.slice(-backSize),
+  ].join('')
+}
+
+async function loadPaperKnowledge(): Promise<PaperKnowledge[]> {
   const readingDir = path.resolve(__dirname, '..', 'reading')
   if (!fs.existsSync(readingDir)) {
     console.log('📂 reading/ 폴더가 없습니다. 소재 뱅크만 사용합니다.')
     return []
   }
 
+  const SUPPORTED_EXTS = ['.pdf', '.txt', '.md']
   const files = fs.readdirSync(readingDir).filter((f) =>
-    f.endsWith('.txt') || f.endsWith('.md'),
+    SUPPORTED_EXTS.includes(path.extname(f).toLowerCase()),
   )
 
   if (files.length === 0) {
-    console.log('📂 reading/ 폴더에 텍스트 파일이 없습니다.')
+    console.log('📂 reading/ 폴더에 지원되는 파일이 없습니다.')
     return []
   }
 
   const papers: PaperKnowledge[] = []
-  // 논문당 최대 발췌 길이 (전체 논문 지식이 프롬프트 60% 이내로)
   const maxExcerptPerPaper = Math.floor(30000 / files.length)
 
   for (const file of files) {
-    const content = fs.readFileSync(path.join(readingDir, file), 'utf-8')
-    const language = detectLanguage(content)
+    const filePath = path.join(readingDir, file)
+    try {
+      const content = await readFileContent(filePath)
 
-    // 핵심 부분 추출: 서론 + 결론 우선, 나머지는 균등 샘플링
-    let excerpt: string
-    if (content.length <= maxExcerptPerPaper) {
-      excerpt = content
-    } else {
-      // 앞 40% + 뒤 30% + 중간에서 랜덤 30%
-      const frontSize = Math.floor(maxExcerptPerPaper * 0.4)
-      const backSize = Math.floor(maxExcerptPerPaper * 0.3)
-      const midSize = maxExcerptPerPaper - frontSize - backSize
-      const midStart = Math.floor(
-        frontSize + Math.random() * (content.length - frontSize - backSize - midSize),
-      )
-      excerpt = [
-        content.slice(0, frontSize),
-        '\n[...중략...]\n',
-        content.slice(midStart, midStart + midSize),
-        '\n[...중략...]\n',
-        content.slice(-backSize),
-      ].join('')
+      if (content.length < 200) {
+        console.warn(`  ⚠️  ${file}: 내용이 너무 짧습니다 (${content.length}자). 건너뜁니다.`)
+        continue
+      }
+
+      const language = detectLanguage(content)
+      const excerpt = extractExcerpt(content, maxExcerptPerPaper)
+
+      papers.push({
+        fileName: path.basename(file, path.extname(file)),
+        language,
+        excerpt,
+      })
+
+      const langLabel = { ko: '한국어', en: '영어', other: '기타' }[language]
+      const ext = path.extname(file).toUpperCase().slice(1)
+      console.log(`  📄 ${file} [${ext}] (${langLabel}, ${content.length}자 → ${excerpt.length}자 발췌)`)
+    } catch (err) {
+      console.error(`  ❌ ${file} 읽기 실패:`, err instanceof Error ? err.message : err)
     }
-
-    papers.push({
-      fileName: path.basename(file, path.extname(file)),
-      language,
-      excerpt,
-    })
-
-    const langLabel = { ko: '한국어', en: '영어', other: '기타' }[language]
-    console.log(`  📄 ${file} (${langLabel}, ${content.length}자 → ${excerpt.length}자 발췌)`)
   }
 
   return papers
@@ -617,7 +643,7 @@ async function main() {
 
   // 논문 지식 로딩
   console.log('\n📚 논문 지식 로딩...')
-  const papers = loadPaperKnowledge()
+  const papers = await loadPaperKnowledge()
   if (papers.length > 0) {
     console.log(`  → ${papers.length}개 논문을 배경 지식으로 활용합니다`)
   } else {

@@ -26,6 +26,7 @@ import Anthropic from '@anthropic-ai/sdk'
 import { createClient } from '@supabase/supabase-js'
 import * as fs from 'fs'
 import * as path from 'path'
+import pdfParse from 'pdf-parse'
 
 // ── 환경변수 ──────────────────────────────────────────
 const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY
@@ -161,8 +162,8 @@ function parseArgs() {
   return { filePath, levelMin, levelMax, count, topic, dryRun }
 }
 
-// ── 파일 읽기 ─────────────────────────────────────────
-function readPaper(filePath: string): string {
+// ── 파일 읽기 (PDF/TXT/MD 자동 감지) ─────────────────
+async function readPaper(filePath: string): Promise<string> {
   const resolved = path.resolve(filePath)
   if (!fs.existsSync(resolved)) {
     console.error(`❌ 파일을 찾을 수 없습니다: ${resolved}`)
@@ -170,13 +171,18 @@ function readPaper(filePath: string): string {
   }
 
   const ext = path.extname(resolved).toLowerCase()
+  let content: string
+
   if (ext === '.pdf') {
-    console.error('❌ PDF 파일은 먼저 텍스트로 변환해주세요:')
-    console.error('   brew install poppler && pdftotext paper.pdf paper.txt')
-    process.exit(1)
+    console.log('📑 PDF 파일을 텍스트로 변환 중...')
+    const buffer = fs.readFileSync(resolved)
+    const { text, numpages } = await pdfParse(buffer)
+    console.log(`  → ${numpages}페이지, ${text.length}자 추출 완료`)
+    content = text
+  } else {
+    content = fs.readFileSync(resolved, 'utf-8')
   }
 
-  const content = fs.readFileSync(resolved, 'utf-8')
   if (content.length < 200) {
     console.error('❌ 논문 내용이 너무 짧습니다 (최소 200자).')
     process.exit(1)
@@ -591,7 +597,7 @@ async function main() {
   if (dryRun) console.log('🔍 Dry run 모드 (DB 저장 없음)')
 
   // 논문 읽기
-  const paperContent = readPaper(filePath)
+  const paperContent = await readPaper(filePath)
   console.log(`\n📖 논문 로드 완료 (${paperContent.length}자)`)
 
   // 언어 감지
