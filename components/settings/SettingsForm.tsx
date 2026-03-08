@@ -4,9 +4,10 @@ import { useState, useEffect, useRef } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { toast } from 'sonner'
-import { User, CreditCard, Lightbulb, LogOut, Copy, Check, Bell } from 'lucide-react'
+import { User, CreditCard, Lightbulb, LogOut, Copy, Check, Bell, Sun, Moon, Monitor } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { usePushNotification } from '@/lib/push/usePushNotification'
+import { useTheme } from '@/components/providers/ThemeProvider'
 import Button from '@/components/ui/Button'
 import Input from '@/components/ui/Input'
 import Card from '@/components/ui/Card'
@@ -40,6 +41,13 @@ export default function SettingsForm({
   const isActive = subscriptionStatus === 'active'
   const { isSupported: pushSupported, isSubscribed: pushSubscribed, subscribe: pushSubscribe, unsubscribe: pushUnsubscribe } = usePushNotification()
   const [pushLoading, setPushLoading] = useState(false)
+  const { theme, setTheme } = useTheme()
+
+  const themeOptions = [
+    { value: 'light' as const, label: '라이트', icon: Sun },
+    { value: 'dark' as const, label: '다크', icon: Moon },
+    { value: 'system' as const, label: '시스템', icon: Monitor },
+  ]
 
   useEffect(() => {
     if (setupNickname && nicknameInputRef.current) {
@@ -149,6 +157,30 @@ export default function SettingsForm({
                 <span className="text-sm font-semibold text-exam-ink">{hintPoints}</span>
               </div>
             </div>
+          </div>
+        </Card>
+
+        {/* Theme */}
+        <Card className="space-y-3">
+          <div className="flex items-center gap-1.5 text-sm font-semibold text-exam-ink">
+            <Sun size={14} />
+            테마
+          </div>
+          <div className="flex border border-exam-rule rounded-md overflow-hidden">
+            {themeOptions.map(({ value, label, icon: Icon }) => (
+              <button
+                key={value}
+                onClick={() => setTheme(value)}
+                className={`flex-1 flex items-center justify-center gap-1.5 py-2 text-xs font-medium transition-colors ${
+                  theme === value
+                    ? 'bg-exam-ink text-white dark:bg-white dark:text-exam-ink'
+                    : 'text-exam-muted hover:text-exam-ink hover:bg-exam-cream'
+                }`}
+              >
+                <Icon size={13} />
+                {label}
+              </button>
+            ))}
           </div>
         </Card>
 

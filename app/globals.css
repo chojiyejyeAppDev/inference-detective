@@ -97,6 +97,52 @@
   --sidebar-ring: #1C1917;
 }
 
+.dark {
+  --background: #1C1917;
+  --foreground: #F5F5F4;
+  --card: #292524;
+  --card-foreground: #F5F5F4;
+  --popover: #292524;
+  --popover-foreground: #F5F5F4;
+  --primary: #F5F5F4;
+  --primary-foreground: #1C1917;
+  --secondary: #292524;
+  --secondary-foreground: #F5F5F4;
+  --muted: #292524;
+  --muted-foreground: #A8A29E;
+  --accent: #292524;
+  --accent-foreground: #F5F5F4;
+  --destructive: #EF4444;
+  --border: #44403C;
+  --input: #44403C;
+  --ring: #F5F5F4;
+  --chart-1: #F5F5F4;
+  --chart-2: #EF4444;
+  --chart-3: #A8A29E;
+  --chart-4: #78716C;
+  --chart-5: #44403C;
+  --sidebar: #292524;
+  --sidebar-foreground: #F5F5F4;
+  --sidebar-primary: #F5F5F4;
+  --sidebar-primary-foreground: #1C1917;
+  --sidebar-accent: #44403C;
+  --sidebar-accent-foreground: #F5F5F4;
+  --sidebar-border: #44403C;
+  --sidebar-ring: #F5F5F4;
+  color-scheme: dark;
+  --color-bg-base: #1C1917;
+  --color-bg-game: #292524;
+  --color-bg-surface: #292524;
+  --color-exam-ink: #F5F5F4;
+  --color-exam-red: #EF4444;
+  --color-exam-blue: #60A5FA;
+  --color-exam-muted: #A8A29E;
+  --color-exam-rule: #44403C;
+  --color-exam-paper: #1C1917;
+  --color-exam-highlight: #451A1A;
+  --color-exam-cream: #1C1917;
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
@@ -117,21 +163,21 @@
     to bottom,
     transparent,
     transparent 27px,
-    #D6D3CA 27px,
-    #D6D3CA 28px
+    var(--color-exam-rule) 27px,
+    var(--color-exam-rule) 28px
   );
   background-position: 0 12px;
 }
 
 /* ── Margin line (left red line like notebook) ── */
 .margin-line {
-  border-left: 2px solid #BF2B2B;
+  border-left: 2px solid var(--color-exam-red);
   padding-left: 1.25rem;
 }
 
 /* ── Exam header bar ── */
 .exam-header {
-  border: 2px solid #1C1917;
+  border: 2px solid var(--color-exam-ink);
   padding: 0.75rem 1rem;
   display: flex;
   align-items: center;
@@ -147,11 +193,11 @@
   justify-content: center;
   width: 2.25rem;
   height: 2.25rem;
-  border: 2.5px solid #1C1917;
+  border: 2.5px solid var(--color-exam-ink);
   border-radius: 50%;
   font-weight: 900;
   font-size: 0.875rem;
-  color: #1C1917;
+  color: var(--color-exam-ink);
   flex-shrink: 0;
 }
 
@@ -161,11 +207,11 @@
   justify-content: center;
   width: 1.625rem;
   height: 1.625rem;
-  border: 2px solid #1C1917;
+  border: 2px solid var(--color-exam-ink);
   border-radius: 50%;
   font-weight: 900;
   font-size: 0.6875rem;
-  color: #1C1917;
+  color: var(--color-exam-ink);
   flex-shrink: 0;
 }
 
@@ -176,18 +222,18 @@
   justify-content: center;
   width: 2.5rem;
   height: 2.5rem;
-  border: 3px solid #BF2B2B;
+  border: 3px solid var(--color-exam-red);
   border-radius: 50%;
   font-weight: 900;
   font-size: 1rem;
-  color: #BF2B2B;
+  color: var(--color-exam-red);
 }
 
 /* ── Red marking underline (like teacher's pen) ── */
 .mark-red {
   text-decoration-line: underline;
   text-decoration-style: wavy;
-  text-decoration-color: #BF2B2B;
+  text-decoration-color: var(--color-exam-red);
   text-decoration-thickness: 2px;
   text-underline-offset: 4px;
 }
@@ -200,7 +246,7 @@
   content: '';
   position: absolute;
   inset: -6px -8px;
-  border: 2.5px solid #BF2B2B;
+  border: 2.5px solid var(--color-exam-red);
   border-radius: 50%;
   pointer-events: none;
   opacity: 0.8;
@@ -208,7 +254,7 @@
 
 /* ── Answer box (like answer sheet cells) ── */
 .answer-cell {
-  border: 1.5px solid #1C1917;
+  border: 1.5px solid var(--color-exam-ink);
   padding: 0.625rem 0.75rem;
   min-height: 2.5rem;
   position: relative;
@@ -218,11 +264,11 @@
   position: absolute;
   top: -0.5rem;
   left: 0.5rem;
-  background: #F8F6F1;
+  background: var(--background);
   padding: 0 0.25rem;
   font-size: 0.625rem;
   font-weight: 700;
-  color: #78716C;
+  color: var(--color-exam-muted);
 }
 
 /* ── Score stamp (appears on results) ── */
@@ -233,10 +279,10 @@
   justify-content: center;
   width: 5rem;
   height: 5rem;
-  border: 3px solid #BF2B2B;
+  border: 3px solid var(--color-exam-red);
   border-radius: 50%;
   transform: rotate(-8deg);
-  color: #BF2B2B;
+  color: var(--color-exam-red);
 }
 .score-stamp-value {
   font-size: 1.5rem;
@@ -258,32 +304,32 @@
   font-weight: 700;
   letter-spacing: 0.15em;
   text-transform: uppercase;
-  color: #78716C;
+  color: var(--color-exam-muted);
 }
 .section-label::before {
   content: '';
   width: 1.5rem;
   height: 2px;
-  background: #1C1917;
+  background: var(--color-exam-ink);
 }
 
 /* ── Passage block (exam-style text box) ── */
 .passage-box {
-  border: 1.5px solid #1C1917;
+  border: 1.5px solid var(--color-exam-ink);
   padding: 1.25rem;
   position: relative;
-  background: white;
+  background: var(--card);
 }
 .passage-box::before {
   content: '지문';
   position: absolute;
   top: -0.5rem;
   left: 1rem;
-  background: white;
+  background: var(--card);
   padding: 0 0.375rem;
   font-size: 0.625rem;
   font-weight: 700;
-  color: #78716C;
+  color: var(--color-exam-muted);
   letter-spacing: 0.1em;
 }
 
@@ -352,23 +398,23 @@
 .font-annotation {
   font-family: var(--font-serif);
   font-style: italic;
-  color: #BF2B2B;
+  color: var(--color-exam-red);
 }
 
 /* ── Scrollbar ── */
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: rgba(28, 25, 23, 0.15); border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: rgba(28, 25, 23, 0.28); }
+::-webkit-scrollbar-thumb { background: color-mix(in srgb, var(--foreground) 15%, transparent); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: color-mix(in srgb, var(--foreground) 28%, transparent); }
 
 /* ── Card elevation ── */
 .card-elevated {
-  box-shadow: 0 1px 3px rgba(28, 25, 23, 0.08);
+  box-shadow: 0 1px 3px color-mix(in srgb, var(--foreground) 8%, transparent);
 }
 
 /* ── Focus ring ── */
 :focus-visible {
-  outline: 2px solid #1C1917;
+  outline: 2px solid var(--color-exam-ink);
   outline-offset: 2px;
 }
 
@@ -388,27 +434,27 @@ button:active:not(:disabled), a[role="button"]:active { transform: scale(0.98); 
 input:-webkit-autofill,
 input:-webkit-autofill:hover,
 input:-webkit-autofill:focus {
-  -webkit-box-shadow: 0 0 0 40px #F8F6F1 inset !important;
-  -webkit-text-fill-color: #1C1917 !important;
-  caret-color: #1C1917;
+  -webkit-box-shadow: 0 0 0 40px var(--background) inset !important;
+  -webkit-text-fill-color: var(--foreground) !important;
+  caret-color: var(--foreground);
 }
 
 /* ── Firefox scrollbar ── */
-* { scrollbar-width: thin; scrollbar-color: rgba(28, 25, 23, 0.15) transparent; }
+* { scrollbar-width: thin; scrollbar-color: color-mix(in srgb, var(--foreground) 15%, transparent) transparent; }
 
 /* ── Skip nav ── */
 .skip-nav {
   position: absolute; top: -100%; left: 0; z-index: 9999;
-  padding: 0.5rem 1rem; background: #1C1917; color: #F8F6F1;
+  padding: 0.5rem 1rem; background: var(--color-exam-ink); color: var(--background);
   font-weight: 700; font-size: 0.875rem; border-radius: 0 0 0.5rem 0;
   text-decoration: none;
 }
 .skip-nav:focus { top: 0; }
 
 /* ── Legacy compatibility ── */
-.exam-rule { border: none; height: 1px; background: #D6D3CA; }
-.text-shimmer { color: #BF2B2B; font-weight: 900; }
-.text-glow-amber { color: #BF2B2B; text-shadow: none; }
+.exam-rule { border: none; height: 1px; background: var(--color-exam-rule); }
+.text-shimmer { color: var(--color-exam-red); font-weight: 900; }
+.text-glow-amber { color: var(--color-exam-red); text-shadow: none; }
 .bg-dot-grid, .bg-dot-grid-dense { background-image: none; }
 .hero-glow-amber { display: none; }
 

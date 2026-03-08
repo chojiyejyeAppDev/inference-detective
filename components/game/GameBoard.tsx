@@ -16,6 +16,17 @@ import ConnectionIndicator from './ConnectionIndicator'
 import LevelUpAnimation from '@/components/level/LevelUpAnimation'
 import ShareResultButton from './ShareResultButton'
 import GameTutorialOverlay from './GameTutorialOverlay'
+import ContextualHint, { hasStepBeenSeen } from './ContextualHint'
+
+/** Fisher-Yates shuffle — returns a new array in random order */
+function shuffleArray<T>(arr: T[]): T[] {
+  const shuffled = [...arr]
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]
+  }
+  return shuffled
+}
 
 interface GameBoardProps {
   question: Question
@@ -74,12 +85,20 @@ export default function GameBoard({
   const [chain, setChain] = useState<(string | null)[]>(
     saved?.chain ?? Array(levelConfig.slots).fill(null),
   )
-  const [pool, setPool] = useState<Sentence[]>(saved?.pool ?? question.sentences)
+  const [pool, setPool] = useState<Sentence[]>(saved?.pool ?? shuffleArray(question.sentences))
   const [showLevelUp, setShowLevelUp] = useState(false)
   const [showCorrectAnswer, setShowCorrectAnswer] = useState(false)
   const [history, setHistory] = useState<{ chain: (string | null)[]; pool: Sentence[] }[]>([])
   const [showTutorial, setShowTutorial] = useState(false)
   const [selectedCardId, setSelectedCardId] = useState<string | null>(null)
+
+  // Contextual micro-tutorial state
+  const [showReadHint, setShowReadHint] = useState(false)
+  const [showDragHint, setShowDragHint] = useState(false)
+  const [showConnectionHint, setShowConnectionHint] = useState(false)
+  const [showSubmitHint, setShowSubmitHint] = useState(false)
+  const [hasDragged, setHasDragged] = useState(false)
+  const dragHintTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   // Persist game state to sessionStorage
   useEffect(() => {
@@ -94,7 +113,7 @@ export default function GameBoard({
   // Reset when question changes
   useEffect(() => {
     setChain(Array(levelConfig.slots).fill(null))
-    setPool(question.sentences)
+    setPool(shuffleArray(question.sentences))
     setShowCorrectAnswer(false)
     setHistory([])
     try { sessionStorage.removeItem(STORAGE_KEY) } catch { /* ignore */ }
@@ -161,6 +180,40 @@ export default function GameBoard({
     return () => document.removeEventListener('keydown', handleKeyDown)
   }, [isReviewMode])
 
+  // --- Contextual micro-tutorial triggers ---
+  // step_read: show on mount
+  useEffect(() => {
+    if (!hasStepBeenSeen('step_read')) {
+      setShowReadHint(true)
+    }
+  }, [])
+
+  // step_drag: show after 8s of no interaction
+  useEffect(() => {
+    if (hasDragged || hasStepBeenSeen('step_drag')) return
+    dragHintTimerRef.current = setTimeout(() => {
+      if (!hasDragged) setShowDragHint(true)
+    }, 8000)
+    return () => {
+      if (dragHintTimerRef.current) clearTimeout(dragHintTimerRef.current)
+    }
+  }, [hasDragged])
+
+  // step_connection: show after first card placed
+  const filledSlots = chain.filter((id) => id !== null).length
+  useEffect(() => {
+    if (filledSlots >= 1 && !hasStepBeenSeen('step_connection')) {
+      setShowConnectionHint(true)
+    }
+  }, [filledSlots])
+
+  // step_submit: show when all slots filled
+  useEffect(() => {
+    if (isChainComplete && !isEvaluated && !hasStepBeenSeen('step_submit')) {
+      setShowSubmitHint(true)
+    }
+  }, [isChainComplete, isEvaluated])
+
   // Keyboard-accessible: click-to-select, click-to-place
   function handleCardSelect(sentenceId: string) {
     if (isEvaluated) return
@@ -172,6 +225,10 @@ export default function GameBoard({
 
     // If a card is selected, place it in this slot
     if (selectedCardId) {
+      if (!hasDragged) {
+        setHasDragged(true)
+        setShowDragHint(false)
+      }
       setHistory((prev) => [...prev.slice(-19), { chain: [...chain], pool: [...pool] }])
 
       const newChain = [...chain]
@@ -226,6 +283,11 @@ export default function GameBoard({
 
   const onDragEnd = (result: DropResult) => {
     if (isEvaluated) return
+    // Mark first drag for contextual hint
+    if (!hasDragged) {
+      setHasDragged(true)
+      setShowDragHint(false)
+    }
     const { source, destination, draggableId } = result
     if (!destination) return
     const srcId = source.droppableId
@@ -323,16 +385,35 @@ export default function GameBoard({
         {/* Main content */}
         <div className="flex-1 flex flex-col md:flex-row gap-4 md:gap-5 p-4 md:p-5 min-h-0 overflow-auto md:overflow-hidden">
           {/* Left: Passage */}
-          <PassageViewer
-            passage={question.passage}
-            conclusion={question.conclusion}
-            topic={question.topic}
-          />
+          <div className="flex flex-col gap-2">
+            {showReadHint && (
+              <ContextualHint
+                stepId="step_read"
+                message="먼저 지문을 읽어보세요"
+                autoDismissMs={5000}
+                onDismiss={() => setShowReadHint(false)}
+              />
+            )}
+            <PassageViewer
+              passage={question.passage}
+              conclusion={question.conclusion}
+              topic={question.topic}
+            />
+          </div>
 
           {/* Right: Game area */}
           <div className="flex-1 flex flex-col gap-4 min-w-0 overflow-y-auto">
             {/* Sentence pool */}
             <div>
+              {showDragHint && (
+                <div className="mb-2">
+                  <ContextualHint
+                    stepId="step_drag"
+                    message="카드를 슬롯으로 끌어다 놓으세요"
+                    onDismiss={() => setShowDragHint(false)}
+                  />
+                </div>
+              )}
               <p className="text-[10px] font-semibold text-stone-500 tracking-widest uppercase mb-2 px-1">
                 <span className="hidden sm:inline">문장 카드 — 끌어서 배치하거나 클릭하여 선택</span>
                 <span className="sm:hidden">문장 카드 — 탭하여 선택 또는 길게 눌러 드래그</span>
@@ -373,6 +454,16 @@ export default function GameBoard({
 
             {/* Chain slots */}
             <div className="flex flex-col pl-4">
+              {showConnectionHint && (
+                <div className="mb-2">
+                  <ContextualHint
+                    stepId="step_connection"
+                    message="연결 강도가 순서 힌트예요"
+                    autoDismissMs={4000}
+                    onDismiss={() => setShowConnectionHint(false)}
+                  />
+                </div>
+              )}
               {chain.map((sentenceId, i) => (
                 <div key={i}>
                   <InferenceSlot
@@ -637,7 +728,7 @@ export default function GameBoard({
                     <button
                       onClick={() => {
                         setChain(Array(levelConfig.slots).fill(null))
-                        setPool(question.sentences)
+                        setPool(shuffleArray(question.sentences))
                         setHistory([])
                         onReset()
                       }}
@@ -653,20 +744,31 @@ export default function GameBoard({
                       힌트 포인트가 없어요. 매일 +3 자동 충전되고, 정답 시 +1 보너스를 받아요.
                     </p>
                   )}
-                  <Button
-                    variant="primary"
-                    size="lg"
-                    fullWidth
-                    onClick={() => onSubmit(chain)}
-                    disabled={!isChainComplete || isSubmitting}
-                    loading={isSubmitting}
-                    icon={isSubmitting ? undefined : <Send size={14} />}
-                    aria-label="추론 경로 제출"
-                    aria-busy={isSubmitting}
-                    className="flex-1"
-                  >
-                    {isSubmitting ? '평가 중...' : '추론 경로 제출'}
-                  </Button>
+                  <div className="flex flex-col gap-2 flex-1">
+                    {showSubmitHint && (
+                      <ContextualHint
+                        stepId="step_submit"
+                        message="완성되면 제출 버튼을 눌러주세요"
+                        onDismiss={() => setShowSubmitHint(false)}
+                      />
+                    )}
+                    <Button
+                      variant="primary"
+                      size="lg"
+                      fullWidth
+                      onClick={() => {
+                        setShowSubmitHint(false)
+                        onSubmit(chain)
+                      }}
+                      disabled={!isChainComplete || isSubmitting}
+                      loading={isSubmitting}
+                      icon={isSubmitting ? undefined : <Send size={14} />}
+                      aria-label="추론 경로 제출"
+                      aria-busy={isSubmitting}
+                    >
+                      {isSubmitting ? '평가 중...' : '추론 경로 제출'}
+                    </Button>
+                  </div>
                 </>
               ) : (
                 <>
@@ -679,7 +781,7 @@ export default function GameBoard({
                         className="flex-1"
                         onClick={() => {
                           setChain(Array(levelConfig.slots).fill(null))
-                          setPool(question.sentences)
+                          setPool(shuffleArray(question.sentences))
                           setHistory([])
                           setShowCorrectAnswer(false)
                           onReset()
