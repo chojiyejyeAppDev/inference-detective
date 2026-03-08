@@ -4,10 +4,11 @@ import { NextResponse, type NextRequest } from 'next/server'
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
 
-  // Supabase 환경변수 없으면 미들웨어 스킵 (로컬 개발 편의)
+  // Supabase 환경변수 없으면 미들웨어 스킵 (로컬 개발 시에만)
   if (
-    !process.env.NEXT_PUBLIC_SUPABASE_URL ||
-    process.env.NEXT_PUBLIC_SUPABASE_URL.includes('placeholder')
+    process.env.NODE_ENV === 'development' &&
+    (!process.env.NEXT_PUBLIC_SUPABASE_URL ||
+     process.env.NEXT_PUBLIC_SUPABASE_URL.includes('placeholder'))
   ) {
     return NextResponse.next({ request })
   }
@@ -15,7 +16,7 @@ export async function middleware(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request })
 
   const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL,
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {

@@ -109,13 +109,21 @@ export async function GET(req: NextRequest) {
     .from('user_progress')
     .select('question_id')
     .eq('user_id', user.id)
-    .eq('is_correct', true)
 
-  const solvedIds = solved?.map((s) => s.question_id) ?? []
+  const allSolvedIds = solved?.map((s) => s.question_id) ?? []
+  const isFirstTime = allSolvedIds.length === 0
+
+  const correctSolvedIds = isFirstTime ? [] : (
+    await service
+      .from('user_progress')
+      .select('question_id')
+      .eq('user_id', user.id)
+      .eq('is_correct', true)
+  ).data?.map((s) => s.question_id) ?? []
 
   // UUID 형식 검증 (SQL 인젝션 방지)
   const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
-  const safeIds = solvedIds.filter((id) => typeof id === 'string' && UUID_RE.test(id))
+  const safeIds = correctSolvedIds.filter((id) => typeof id === 'string' && UUID_RE.test(id))
 
   // 문제 조회
   let query = service
@@ -127,7 +135,14 @@ export async function GET(req: NextRequest) {
     query = query.not('id', 'in', `(${safeIds.join(',')})`)
   }
 
-  const { data: questions, error: qError } = await query.limit(10)
+  // 첫 사용자: 가장 오래된(쉬운) 문제 1개 / 기존 사용자: 랜덤 10개
+  if (isFirstTime) {
+    query = query.order('created_at', { ascending: true }).limit(1)
+  } else {
+    query = query.limit(10)
+  }
+
+  const { data: questions, error: qError } = await query
 
   // 새 문제가 없으면 이미 푼 문제에서 복습 모드로 제공
   let isReview = false
@@ -148,11 +163,11 @@ export async function GET(req: NextRequest) {
     isReview = true
   }
 
-  // 랜덤 선택
+  // 선택: 첫 사용자는 첫 번째(가장 쉬운), 기존 사용자는 랜덤
   if (!pool || pool.length === 0) {
     return NextResponse.json({ error: '사용 가능한 문제가 없습니다.' }, { status: 404 })
   }
-  const question = pool[Math.floor(Math.random() * pool.length)]
+  const question = isFirstTime ? pool[0] : pool[Math.floor(Math.random() * pool.length)]
 
   return NextResponse.json({
     question,
