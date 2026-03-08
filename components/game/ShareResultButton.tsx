@@ -29,7 +29,7 @@ function buildShareText({
     lvlEmoji,
     '',
     '수능 비문학 추론 훈련, 매일 5문제 무료!',
-    'https://inference-detective.vercel.app',
+    'https://eruda.today',
   ]
     .filter(Boolean)
     .join('\n')
@@ -40,7 +40,7 @@ export default function ShareResultButton(props: ShareResultButtonProps) {
   const [copied, setCopied] = useState(false)
 
   const shareText = buildShareText(props)
-  const appUrl = 'https://inference-detective.vercel.app'
+  const appUrl = 'https://eruda.today'
   const pct = Math.round(props.accuracy * 100)
   const title = `이:르다 Lv.${props.level} — 정확도 ${pct}%`
 
@@ -50,10 +50,44 @@ export default function ShareResultButton(props: ShareResultButtonProps) {
     setIsOpen(false)
   }
 
-  function shareKakao() {
-    // 카카오톡 공유 — sharer URL scheme (SDK 불필요)
-    const kakaoUrl = `https://sharer.kakao.com/talk/friends/picker/link?url=${encodeURIComponent(appUrl)}&text=${encodeURIComponent(shareText)}`
-    window.open(kakaoUrl, '_blank', 'noopener,noreferrer,width=600,height=600')
+  async function shareKakao() {
+    const kakaoKey = process.env.NEXT_PUBLIC_KAKAO_JS_KEY
+    if (!kakaoKey) {
+      // SDK 키 없으면 URL fallback
+      const kakaoUrl = `https://sharer.kakao.com/talk/friends/picker/link?url=${encodeURIComponent(appUrl)}&text=${encodeURIComponent(shareText)}`
+      window.open(kakaoUrl, '_blank', 'noopener,noreferrer,width=600,height=600')
+      setIsOpen(false)
+      return
+    }
+
+    // 카카오 SDK 동적 로드
+    const w = window as typeof window & { Kakao?: { init: (key: string) => void; isInitialized: () => boolean; Share: { sendDefault: (params: Record<string, unknown>) => void } } }
+    if (!w.Kakao) {
+      await new Promise<void>((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = 'https://t1.kakaocdn.net/kakao_js_sdk/2.7.4/kakao.min.js'
+        script.onload = () => resolve()
+        script.onerror = () => reject()
+        document.head.appendChild(script)
+      })
+    }
+    if (w.Kakao && !w.Kakao.isInitialized()) {
+      w.Kakao.init(kakaoKey)
+    }
+    if (w.Kakao) {
+      w.Kakao.Share.sendDefault({
+        objectType: 'feed',
+        content: {
+          title,
+          description: `${props.isCorrect ? '정답!' : '도전 중!'} 수능 비문학 추론 훈련, 매일 5문제 무료`,
+          imageUrl: `${appUrl}/og-image.png`,
+          link: { mobileWebUrl: appUrl, webUrl: appUrl },
+        },
+        buttons: [
+          { title: '나도 도전하기', link: { mobileWebUrl: appUrl, webUrl: appUrl } },
+        ],
+      })
+    }
     setIsOpen(false)
   }
 
