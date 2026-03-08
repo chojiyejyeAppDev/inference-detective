@@ -48,7 +48,7 @@ export function ChartSkeleton({ title }: { title: string }) {
   return (
     <div className="rounded-xl border border-slate-700 bg-slate-800/50 p-4">
       <Skeleton className="w-28 h-4 mb-4" />
-      <p className="text-xs text-slate-600 mb-2">{title}</p>
+      <p className="text-xs text-slate-500 mb-2">{title}</p>
       <div className="flex items-end gap-2 h-24">
         {BAR_HEIGHTS.map((h, i) => (
           <Skeleton

@@ -194,6 +194,7 @@ export default function LevelGrid({
               transition={{ delay: i * 0.06 }}
             >
               <button
+                aria-label={!isUnlocked ? `레벨 ${config.level} — 레벨 ${config.level - 1} 클리어 후 해금` : `레벨 ${config.level} — ${config.name}`}
                 onClick={() => {
                   if (!isUnlocked) {
                     toast.info(`레벨 ${config.level}은(는) 레벨 ${config.level - 1} 클리어 후 해금돼요.`)
@@ -239,11 +240,11 @@ export default function LevelGrid({
                     {isThisLoading && (
                       <Loader2 size={14} className="text-amber-400 animate-spin" />
                     )}
-                    {!isUnlocked && <Lock size={13} className="text-slate-600" />}
+                    {!isUnlocked && <Lock size={13} className="text-slate-500" />}
                     {isUnlocked && !isCurrent && !isThisLoading && (
                       <ChevronRight
                         size={14}
-                        className="text-slate-600 group-hover:text-slate-400 transition-colors"
+                        className="text-slate-500 group-hover:text-slate-400 transition-colors"
                       />
                     )}
                   </div>
@@ -256,7 +257,7 @@ export default function LevelGrid({
                 </div>
 
                 {/* Stats */}
-                <div className="mt-3 flex items-center gap-3 text-xs text-slate-600">
+                <div className="mt-3 flex items-center gap-3 text-xs text-slate-500">
                   <span>{config.slots}단계 추론</span>
                   <span>·</span>
                   <span>

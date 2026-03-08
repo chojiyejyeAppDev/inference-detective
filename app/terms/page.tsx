@@ -19,7 +19,7 @@ export default function TermsPage() {
         </Link>
 
         <h1 className="text-3xl font-black text-white tracking-tight mb-2">이용약관</h1>
-        <p className="text-sm text-slate-600 mb-10">시행일: 2026년 3월 1일</p>
+        <p className="text-sm text-slate-500 mb-10">시행일: 2026년 3월 1일</p>
 
         <div className="space-y-10 text-sm leading-relaxed">
           <section>
@@ -119,7 +119,7 @@ export default function TermsPage() {
           </section>
 
           <section className="border-t border-white/[0.06] pt-8">
-            <p className="text-slate-600">
+            <p className="text-slate-500">
               본 약관에 대한 문의사항은{' '}
               <a href="mailto:eonlab@2onlab.com" className="text-amber-400 hover:text-amber-300 transition-colors">
                 eonlab@2onlab.com

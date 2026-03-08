@@ -297,7 +297,7 @@ export default function PricingPage() {
             <ul className="space-y-2.5 text-sm">
               {FREE_FEATURES.map((f) => (
                 <li key={f} className="flex items-center gap-2 text-slate-400">
-                  <span className="text-slate-600 text-xs">✓</span> {f}
+                  <span className="text-slate-500 text-xs">✓</span> {f}
                 </li>
               ))}
               {FREE_DISABLED.map((f) => (
@@ -430,7 +430,7 @@ export default function PricingPage() {
                 placeholder="01012345678"
                 value={phoneNumber}
                 onChange={(e) => setPhoneNumber(e.target.value.replace(/[^0-9-]/g, ''))}
-                className="w-full px-4 py-3 rounded-xl bg-slate-800/60 border border-slate-700/50 text-slate-200 text-sm placeholder:text-slate-600 focus:outline-none focus:border-amber-500/50 focus:ring-1 focus:ring-amber-500/30 transition-all"
+                className="w-full px-3 py-2.5 rounded-lg border border-slate-700 bg-slate-900 text-sm text-slate-100 placeholder-slate-500 focus:border-amber-500 focus:outline-none transition-colors"
               />
             </div>
           )}
@@ -454,7 +454,7 @@ export default function PricingPage() {
             <button
               onClick={handlePayment}
               disabled={loading}
-              className="animate-cta-glow w-full py-4 rounded-2xl bg-amber-500 text-slate-900 font-black text-base hover:bg-amber-400 transition-colors disabled:opacity-50 shadow-xl shadow-amber-500/25"
+              className="animate-cta-glow w-full py-2.5 rounded-xl bg-amber-500 text-slate-900 font-bold text-sm hover:bg-amber-400 transition-colors disabled:opacity-50 shadow-lg shadow-amber-500/25"
             >
               {loading
                 ? '결제 진행 중...'
@@ -465,7 +465,7 @@ export default function PricingPage() {
             </button>
           )}
 
-          <p className="text-center text-xs text-slate-600 mt-4">
+          <p className="text-center text-xs text-slate-500 mt-4">
             {isSubscription
               ? '언제든지 해지 가능 · 해지 후 만료일까지 서비스 이용 가능'
               : `${planInfo.days}일 이용권 · 자동 갱신 없음`

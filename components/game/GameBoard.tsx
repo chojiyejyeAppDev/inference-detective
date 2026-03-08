@@ -4,7 +4,7 @@ import { useState, useCallback, useEffect } from 'react'
 import { DragDropContext, Droppable, DropResult } from '@hello-pangea/dnd'
 import { motion, AnimatePresence } from 'framer-motion'
 import Link from 'next/link'
-import { Lightbulb, Send, RefreshCw, ChevronRight, Trophy, Undo2, Flame, HelpCircle, CheckCircle2, XCircle } from 'lucide-react'
+import { Lightbulb, Send, RefreshCw, ChevronRight, Trophy, Undo2, Flame, HelpCircle, CheckCircle2, XCircle, Loader2 } from 'lucide-react'
 import { Question, Sentence, EvaluationResult, LevelConfig } from '@/types'
 import { buildConnectionMap } from '@/lib/game/connectionStrength'
 import PassageViewer from './PassageViewer'
@@ -276,9 +276,9 @@ export default function GameBoard({
             <span className="text-xs font-bold text-amber-400 tracking-widest uppercase shrink-0">
               Lv.{levelConfig.level}
             </span>
-            <span className="text-slate-600 hidden sm:inline">·</span>
+            <span className="text-slate-500 hidden sm:inline">·</span>
             <span className="text-sm text-slate-400 truncate hidden sm:inline">{levelConfig.name}</span>
-            <span className="text-slate-600 hidden sm:inline">·</span>
+            <span className="text-slate-500 hidden sm:inline">·</span>
             <span className="text-xs text-slate-500 shrink-0">{levelConfig.slots}단계</span>
             {isReviewMode && (
               <span className="text-[10px] font-bold text-blue-400 bg-blue-500/15 px-1.5 py-0.5 rounded-full border border-blue-500/30">
@@ -334,7 +334,7 @@ export default function GameBoard({
                     ].join(' ')}
                   >
                     {pool.length === 0 ? (
-                      <div className="flex items-center justify-center h-12 text-xs text-slate-600 italic">
+                      <div className="flex items-center justify-center h-12 text-xs text-slate-500 italic">
                         모든 문장이 슬롯에 배치되었어요
                       </div>
                     ) : (
@@ -357,7 +357,7 @@ export default function GameBoard({
             {/* Divider */}
             <div className="flex items-center gap-3">
               <div className="flex-1 h-px bg-slate-800" />
-              <span className="text-[10px] font-semibold text-slate-600 tracking-widest uppercase">
+              <span className="text-[10px] font-semibold text-slate-500 tracking-widest uppercase">
                 추론 경로 조립
               </span>
               <div className="flex-1 h-px bg-slate-800" />
@@ -387,7 +387,7 @@ export default function GameBoard({
               <div className="flex items-center gap-3 mt-2 pl-3">
                 <div className="flex flex-col items-center">
                   <div className="w-0.5 h-3 bg-slate-700" />
-                  <ChevronRight size={14} className="text-slate-600 rotate-90" />
+                  <ChevronRight size={14} className="text-slate-500 rotate-90" />
                 </div>
                 <div className="flex-1 rounded-lg border border-amber-500/30 bg-amber-500/5 px-4 py-2">
                   <p className="text-[10px] text-amber-400 font-semibold mb-0.5">결론</p>
@@ -404,6 +404,9 @@ export default function GameBoard({
                 <motion.div
                   initial={{ opacity: 0, y: 12 }}
                   animate={{ opacity: 1, y: 0 }}
+                  role="status"
+                  aria-live="polite"
+                  aria-atomic="true"
                   className={[
                     'rounded-xl border p-4',
                     evaluationResult.is_correct
@@ -477,7 +480,7 @@ export default function GameBoard({
                           />
                         ))}
                       </div>
-                      <p className="text-[10px] text-slate-600 mt-1">
+                      <p className="text-[10px] text-slate-500 mt-1">
                         80% 이상 정확도 {evaluationResult.level_progress.required}회 달성 시 레벨업
                       </p>
                       {levelConfig.level === 6 && (
@@ -552,7 +555,7 @@ export default function GameBoard({
                             ? '힌트 포인트 부족'
                             : undefined
                       }
-                      className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg border border-amber-500/30 bg-amber-500/10 text-amber-400 text-sm font-medium hover:bg-amber-500/20 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                      className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg border border-amber-500/30 bg-amber-500/10 text-amber-400 text-sm font-medium hover:bg-amber-500/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       <Lightbulb size={14} />
                       {isHintLoading ? '로딩...' : '힌트'}
@@ -561,7 +564,7 @@ export default function GameBoard({
                       onClick={handleUndo}
                       disabled={history.length === 0}
                       aria-label="마지막 동작 되돌리기"
-                      className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-lg border border-slate-700 text-slate-400 text-sm hover:border-slate-600 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                      className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-lg border border-slate-700 text-slate-400 text-sm hover:border-slate-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       <Undo2 size={13} />
                       되돌리기
@@ -582,11 +585,7 @@ export default function GameBoard({
                   </div>
                   {hintPoints <= 0 && levelConfig.level !== 7 && (
                     <p className="text-[11px] text-slate-500 mt-1">
-                      힌트 포인트가 없어요.{' '}
-                      <Link href="/settings" className="text-amber-400/70 hover:text-amber-400 underline underline-offset-2">
-                        친구 초대
-                      </Link>
-                      로 충전하세요!
+                      힌트 포인트가 없어요. 매일 +3 자동 충전되고, 정답 시 +1 보너스를 받아요.
                     </p>
                   )}
                   <button
@@ -594,10 +593,10 @@ export default function GameBoard({
                     disabled={!isChainComplete || isSubmitting}
                     aria-label="추론 경로 제출"
                     aria-busy={isSubmitting}
-                    className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-amber-500 text-slate-900 text-sm font-bold hover:bg-amber-400 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                    className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-amber-500 text-slate-900 text-sm font-bold hover:bg-amber-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {isSubmitting ? (
-                      <div className="w-4 h-4 rounded-full border-2 border-slate-900 border-t-transparent animate-spin" />
+                      <Loader2 size={14} className="animate-spin" />
                     ) : (
                       <Send size={14} />
                     )}

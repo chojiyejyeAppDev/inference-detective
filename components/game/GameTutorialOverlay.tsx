@@ -166,7 +166,7 @@ export default function GameTutorialOverlay({ forceOpen, onClose }: Props) {
                 <div className="mt-4 relative h-24 rounded-lg bg-slate-900/60 border border-slate-700/50 overflow-hidden">
                   {/* Slot target */}
                   <div className="absolute bottom-3 left-1/2 -translate-x-1/2 w-36 h-8 rounded-lg border-2 border-dashed border-slate-600 flex items-center justify-center">
-                    <span className="text-[10px] text-slate-600">슬롯</span>
+                    <span className="text-[10px] text-slate-500">슬롯</span>
                   </div>
                   {/* Animated card */}
                   <motion.div

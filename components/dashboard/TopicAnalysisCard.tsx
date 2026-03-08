@@ -55,10 +55,10 @@ export default function TopicAnalysisCard({ data }: TopicAnalysisCardProps) {
   return (
     <div className="rounded-xl border border-slate-700 bg-slate-800/50 p-5">
       <h3 className="text-sm font-semibold text-slate-300 mb-1">주제별 정답률</h3>
-      <p className="text-xs text-slate-600 mb-4">어떤 주제가 약한지 파악하세요</p>
+      <p className="text-xs text-slate-500 mb-4">어떤 주제가 약한지 파악하세요</p>
 
       {data.length === 0 ? (
-        <div className="h-32 flex items-center justify-center text-slate-600 text-sm">
+        <div className="h-32 flex items-center justify-center text-slate-500 text-sm">
           아직 데이터가 없어요
         </div>
       ) : (
@@ -94,7 +94,7 @@ export default function TopicAnalysisCard({ data }: TopicAnalysisCardProps) {
           <span className="font-medium" style={{ color: TOPIC_COLORS[weakest.topic] ?? '#F59E0B' }}>
             {TOPIC_LABELS[weakest.topic] ?? weakest.topic}
           </span>
-          <span className="text-slate-600"> ({Math.round(weakest.accuracy * 100)}%)</span>
+          <span className="text-slate-500"> ({Math.round(weakest.accuracy * 100)}%)</span>
         </p>
       )}
     </div>

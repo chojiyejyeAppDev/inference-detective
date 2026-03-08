@@ -143,7 +143,7 @@ export default function GenerateQuestionsPage() {
             onChange={(e) => setText(e.target.value)}
             rows={12}
             placeholder="여기에 논문이나 지문 텍스트를 붙여넣으세요..."
-            className="w-full rounded-lg bg-slate-800 border border-slate-700 text-sm px-3 py-2 text-slate-200 resize-y placeholder:text-slate-600"
+            className="w-full rounded-lg bg-slate-800 border border-slate-700 text-sm px-3 py-2 text-slate-200 resize-y placeholder:text-slate-500"
           />
           <p className="text-xs text-slate-500 mt-1">
             {text.length.toLocaleString()}자 입력됨 (최대 15,000자 사용)

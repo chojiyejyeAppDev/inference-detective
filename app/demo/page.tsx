@@ -163,7 +163,7 @@ export default function DemoPage() {
               {/* Card Pool */}
               <div className="rounded-xl border border-white/[0.08] bg-bg-surface/80 p-4">
                 <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">
-                  문장 카드 <span className="text-slate-600 normal-case">— 오른쪽 슬롯으로 드래그하세요</span>
+                  문장 카드 <span className="text-slate-500 normal-case">— 오른쪽 슬롯으로 드래그하세요</span>
                 </p>
                 <Droppable droppableId="pool">
                   {(provided) => (
@@ -173,7 +173,7 @@ export default function DemoPage() {
                       ))}
                       {provided.placeholder}
                       {pool.length === 0 && !result && (
-                        <p className="text-xs text-slate-600 text-center py-2">모든 카드를 배치했어요</p>
+                        <p className="text-xs text-slate-500 text-center py-2">모든 카드를 배치했어요</p>
                       )}
                     </div>
                   )}

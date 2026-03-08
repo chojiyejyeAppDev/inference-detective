@@ -116,7 +116,7 @@ function LoginForm() {
                   type="button"
                   onClick={handlePasswordReset}
                   disabled={resetSent}
-                  className="text-[11px] text-amber-400/70 hover:text-amber-400 transition-colors disabled:text-slate-600"
+                  className="text-[11px] text-amber-400/70 hover:text-amber-400 transition-colors disabled:text-slate-500"
                 >
                   {resetSent ? '메일 발송됨' : '비밀번호 찾기'}
                 </button>
@@ -142,7 +142,7 @@ function LoginForm() {
 
           <div className="flex items-center gap-3 my-4">
             <div className="flex-1 h-px bg-slate-700" />
-            <span className="text-xs text-slate-600">또는</span>
+            <span className="text-xs text-slate-500">또는</span>
             <div className="flex-1 h-px bg-slate-700" />
           </div>
 

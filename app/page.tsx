@@ -124,7 +124,7 @@ function LandingDemo() {
         <div className="w-3 h-3 rounded-full bg-red-500/60" />
         <div className="w-3 h-3 rounded-full bg-amber-500/60" />
         <div className="w-3 h-3 rounded-full bg-emerald-500/60" />
-        <span className="text-xs text-slate-600 ml-2 font-mono">eruda.today/play</span>
+        <span className="text-xs text-slate-500 ml-2 font-mono">eruda.today/play</span>
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
         {/* Passage + remaining cards */}
@@ -157,7 +157,7 @@ function LandingDemo() {
                       : 'border-white/[0.08] bg-white/[0.03]',
                   ].join(' ')}
                 >
-                  <GripVertical size={10} className="text-slate-600 shrink-0" />
+                  <GripVertical size={10} className="text-slate-500 shrink-0" />
                   <span className="leading-[1.5]">{card.text}</span>
                 </motion.div>
               ))}
@@ -179,14 +179,14 @@ function LandingDemo() {
                     'rounded-lg border px-3.5 py-2.5 text-xs min-h-[36px] flex items-start gap-2.5 transition-all',
                     slotId
                       ? 'border-emerald-500/25 bg-emerald-500/[0.06] text-slate-300'
-                      : 'border-dashed border-white/10 bg-white/[0.02] text-slate-600',
+                      : 'border-dashed border-white/10 bg-white/[0.02] text-slate-500',
                   ].join(' ')}
                   animate={slotId ? { scale: [1, 1.02, 1] } : {}}
                   transition={{ duration: 0.3 }}
                 >
                   <span className={[
                     'w-4 h-4 rounded-full font-black text-[10px] flex items-center justify-center shrink-0 mt-0.5',
-                    slotId ? 'bg-emerald-500/20 text-emerald-400' : 'bg-white/[0.05] text-slate-600',
+                    slotId ? 'bg-emerald-500/20 text-emerald-400' : 'bg-white/[0.05] text-slate-500',
                   ].join(' ')}>
                     {slotId ? i + 1 : '?'}
                   </span>
@@ -383,7 +383,7 @@ export default function LandingPage() {
             </Link>
           </div>
 
-          <p className="text-xs text-slate-600 mt-4">
+          <p className="text-xs text-slate-500 mt-4">
             신용카드 불필요 · 매일 5문제 무료 · 언제든지 업그레이드
           </p>
         </motion.div>
@@ -422,7 +422,7 @@ export default function LandingPage() {
               <motion.div key={s.label} variants={item} style={{ animationDelay: `${i * 0.12}s` }}>
                 <p className="text-4xl font-black text-amber-400 text-glow-amber leading-none mb-1">{s.n}</p>
                 <p className="text-sm font-semibold text-slate-300 mb-0.5">{s.label}</p>
-                <p className="text-[11px] text-slate-600">{s.sub}</p>
+                <p className="text-[11px] text-slate-500">{s.sub}</p>
               </motion.div>
             ))}
           </div>
@@ -535,8 +535,8 @@ export default function LandingPage() {
               <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-4">무료</p>
               <p className="text-4xl font-black text-white mb-6 tabular-nums">₩0</p>
               <ul className="text-sm text-slate-500 space-y-2.5 mb-8">
-                <li className="flex items-center gap-2"><span className="text-slate-600">✓</span> 하루 5문제</li>
-                <li className="flex items-center gap-2"><span className="text-slate-600">✓</span> 레벨 1-7 도전</li>
+                <li className="flex items-center gap-2"><span className="text-slate-500">✓</span> 하루 5문제</li>
+                <li className="flex items-center gap-2"><span className="text-slate-500">✓</span> 레벨 1-7 도전</li>
                 <li className="flex items-center gap-2 line-through opacity-40"><span>✗</span> 성장 대시보드</li>
                 <li className="flex items-center gap-2 line-through opacity-40"><span>✗</span> 전체 힌트</li>
               </ul>

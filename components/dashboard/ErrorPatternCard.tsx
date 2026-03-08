@@ -35,10 +35,10 @@ export default function ErrorPatternCard({ patterns }: ErrorPatternCardProps) {
   return (
     <div className="rounded-xl border border-slate-700 bg-slate-800/50 p-5">
       <h3 className="text-sm font-semibold text-slate-300 mb-1">오류 패턴 분석</h3>
-      <p className="text-xs text-slate-600 mb-4">어느 단계에서 자주 실수하나요?</p>
+      <p className="text-xs text-slate-500 mb-4">어느 단계에서 자주 실수하나요?</p>
 
       {patterns.length === 0 ? (
-        <div className="h-32 flex items-center justify-center text-slate-600 text-sm">
+        <div className="h-32 flex items-center justify-center text-slate-500 text-sm">
           아직 데이터가 없어요
         </div>
       ) : (

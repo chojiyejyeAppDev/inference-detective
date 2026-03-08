@@ -32,10 +32,10 @@ export default function HintDependencyChart({
   return (
     <div className="rounded-xl border border-slate-700 bg-slate-800/50 p-5">
       <h3 className="text-sm font-semibold text-slate-300 mb-1">힌트 의존도</h3>
-      <p className="text-xs text-slate-600 mb-4">힌트 없이 문제를 풀수록 성장해요</p>
+      <p className="text-xs text-slate-500 mb-4">힌트 없이 문제를 풀수록 성장해요</p>
 
       {totalQuestions === 0 ? (
-        <div className="h-32 flex items-center justify-center text-slate-600 text-sm">
+        <div className="h-32 flex items-center justify-center text-slate-500 text-sm">
           아직 데이터가 없어요
         </div>
       ) : (

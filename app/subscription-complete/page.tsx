@@ -102,7 +102,7 @@ function SubscriptionCompleteContent() {
           </div>
           <div className="flex items-center justify-center gap-4 text-xs text-slate-400">
             <span>결제 금액: <span className="text-white font-semibold">{plan.price}</span></span>
-            <span className="text-slate-600">|</span>
+            <span className="text-slate-500">|</span>
             <span>이용 기간: <span className="text-white font-semibold">{plan.period}</span></span>
           </div>
         </motion.div>
@@ -137,7 +137,7 @@ function SubscriptionCompleteContent() {
                 </div>
                 <ArrowRight
                   size={14}
-                  className="text-slate-600 group-hover:text-slate-400 transition-colors shrink-0"
+                  className="text-slate-500 group-hover:text-slate-400 transition-colors shrink-0"
                 />
               </Link>
             </motion.div>

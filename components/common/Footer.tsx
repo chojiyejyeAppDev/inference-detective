@@ -26,7 +26,7 @@ export default function Footer() {
         </div>
 
         {/* 사업자 정보 */}
-        <div className="text-[11px] leading-relaxed text-slate-600 space-y-1">
+        <div className="text-[11px] leading-relaxed text-slate-500 space-y-1">
           <p>
             <span className="text-slate-500">이온랩</span>
             <span className="mx-1.5">|</span>대표자: 조지예

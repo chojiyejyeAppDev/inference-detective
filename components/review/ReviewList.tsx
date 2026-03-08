@@ -93,7 +93,7 @@ export default function ReviewList({ items }: ReviewListProps) {
         {/* Empty state */}
         {filtered.length === 0 && (
           <div className="rounded-xl border border-slate-700 bg-slate-800/50 p-10 text-center">
-            <BookOpen size={24} className="text-slate-600 mx-auto mb-3" />
+            <BookOpen size={24} className="text-slate-500 mx-auto mb-3" />
             <p className="text-slate-400 text-sm">
               {filter === 'wrong' ? '오답이 없어요! 대단해요!' : '아직 풀어본 문제가 없어요.'}
             </p>
@@ -160,7 +160,7 @@ export default function ReviewList({ items }: ReviewListProps) {
                     ].join(' ')}>
                       {accuracy}%
                     </span>
-                    <span className="text-[10px] text-slate-600">{dateStr}</span>
+                    <span className="text-[10px] text-slate-500">{dateStr}</span>
                     <ChevronDown
                       size={14}
                       className={[

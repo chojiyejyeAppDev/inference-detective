@@ -162,7 +162,7 @@ export default function SettingsForm({
                 {copied ? <Check size={14} className="text-emerald-400" /> : <Copy size={14} />}
               </button>
             </div>
-            <p className="text-[11px] text-slate-600">친구가 이 코드로 가입하면 둘 다 보너스 문제를 받아요</p>
+            <p className="text-[11px] text-slate-500">친구가 이 코드로 가입하면 둘 다 보너스 문제를 받아요</p>
           </div>
         )}
 

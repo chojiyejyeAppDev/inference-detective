@@ -133,7 +133,7 @@ function SignupForm() {
             <button
               onClick={handleResendVerification}
               disabled={resending || resent}
-              className="text-sm text-amber-400 hover:text-amber-300 transition-colors disabled:text-slate-600 disabled:cursor-not-allowed"
+              className="text-sm text-amber-400 hover:text-amber-300 transition-colors disabled:text-slate-500 disabled:cursor-not-allowed"
             >
               {resent ? '재발송 완료!' : resending ? '발송 중...' : '인증 메일 재발송'}
             </button>
@@ -191,11 +191,11 @@ function SignupForm() {
             )}
             {googleLoading ? '연결 중...' : 'Google로 바로 시작'}
           </button>
-          <p className="text-center text-[11px] text-slate-600 mt-2 mb-1">이메일 인증 없이 바로 시작할 수 있어요</p>
+          <p className="text-center text-[11px] text-slate-500 mt-2 mb-1">이메일 인증 없이 바로 시작할 수 있어요</p>
 
           <div className="flex items-center gap-3 my-4">
             <div className="flex-1 h-px bg-slate-700" />
-            <span className="text-xs text-slate-600">또는 이메일로 가입</span>
+            <span className="text-xs text-slate-500">또는 이메일로 가입</span>
             <div className="flex-1 h-px bg-slate-700" />
           </div>
 
@@ -269,7 +269,7 @@ function SignupForm() {
           </p>
         </div>
 
-        <p className="text-center text-xs text-slate-600 mt-4">
+        <p className="text-center text-xs text-slate-500 mt-4">
           가입 시{' '}
           <Link href="/terms" className="text-slate-500 hover:text-slate-300 underline underline-offset-2 transition-colors">
             서비스 이용약관

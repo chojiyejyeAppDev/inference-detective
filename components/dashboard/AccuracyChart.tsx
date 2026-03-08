@@ -45,7 +45,7 @@ export default function AccuracyChart({ data }: AccuracyChartProps) {
     <div className="rounded-xl border border-slate-700 bg-slate-800/50 p-5">
       <h3 className="text-sm font-semibold text-slate-300 mb-4">정확도 추이</h3>
       {data.length === 0 ? (
-        <div className="h-40 flex items-center justify-center text-slate-600 text-sm">
+        <div className="h-40 flex items-center justify-center text-slate-500 text-sm">
           아직 데이터가 없어요. 문제를 풀어보세요!
         </div>
       ) : (
