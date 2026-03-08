@@ -3,6 +3,7 @@ import { createClient, createServiceClient } from '@/lib/supabase/server'
 import { evaluateChain, checkLevelUp } from '@/lib/game/evaluator'
 import { LEVEL_UP_SESSIONS, LEVEL_UP_ACCURACY } from '@/lib/game/levelConfig'
 import { checkCsrf } from '@/lib/api/csrf'
+import { rateLimit, rateLimitResponse } from '@/lib/api/rateLimit'
 
 export async function POST(req: NextRequest) {
   const csrfError = checkCsrf(req)
@@ -14,6 +15,10 @@ export async function POST(req: NextRequest) {
   if (authError || !user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
+
+  // Rate limit: 20 evaluations per minute per user
+  const { limited } = rateLimit(`evaluate:${user.id}`, { max: 20, windowMs: 60_000 })
+  if (limited) return rateLimitResponse()
 
   let body: { question_id: string; submitted_chain: (string | null)[]; hints_used?: number }
   try {

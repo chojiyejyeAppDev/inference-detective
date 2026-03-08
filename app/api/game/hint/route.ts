@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient, createServiceClient } from '@/lib/supabase/server'
 import { checkCsrf } from '@/lib/api/csrf'
+import { rateLimit, rateLimitResponse } from '@/lib/api/rateLimit'
 
 export async function POST(req: NextRequest) {
   const csrfError = checkCsrf(req)
@@ -12,6 +13,10 @@ export async function POST(req: NextRequest) {
   if (authError || !user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
+
+  // Rate limit: 30 hint requests per minute per user
+  const { limited } = rateLimit(`hint:${user.id}`, { max: 30, windowMs: 60_000 })
+  if (limited) return rateLimitResponse()
 
   let body: { question_id: string; hint_step: number }
   try {

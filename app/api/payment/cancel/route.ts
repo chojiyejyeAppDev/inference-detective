@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient, createServiceClient } from '@/lib/supabase/server'
+import * as Sentry from '@sentry/nextjs'
 import { deleteBillingKey } from '@/lib/payment/portone'
 import { checkCsrf } from '@/lib/api/csrf'
 
@@ -34,7 +35,7 @@ export async function POST(req: NextRequest) {
       await deleteBillingKey(subscription.billing_key)
     } catch (err) {
       // 빌링키 삭제 실패해도 DB 취소는 진행
-      console.error('Billing key deletion failed:', err)
+      Sentry.captureException(err, { tags: { api: 'cancel' } })
     }
   }
 

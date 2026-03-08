@@ -179,7 +179,6 @@ export default function PricingPage() {
         })
 
         if (!response || response.code != null) {
-          console.error('빌링키 발급 실패:', response?.message)
           toast.error('카드 등록에 실패했어요. 다시 시도해주세요.')
           setLoading(false)
           setPaymentStep('idle')
@@ -220,7 +219,6 @@ export default function PricingPage() {
         })
 
         if (!response || response.code != null) {
-          console.error('결제 실패:', response?.message)
           toast.error('결제에 실패했어요. 다시 시도해주세요.')
           setLoading(false)
           setPaymentStep('idle')
@@ -250,7 +248,6 @@ export default function PricingPage() {
         router.refresh()
       }, 800)
     } catch (err) {
-      console.error('결제 오류:', err)
       toast.error('결제 처리 중 오류가 발생했어요.')
       setLoading(false)
       setPaymentStep('idle')

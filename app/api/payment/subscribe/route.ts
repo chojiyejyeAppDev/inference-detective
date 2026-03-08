@@ -3,7 +3,9 @@ import { createClient, createServiceClient } from '@/lib/supabase/server'
 import { chargeBillingKey, getPayment, PLANS, type PlanKey } from '@/lib/payment/portone'
 import { sendEmail } from '@/lib/email/resend'
 import { subscriptionConfirmEmail } from '@/lib/email/templates'
+import * as Sentry from '@sentry/nextjs'
 import { checkCsrf } from '@/lib/api/csrf'
+import { rateLimit, rateLimitResponse } from '@/lib/api/rateLimit'
 
 export async function POST(req: NextRequest) {
   const csrfError = checkCsrf(req)
@@ -15,6 +17,10 @@ export async function POST(req: NextRequest) {
   if (authError || !user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
+
+  // Rate limit: 5 payment requests per minute per user
+  const { limited } = rateLimit(`subscribe:${user.id}`, { max: 5, windowMs: 60_000 })
+  if (limited) return rateLimitResponse()
 
   let body: { billingKey?: string; paymentId?: string; plan?: string }
   try {
@@ -165,7 +171,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ error: 'Invalid request' }, { status: 400 })
   } catch (err) {
-    console.error('Subscribe error:', err)
+    Sentry.captureException(err, { tags: { api: 'subscribe' } })
     return NextResponse.json(
       { error: err instanceof Error ? err.message : 'Payment failed' },
       { status: 402 },

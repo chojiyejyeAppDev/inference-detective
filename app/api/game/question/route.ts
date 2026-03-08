@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient, createServiceClient } from '@/lib/supabase/server'
 import { FREE_DAILY_LIMIT } from '@/lib/game/levelConfig'
+import { rateLimit, rateLimitResponse } from '@/lib/api/rateLimit'
 
 export async function GET(req: NextRequest) {
   const supabase = await createClient()
@@ -9,6 +10,10 @@ export async function GET(req: NextRequest) {
   if (authError || !user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
+
+  // Rate limit: 30 question requests per minute per user
+  const { limited } = rateLimit(`question:${user.id}`, { max: 30, windowMs: 60_000 })
+  if (limited) return rateLimitResponse()
 
   const service = await createServiceClient()
   // KST(UTC+9) 기준 오늘 날짜

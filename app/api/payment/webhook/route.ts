@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServiceClient } from '@/lib/supabase/server'
 import { getPayment, PLANS, type PlanKey } from '@/lib/payment/portone'
+import * as Sentry from '@sentry/nextjs'
 import crypto from 'crypto'
 
 // PortOne V2 웹훅 body
@@ -69,7 +70,7 @@ export async function POST(req: NextRequest) {
   const webhookSignature = req.headers.get('webhook-signature')
 
   if (!verifyWebhookSignature(rawBody, webhookId, webhookTimestamp, webhookSignature)) {
-    console.error('Webhook signature verification failed')
+    Sentry.captureMessage('Webhook signature verification failed', 'warning')
     return NextResponse.json({ error: 'Invalid signature' }, { status: 401 })
   }
 
@@ -103,11 +104,11 @@ export async function POST(req: NextRequest) {
 
     // 결제 소유자 검증: paymentId에서 추출한 userId와 실제 결제의 customerId 일치 확인
     if (payment.customer?.id && payment.customer.id !== userId) {
-      console.error('Webhook userId mismatch:', { paymentUserId: userId, customerId: payment.customer.id })
+      Sentry.captureMessage('Webhook userId mismatch', { level: 'warning', extra: { paymentUserId: userId, customerId: payment.customer.id } })
       return NextResponse.json({ error: 'User mismatch' }, { status: 403 })
     }
   } catch (err) {
-    console.error('Payment validation failed:', err)
+    Sentry.captureException(err, { tags: { api: 'webhook' } })
     return NextResponse.json({ error: 'Validation failed' }, { status: 500 })
   }
 

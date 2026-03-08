@@ -23,7 +23,6 @@ export default async function DashboardPage() {
     .single()
 
   if (profileError || !profile) {
-    console.error('[dashboard] profile fetch error:', profileError?.message)
     redirect('/login')
   }
 
@@ -247,6 +246,7 @@ export default async function DashboardPage() {
           <InviteSection
             inviteCode={profile.invite_code}
             appUrl={process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'}
+            isPremium={isPremium}
           />
         )}
       </div>

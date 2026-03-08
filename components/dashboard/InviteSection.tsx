@@ -6,9 +6,10 @@ import { Copy, Check } from 'lucide-react'
 interface InviteSectionProps {
   inviteCode: string
   appUrl: string
+  isPremium?: boolean
 }
 
-export default function InviteSection({ inviteCode, appUrl }: InviteSectionProps) {
+export default function InviteSection({ inviteCode, appUrl, isPremium }: InviteSectionProps) {
   const link = `${appUrl}/signup?ref=${inviteCode}`
   const [copied, setCopied] = useState(false)
 
@@ -22,7 +23,7 @@ export default function InviteSection({ inviteCode, appUrl }: InviteSectionProps
     <div className="mt-6 rounded-xl border border-slate-700 bg-slate-800/50 p-5">
       <h3 className="text-sm font-semibold text-slate-300 mb-1">친구 초대하기</h3>
       <p className="text-xs text-slate-500 mb-3">
-        친구가 가입하면 둘 다 하루 +2문제 보너스!
+        친구가 가입하면 {isPremium ? '나는 힌트 포인트 +5, 친구는 +2문제 보너스!' : '둘 다 하루 +2문제 보너스!'}
       </p>
       <div className="flex items-center gap-2">
         <code className="flex-1 rounded-lg bg-slate-900 border border-slate-700 px-3 py-2 text-xs text-amber-400 truncate">

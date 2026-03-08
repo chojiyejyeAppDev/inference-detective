@@ -4,6 +4,7 @@ import { INVITE_BONUS_QUESTIONS } from '@/lib/game/levelConfig'
 import { sendEmail } from '@/lib/email/resend'
 import { inviteSuccessToInviter, inviteSuccessToInvitee } from '@/lib/email/templates'
 import { checkCsrf } from '@/lib/api/csrf'
+import { rateLimit, rateLimitResponse } from '@/lib/api/rateLimit'
 
 export async function POST(req: NextRequest) {
   const csrfError = checkCsrf(req)
@@ -15,6 +16,10 @@ export async function POST(req: NextRequest) {
   if (authError || !user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
+
+  // Rate limit: 10 invite attempts per minute per user (brute-force prevention)
+  const { limited } = rateLimit(`invite:${user.id}`, { max: 10, windowMs: 60_000 })
+  if (limited) return rateLimitResponse()
 
   let body: { invite_code: string }
   try {
@@ -130,9 +135,11 @@ export async function POST(req: NextRequest) {
     // 이메일 발송 실패해도 초대 기능은 정상 동작
   }
 
+  const isPremiumInviter = inviterFull?.subscription_status === 'active'
   return NextResponse.json({
     success: true,
     bonus_questions: INVITE_BONUS_QUESTIONS,
+    inviter_reward: isPremiumInviter ? 'hint_points' : 'bonus_questions',
     message: `초대 코드 적용 완료! 오늘 ${INVITE_BONUS_QUESTIONS}문제가 추가되었어요.`,
   })
 }
