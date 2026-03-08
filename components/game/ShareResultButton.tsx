@@ -141,7 +141,7 @@ export default function ShareResultButton(props: ShareResultButtonProps) {
       <button
         onClick={handleNativeShare}
         aria-label="결과 공유"
-        className="flex items-center gap-1 px-3 py-1.5 rounded-lg border border-slate-600 text-slate-400 text-xs hover:border-slate-500 hover:text-slate-300 transition-colors"
+        className="flex items-center gap-1 px-3 py-1.5 border border-exam-rule text-stone-500 text-xs hover:border-stone-400 hover:text-exam-ink transition-colors"
       >
         <Share2 size={12} />
         공유
@@ -154,35 +154,35 @@ export default function ShareResultButton(props: ShareResultButtonProps) {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9, y: -4 }}
             transition={{ duration: 0.15 }}
-            className="absolute bottom-full right-0 mb-2 w-44 rounded-xl border border-slate-700 bg-slate-800 shadow-xl shadow-black/40 overflow-hidden z-50"
+            className="absolute bottom-full right-0 mb-2 w-44 border border-exam-rule bg-white shadow-lg overflow-hidden z-50"
           >
             <button
               onClick={shareTwitter}
-              className="w-full flex items-center gap-1.5 px-4 py-2.5 text-xs text-slate-300 hover:bg-slate-700/60 transition-colors"
+              className="w-full flex items-center gap-1.5 px-4 py-2.5 text-xs text-exam-ink hover:bg-bg-base transition-colors"
             >
-              <Twitter size={13} className="text-sky-400" />
+              <Twitter size={13} className="text-sky-500" />
               X (Twitter)에 공유
             </button>
             <button
               onClick={shareKakao}
-              className="w-full flex items-center gap-1.5 px-4 py-2.5 text-xs text-slate-300 hover:bg-slate-700/60 transition-colors"
+              className="w-full flex items-center gap-1.5 px-4 py-2.5 text-xs text-exam-ink hover:bg-bg-base transition-colors"
             >
-              <MessageCircle size={13} className="text-yellow-400" />
+              <MessageCircle size={13} className="text-yellow-500" />
               카카오톡에 공유
             </button>
-            <div className="h-px bg-slate-700/60" />
+            <div className="h-px bg-exam-rule" />
             <button
               onClick={copyToClipboard}
-              className="w-full flex items-center gap-1.5 px-4 py-2.5 text-xs text-slate-300 hover:bg-slate-700/60 transition-colors"
+              className="w-full flex items-center gap-1.5 px-4 py-2.5 text-xs text-exam-ink hover:bg-bg-base transition-colors"
             >
               {copied ? (
                 <>
-                  <Check size={13} className="text-emerald-400" />
+                  <Check size={13} className="text-green-700" />
                   복사됨!
                 </>
               ) : (
                 <>
-                  <Copy size={13} className="text-slate-400" />
+                  <Copy size={13} className="text-stone-400" />
                   텍스트 복사
                 </>
               )}

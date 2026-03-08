@@ -10,7 +10,7 @@ export function Skeleton({ className, style }: SkeletonProps) {
   return (
     <div
       className={cn(
-        'animate-pulse rounded-md bg-slate-800',
+        'animate-pulse bg-stone-200',
         className,
       )}
       style={style}
@@ -21,10 +21,10 @@ export function Skeleton({ className, style }: SkeletonProps) {
 /** 레벨 카드 스켈레톤 */
 export function LevelCardSkeleton() {
   return (
-    <div className="rounded-xl border border-slate-800 bg-slate-900/40 p-5">
+    <div className="border border-exam-rule bg-white p-5">
       <div className="flex items-center justify-between mb-3">
         <Skeleton className="w-9 h-9 rounded-full" />
-        <Skeleton className="w-12 h-4 rounded-full" />
+        <Skeleton className="w-12 h-4" />
       </div>
       <Skeleton className="w-3/4 h-4 mb-1.5" />
       <Skeleton className="w-full h-3" />
@@ -46,14 +46,14 @@ const BAR_HEIGHTS = [60, 40, 80, 55, 70, 45, 90, 65]
 /** 대시보드 차트 스켈레톤 */
 export function ChartSkeleton({ title }: { title: string }) {
   return (
-    <div className="rounded-xl border border-slate-700 bg-slate-800/50 p-4">
+    <div className="border border-exam-rule bg-white p-4">
       <Skeleton className="w-28 h-4 mb-4" />
-      <p className="text-xs text-slate-500 mb-2">{title}</p>
+      <p className="text-xs text-stone-400 mb-2">{title}</p>
       <div className="flex items-end gap-2 h-24">
         {BAR_HEIGHTS.map((h, i) => (
           <Skeleton
             key={i}
-            className="flex-1 rounded-sm"
+            className="flex-1"
             style={{ height: `${h}%` }}
           />
         ))}

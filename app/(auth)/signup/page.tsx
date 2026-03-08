@@ -117,35 +117,36 @@ function SignupForm() {
 
   if (done) {
     return (
-      <div className="min-h-screen bg-bg-game flex items-center justify-center px-4">
+      <div className="min-h-screen bg-bg-base flex items-center justify-center px-4">
         <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.4 }}
           className="w-full max-w-sm text-center"
         >
-          <div className="w-16 h-16 rounded-full bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center mx-auto mb-4">
-            <span className="text-2xl">✓</span>
+          <div className="w-16 h-16 border-2 border-exam-ink flex items-center justify-center mx-auto mb-4">
+            <span className="text-2xl text-exam-ink">&#10003;</span>
           </div>
-          <h2 className="text-xl font-bold text-white mb-2">이메일을 확인해 주세요</h2>
-          <p className="text-slate-400 text-sm mb-4">
+          <h2 className="text-xl font-bold text-exam-ink mb-2">이메일을 확인해 주세요</h2>
+          <p className="text-stone-500 text-sm mb-4">
             {email}로 인증 링크를 보냈어요.
             <br />
             메일함을 확인하고 링크를 클릭하면 가입이 완료돼요.
           </p>
-          <p className="text-xs text-slate-500 mb-5">
+          <p className="text-xs text-stone-400 mb-5">
             메일이 안 보이나요? 스팸함도 확인해 보세요.
           </p>
           <div className="flex flex-col items-center gap-3">
             <button
               onClick={handleResendVerification}
               disabled={resending || resent}
-              className="text-sm text-amber-400 hover:text-amber-300 transition-colors disabled:text-slate-500 disabled:cursor-not-allowed"
+              className="text-sm text-exam-ink font-semibold hover:underline underline-offset-2 transition-colors disabled:text-stone-300 disabled:cursor-not-allowed"
             >
               {resent ? '재발송 완료!' : resending ? '발송 중...' : '인증 메일 재발송'}
             </button>
             <Link
               href="/login"
-              className="text-slate-500 hover:text-slate-300 text-sm underline underline-offset-2 transition-colors"
+              className="text-stone-500 hover:text-exam-ink text-sm underline underline-offset-2 transition-colors"
             >
               로그인 페이지로 이동
             </Link>
@@ -156,27 +157,28 @@ function SignupForm() {
   }
 
   return (
-    <div className="min-h-screen bg-bg-game flex items-center justify-center px-4">
+    <div className="min-h-screen bg-bg-base flex items-center justify-center px-4">
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.4 }}
         className="w-full max-w-sm"
       >
         {/* Logo */}
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-white mb-1">이:르다</h1>
-          <p className="text-slate-400 text-sm">수능 비문학 추론 훈련</p>
+          <span className="font-exam-serif text-2xl font-bold">이:르다</span>
+          <p className="text-stone-500 text-sm mt-1">수능 비문학 추론 훈련</p>
         </div>
 
-        <div className="rounded-2xl border border-slate-700 bg-slate-800/60 p-6">
-          <h2 className="text-lg font-semibold text-white mb-5">회원가입</h2>
+        <div className="border border-exam-rule bg-white p-6">
+          <h2 className="text-lg font-semibold text-exam-ink mb-5">회원가입</h2>
 
           {refCode && (
-            <div className="mb-4 rounded-lg bg-amber-500/10 border border-amber-500/30 px-3 py-2.5">
-              <p className="text-xs text-amber-300 font-semibold">
+            <div className="mb-4 border border-exam-rule bg-bg-game px-3 py-2.5">
+              <p className="text-xs text-exam-ink font-semibold">
                 초대 코드 <span className="font-bold">{refCode}</span> 적용됨
               </p>
-              <p className="text-[11px] text-amber-400/70 mt-0.5">
+              <p className="text-[11px] text-stone-500 mt-0.5">
                 가입하면 오늘 7문제를 풀 수 있어요! (기본 5 + 보너스 2)
               </p>
             </div>
@@ -186,7 +188,7 @@ function SignupForm() {
           <button
             onClick={handleGoogleSignup}
             disabled={googleLoading || loading}
-            className="w-full py-2.5 rounded-xl border border-slate-600 bg-slate-700/50 text-slate-200 text-sm font-semibold hover:bg-slate-700 transition-colors flex items-center justify-center gap-2.5 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
+            className="w-full py-2.5 border border-exam-rule bg-white text-exam-ink text-sm font-semibold hover:bg-bg-game transition-colors flex items-center justify-center gap-2.5 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {googleLoading ? (
               <Loader2 size={16} className="animate-spin" />
@@ -200,17 +202,17 @@ function SignupForm() {
             )}
             {googleLoading ? '연결 중...' : 'Google로 바로 시작'}
           </button>
-          <p className="text-center text-[11px] text-slate-500 mt-2 mb-1">이메일 인증 없이 바로 시작할 수 있어요</p>
+          <p className="text-center text-[11px] text-stone-400 mt-2 mb-1">이메일 인증 없이 바로 시작할 수 있어요</p>
 
           <div className="flex items-center gap-3 my-4">
-            <div className="flex-1 h-px bg-slate-700" />
-            <span className="text-xs text-slate-500">또는 이메일로 가입</span>
-            <div className="flex-1 h-px bg-slate-700" />
+            <div className="flex-1 h-px bg-exam-rule" />
+            <span className="text-xs text-stone-400">또는 이메일로 가입</span>
+            <div className="flex-1 h-px bg-exam-rule" />
           </div>
 
           <form onSubmit={handleSignup} className="space-y-4">
             <div>
-              <label className="block text-xs font-medium text-slate-400 mb-1.5">닉네임</label>
+              <label className="block text-xs font-medium text-stone-500 mb-1.5">닉네임</label>
               <input
                 type="text"
                 value={nickname}
@@ -218,30 +220,30 @@ function SignupForm() {
                 required
                 maxLength={20}
                 className={[
-                  'w-full rounded-lg border bg-slate-900 px-3 py-2.5 text-sm text-slate-100 placeholder-slate-600 focus:outline-none transition-colors',
-                  nicknameError ? 'border-red-500 focus:border-red-400' : 'border-slate-700 focus:border-amber-500',
+                  'w-full border bg-white px-3 py-2.5 text-sm text-exam-ink placeholder-stone-400 focus:outline-none transition-colors',
+                  nicknameError ? 'border-exam-red focus:border-exam-red' : 'border-exam-rule focus:border-exam-ink',
                 ].join(' ')}
                 placeholder="탐정 이름 (한글/영문/숫자)"
               />
               {nicknameError && (
-                <p className="text-[11px] text-red-400 mt-1">{nicknameError}</p>
+                <p className="text-[11px] text-exam-red mt-1">{nicknameError}</p>
               )}
             </div>
 
             <div>
-              <label className="block text-xs font-medium text-slate-400 mb-1.5">이메일</label>
+              <label className="block text-xs font-medium text-stone-500 mb-1.5">이메일</label>
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2.5 text-sm text-slate-100 placeholder-slate-600 focus:border-amber-500 focus:outline-none transition-colors"
+                className="w-full border border-exam-rule bg-white px-3 py-2.5 text-sm text-exam-ink placeholder-stone-400 focus:border-exam-ink focus:outline-none transition-colors"
                 placeholder="name@example.com"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-medium text-slate-400 mb-1.5">비밀번호</label>
+              <label className="block text-xs font-medium text-stone-500 mb-1.5">비밀번호</label>
               <input
                 type="password"
                 value={password}
@@ -249,42 +251,42 @@ function SignupForm() {
                 required
                 minLength={8}
                 className={[
-                  'w-full rounded-lg border bg-slate-900 px-3 py-2.5 text-sm text-slate-100 placeholder-slate-600 focus:outline-none transition-colors',
-                  passwordTooShort ? 'border-red-500 focus:border-red-400' : 'border-slate-700 focus:border-amber-500',
+                  'w-full border bg-white px-3 py-2.5 text-sm text-exam-ink placeholder-stone-400 focus:outline-none transition-colors',
+                  passwordTooShort ? 'border-exam-red focus:border-exam-red' : 'border-exam-rule focus:border-exam-ink',
                 ].join(' ')}
                 placeholder="8자 이상"
               />
               {passwordTooShort && (
-                <p className="text-[11px] text-red-400 mt-1">비밀번호는 8자 이상이어야 해요. ({password.length}/8)</p>
+                <p className="text-[11px] text-exam-red mt-1">비밀번호는 8자 이상이어야 해요. ({password.length}/8)</p>
               )}
             </div>
 
-            {error && <p className="text-xs text-red-400">{error}</p>}
+            {error && <p className="text-xs text-exam-red">{error}</p>}
 
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-2.5 rounded-xl bg-amber-500 text-slate-900 text-sm font-bold hover:bg-amber-400 transition-colors disabled:opacity-50"
+              className="w-full py-2.5 bg-exam-ink text-white text-sm font-bold hover:opacity-90 transition-opacity disabled:opacity-50"
             >
               {loading ? '가입 중...' : '이메일로 가입하기'}
             </button>
           </form>
 
-          <p className="text-center text-xs text-slate-500 mt-4">
+          <p className="text-center text-xs text-stone-500 mt-4">
             이미 계정이 있으신가요?{' '}
-            <Link href="/login" className="text-amber-400 hover:text-amber-300">
+            <Link href="/login" className="text-exam-ink font-semibold hover:underline underline-offset-2">
               로그인
             </Link>
           </p>
         </div>
 
-        <p className="text-center text-xs text-slate-500 mt-4">
+        <p className="text-center text-xs text-stone-400 mt-4">
           가입 시{' '}
-          <Link href="/terms" className="text-slate-500 hover:text-slate-300 underline underline-offset-2 transition-colors">
+          <Link href="/terms" className="text-stone-500 hover:text-exam-ink underline underline-offset-2 transition-colors">
             서비스 이용약관
           </Link>
           {' '}및{' '}
-          <Link href="/privacy" className="text-slate-500 hover:text-slate-300 underline underline-offset-2 transition-colors">
+          <Link href="/privacy" className="text-stone-500 hover:text-exam-ink underline underline-offset-2 transition-colors">
             개인정보처리방침
           </Link>
           에 동의하는 것으로 간주됩니다.
@@ -297,8 +299,8 @@ function SignupForm() {
 export default function SignupPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen bg-bg-game flex items-center justify-center">
-        <div className="w-6 h-6 rounded-full border-2 border-amber-500 border-t-transparent animate-spin" />
+      <div className="min-h-screen bg-bg-base flex items-center justify-center">
+        <div className="w-6 h-6 border-2 border-exam-ink border-t-transparent animate-spin" />
       </div>
     }>
       <SignupForm />

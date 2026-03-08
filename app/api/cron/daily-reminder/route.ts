@@ -14,6 +14,7 @@ import { createClient } from '@supabase/supabase-js'
 import { sendEmail } from '@/lib/email/resend'
 import { dailyReminderEmail, inactivityReminderEmail, subscriptionExpiryReminderEmail } from '@/lib/email/templates'
 import type { ReminderSegment } from '@/lib/email/templates'
+import { sendPushToUser } from '@/lib/push/webpush'
 
 const MAX_EMAILS_PER_RUN = 50
 
@@ -153,6 +154,17 @@ export async function GET(req: NextRequest) {
       const result = await sendEmail({ to: email, subject, html })
       if (result.success) sentCount++
       else errors.push(`${target.id}: ${JSON.stringify(result.error)}`)
+
+      // 푸시 알림도 함께 발송
+      const pushBody = target.type === '1day'
+        ? '오늘의 추론 문제가 준비됐어요!'
+        : `${target.daysAway}일째 쉬고 있어요. 다시 도전해보세요!`
+      await sendPushToUser(target.id, {
+        title: '이:르다',
+        body: pushBody,
+        url: '/levels',
+        tag: `reminder-${target.type}`,
+      }).catch(() => {}) // 푸시 실패는 무시
     } catch (err) {
       errors.push(`${target.id}: ${err}`)
     }

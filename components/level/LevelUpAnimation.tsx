@@ -10,10 +10,11 @@ interface LevelUpAnimationProps {
   onDismiss: () => void
 }
 
-function Particle({ delay, x, y }: { delay: number; x: number; y: number }) {
+function Particle({ delay, x, y, color }: { delay: number; x: number; y: number; color: string }) {
   return (
     <motion.div
-      className="absolute w-2 h-2 rounded-full bg-amber-400"
+      className="absolute w-2 h-2"
+      style={{ backgroundColor: color }}
       initial={{ opacity: 0, x: 0, y: 0, scale: 0 }}
       animate={{
         opacity: [0, 1, 1, 0],
@@ -42,6 +43,8 @@ export default function LevelUpAnimation({ fromLevel, toLevel, onDismiss }: Leve
     return () => clearTimeout(timer)
   }, [onDismiss, reduced])
 
+  const particleColors = ['#1C1917', '#C22D2D', '#1C1917', '#C22D2D', '#78716C']
+
   const particles = reduced
     ? []
     : Array.from({ length: 20 }, (_, i) => ({
@@ -49,6 +52,7 @@ export default function LevelUpAnimation({ fromLevel, toLevel, onDismiss }: Leve
         delay: 0.3 + Math.random() * 0.5,
         x: (Math.random() - 0.5) * 300,
         y: (Math.random() - 0.5) * 300,
+        color: particleColors[i % particleColors.length],
       }))
 
   return (
@@ -59,7 +63,7 @@ export default function LevelUpAnimation({ fromLevel, toLevel, onDismiss }: Leve
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: reduced ? 0 : 0.3 }}
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-white/90 backdrop-blur-sm"
           onClick={() => {
             setVisible(false)
             setTimeout(onDismiss, 400)
@@ -69,13 +73,13 @@ export default function LevelUpAnimation({ fromLevel, toLevel, onDismiss }: Leve
             {/* Particles */}
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
               {particles.map((p) => (
-                <Particle key={p.id} delay={p.delay} x={p.x} y={p.y} />
+                <Particle key={p.id} delay={p.delay} x={p.x} y={p.y} color={p.color} />
               ))}
             </div>
 
-            {/* Glow ring */}
+            {/* Ring */}
             <motion.div
-              className="absolute w-40 h-40 rounded-full border-2 border-amber-400/30"
+              className="absolute w-40 h-40 border-2 border-exam-ink/20"
               initial={{ scale: 0, opacity: 0 }}
               animate={{ scale: [0, 2.5], opacity: [0.6, 0] }}
               transition={{ duration: 1.5, delay: 0.2 }}
@@ -88,10 +92,10 @@ export default function LevelUpAnimation({ fromLevel, toLevel, onDismiss }: Leve
               transition={{ type: 'spring', stiffness: 200, damping: 15, delay: 0.1 }}
               className="relative"
             >
-              <div className="w-28 h-28 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center shadow-2xl shadow-amber-500/30">
+              <div className="w-28 h-28 border-4 border-exam-ink bg-white flex items-center justify-center">
                 <div className="text-center">
                   <motion.span
-                    className="text-4xl font-black text-slate-900"
+                    className="text-4xl font-exam-serif font-black text-exam-ink"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ delay: 0.4 }}
@@ -109,10 +113,10 @@ export default function LevelUpAnimation({ fromLevel, toLevel, onDismiss }: Leve
               transition={{ delay: 0.5 }}
               className="mt-6 text-center"
             >
-              <h2 className="text-2xl font-black text-amber-400 tracking-wider">
+              <h2 className="text-2xl font-exam-serif font-black text-exam-ink tracking-wider">
                 LEVEL UP!
               </h2>
-              <p className="mt-2 text-sm text-slate-400">
+              <p className="mt-2 text-sm text-stone-500">
                 Lv.{fromLevel} → Lv.{toLevel}
               </p>
             </motion.div>
@@ -122,7 +126,7 @@ export default function LevelUpAnimation({ fromLevel, toLevel, onDismiss }: Leve
               initial={{ opacity: 0 }}
               animate={{ opacity: [0, 0.6] }}
               transition={{ delay: 1.5 }}
-              className="mt-8 text-xs text-slate-500"
+              className="mt-8 text-xs text-stone-400"
             >
               화면을 터치하면 계속합니다
             </motion.p>

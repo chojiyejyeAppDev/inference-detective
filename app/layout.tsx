@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from 'next'
-import { Noto_Sans_KR } from 'next/font/google'
+import { Noto_Sans_KR, Noto_Serif_KR } from 'next/font/google'
 import { Toaster } from 'sonner'
 import { Suspense } from 'react'
 import PostHogProvider from '@/components/providers/PostHogProvider'
@@ -10,6 +10,13 @@ const notoSansKR = Noto_Sans_KR({
   subsets: ['latin'],
   weight: ['400', '500', '600', '700', '900'],
   variable: '--font-noto-sans-kr',
+  display: 'swap',
+})
+
+const notoSerifKR = Noto_Serif_KR({
+  subsets: ['latin'],
+  weight: ['400', '600', '700', '900'],
+  variable: '--font-noto-serif-kr',
   display: 'swap',
 })
 
@@ -39,8 +46,8 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="ko" className="dark">
-      <body className={`${notoSansKR.variable} font-sans antialiased`}>
+    <html lang="ko">
+      <body className={`${notoSansKR.variable} ${notoSerifKR.variable} font-sans antialiased`}>
         <a href="#main-content" className="skip-nav">본문으로 건너뛰기</a>
         <Suspense fallback={null}>
           <PostHogProvider>
@@ -51,13 +58,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           </PostHogProvider>
         </Suspense>
         <Toaster
-          theme="dark"
           position="top-center"
           toastOptions={{
             style: {
-              background: '#1e293b',
-              border: '1px solid #334155',
-              color: '#e2e8f0',
+              background: '#FFFFFF',
+              border: '1px solid #E7E5E0',
+              color: '#1C1917',
+              fontFamily: 'var(--font-noto-sans-kr)',
             },
           }}
         />

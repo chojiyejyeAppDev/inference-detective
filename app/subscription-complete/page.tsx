@@ -59,8 +59,6 @@ function SubscriptionCompleteContent() {
 
   return (
     <div className="min-h-screen bg-bg-base flex items-center justify-center px-4 py-12">
-      <div className="fixed inset-0 bg-dot-grid opacity-40 pointer-events-none" />
-
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -71,16 +69,16 @@ function SubscriptionCompleteContent() {
           initial={{ scale: 0 }}
           animate={{ scale: 1 }}
           transition={{ type: 'spring', delay: 0.2, duration: 0.6 }}
-          className="w-20 h-20 rounded-3xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center mx-auto mb-6"
+          className="w-20 h-20 border-2 border-exam-ink flex items-center justify-center mx-auto mb-6"
         >
-          <PartyPopper size={36} className="text-amber-400" />
+          <PartyPopper size={36} className="text-exam-ink" />
         </motion.div>
 
         <motion.h1
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.3 }}
-          className="text-2xl font-black text-white mb-2"
+          className="font-exam-serif text-2xl font-black text-exam-ink mb-2"
         >
           프리미엄 시작!
         </motion.h1>
@@ -88,7 +86,7 @@ function SubscriptionCompleteContent() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.4 }}
-          className="text-slate-400 text-sm mb-6"
+          className="text-stone-500 text-sm mb-6"
         >
           이제 무제한으로 추론 실력을 키울 수 있어요.
           <br />
@@ -100,16 +98,16 @@ function SubscriptionCompleteContent() {
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.45 }}
-          className="rounded-xl border border-amber-500/30 bg-amber-500/5 p-4 mb-8"
+          className="border border-exam-rule bg-white p-4 mb-8"
         >
           <div className="flex items-center justify-center gap-2 mb-2">
-            <Crown size={14} className="text-amber-400" />
-            <span className="text-sm font-bold text-amber-300">{plan.name}</span>
+            <Crown size={14} className="text-exam-red" />
+            <span className="text-sm font-bold text-exam-ink">{plan.name}</span>
           </div>
-          <div className="flex items-center justify-center gap-4 text-xs text-slate-400">
-            <span>결제 금액: <span className="text-white font-semibold">{plan.price}</span></span>
-            <span className="text-slate-500">|</span>
-            <span>이용 기간: <span className="text-white font-semibold">{plan.period}</span></span>
+          <div className="flex items-center justify-center gap-4 text-xs text-stone-500">
+            <span>결제 금액: <span className="text-exam-ink font-semibold">{plan.price}</span></span>
+            <span className="text-stone-300">|</span>
+            <span>이용 기간: <span className="text-exam-ink font-semibold">{plan.period}</span></span>
           </div>
         </motion.div>
 
@@ -119,10 +117,10 @@ function SubscriptionCompleteContent() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.48 }}
-            className="rounded-lg bg-slate-800/50 border border-slate-700/50 px-4 py-3 mb-6 text-left"
+            className="border border-exam-rule bg-exam-highlight px-4 py-3 mb-6 text-left"
           >
-            <p className="text-xs text-slate-400">
-              <span className="text-amber-400 font-semibold">Lv.{level}</span> — {tip}
+            <p className="text-xs text-stone-700">
+              <span className="text-exam-red font-semibold">Lv.{level}</span> — {tip}
             </p>
           </motion.div>
         )}
@@ -139,25 +137,25 @@ function SubscriptionCompleteContent() {
               <Link
                 href={step.href}
                 className={[
-                  'flex items-center gap-4 rounded-2xl border p-4 text-left transition-all group',
+                  'flex items-center gap-4 border p-4 text-left transition-all group',
                   step.primary
-                    ? 'border-amber-500/50 bg-amber-500/10 hover:bg-amber-500/10'
-                    : 'border-slate-700 bg-slate-800/40 hover:border-slate-600',
+                    ? 'border-exam-ink bg-exam-highlight hover:bg-red-50'
+                    : 'border-exam-rule bg-white hover:border-stone-400',
                 ].join(' ')}
               >
                 <div className={[
-                  'w-10 h-10 rounded-xl flex items-center justify-center shrink-0',
-                  step.primary ? 'bg-amber-500/20' : 'bg-slate-700/60',
+                  'w-10 h-10 flex items-center justify-center shrink-0 border',
+                  step.primary ? 'border-exam-ink bg-white' : 'border-exam-rule bg-bg-base',
                 ].join(' ')}>
-                  <step.icon size={18} className={step.primary ? 'text-amber-400' : 'text-slate-400'} />
+                  <step.icon size={18} className={step.primary ? 'text-exam-red' : 'text-stone-500'} />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-slate-200">{step.title}</p>
-                  <p className="text-xs text-slate-500 mt-0.5">{step.desc}</p>
+                  <p className="text-sm font-semibold text-exam-ink">{step.title}</p>
+                  <p className="text-xs text-stone-500 mt-0.5">{step.desc}</p>
                 </div>
                 <ArrowRight
                   size={14}
-                  className="text-slate-500 group-hover:text-slate-400 transition-colors shrink-0"
+                  className="text-stone-400 group-hover:text-exam-ink transition-colors shrink-0"
                 />
               </Link>
             </motion.div>

@@ -39,21 +39,21 @@ export default async function AdminDashboard() {
 
   return (
     <div className="space-y-8">
-      <h1 className="text-2xl font-bold text-slate-100">대시보드</h1>
+      <h1 className="text-2xl font-bold text-exam-ink">대시보드</h1>
 
       {/* Stat cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {stats.map((s) => (
-          <div key={s.label} className="rounded-xl border border-slate-800 bg-slate-900/50 p-5">
-            <p className="text-xs text-slate-400 mb-1">{s.label}</p>
-            <p className="text-2xl font-bold text-amber-400">{s.value}</p>
+          <div key={s.label} className="border border-exam-rule bg-white p-5">
+            <p className="text-xs text-stone-500 mb-1">{s.label}</p>
+            <p className="text-2xl font-bold text-exam-red">{s.value}</p>
           </div>
         ))}
       </div>
 
       {/* Questions per level */}
       <div>
-        <h2 className="text-lg font-semibold text-slate-200 mb-4">레벨별 문제 현황</h2>
+        <h2 className="text-lg font-semibold text-exam-ink mb-4">레벨별 문제 현황</h2>
         <div className="grid grid-cols-7 gap-3">
           {[1, 2, 3, 4, 5, 6, 7].map((lvl) => {
             const count = levelCounts[lvl] ?? 0
@@ -61,14 +61,14 @@ export default async function AdminDashboard() {
             return (
               <div
                 key={lvl}
-                className={`rounded-lg border p-4 text-center ${
+                className={`border p-4 text-center ${
                   isLow
-                    ? 'border-red-500/40 bg-red-500/5'
-                    : 'border-slate-800 bg-slate-900/50'
+                    ? 'border-red-500/40 bg-red-50'
+                    : 'border-exam-rule bg-white'
                 }`}
               >
-                <p className="text-xs text-slate-400 mb-1">레벨 {lvl}</p>
-                <p className={`text-xl font-bold ${isLow ? 'text-red-400' : 'text-slate-200'}`}>
+                <p className="text-xs text-stone-500 mb-1">레벨 {lvl}</p>
+                <p className={`text-xl font-bold ${isLow ? 'text-red-400' : 'text-exam-ink'}`}>
                   {count}
                 </p>
               </div>

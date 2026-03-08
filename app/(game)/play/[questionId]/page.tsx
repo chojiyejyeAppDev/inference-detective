@@ -113,6 +113,17 @@ export default function PlayPage({ params }: { params: Promise<{ questionId: str
           toast.success(`힌트 포인트 +${result.hint_points_bonus}`, { duration: 2000 })
         }
       }
+
+      // 새 배지 획득 알림
+      if (result.new_badges && result.new_badges.length > 0) {
+        for (const _badgeId of result.new_badges) {
+          toast('배지 획득!', {
+            description: `새로운 배지를 획득했어요!`,
+            action: { label: '보기', onClick: () => window.location.href = '/badges' },
+            duration: 4000,
+          })
+        }
+      }
     } catch (err) {
       const msg = err instanceof DOMException && err.name === 'AbortError'
         ? '요청 시간이 초과되었어요. 네트워크를 확인해주세요.'
@@ -163,44 +174,44 @@ export default function PlayPage({ params }: { params: Promise<{ questionId: str
     return (
       <div className="min-h-screen bg-bg-game flex flex-col">
         {/* Skeleton header */}
-        <div className="flex items-center justify-between px-4 md:px-6 py-3 border-b border-slate-800">
+        <div className="flex items-center justify-between px-4 md:px-6 py-3 border-b border-exam-rule">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-5 bg-slate-700/60 rounded animate-pulse" />
-            <div className="w-20 h-4 bg-slate-700/40 rounded animate-pulse hidden sm:block" />
+            <div className="w-12 h-5 bg-stone-200 rounded animate-pulse" />
+            <div className="w-20 h-4 bg-stone-200 rounded animate-pulse hidden sm:block" />
           </div>
-          <div className="w-16 h-4 bg-slate-700/40 rounded animate-pulse" />
+          <div className="w-16 h-4 bg-stone-200 rounded animate-pulse" />
         </div>
         {/* Skeleton body */}
         <div className="flex-1 flex flex-col md:flex-row gap-4 md:gap-5 p-4 md:p-5">
           {/* Passage skeleton */}
           <div className="w-full md:w-[45%] flex flex-col gap-3">
-            <div className="w-24 h-4 bg-slate-700/40 rounded animate-pulse" />
-            <div className="flex-1 rounded-xl border border-slate-700/50 bg-slate-900/30 p-5 space-y-3">
+            <div className="w-24 h-4 bg-stone-200 rounded animate-pulse" />
+            <div className="flex-1 border border-exam-rule bg-white p-5 space-y-3">
               {[...Array(6)].map((_, i) => (
-                <div key={i} className="h-4 bg-slate-700/30 rounded animate-pulse" style={{ width: `${85 - i * 8}%` }} />
+                <div key={i} className="h-4 bg-stone-200 rounded animate-pulse" style={{ width: `${85 - i * 8}%` }} />
               ))}
             </div>
-            <div className="rounded-xl border border-amber-500/30 bg-amber-500/5 p-4">
-              <div className="w-20 h-3 bg-amber-500/20 rounded animate-pulse mb-2" />
-              <div className="h-4 bg-amber-500/10 rounded animate-pulse w-3/4" />
+            <div className="border border-exam-rule bg-white p-4">
+              <div className="w-20 h-3 bg-stone-200 rounded animate-pulse mb-2" />
+              <div className="h-4 bg-stone-100 rounded animate-pulse w-3/4" />
             </div>
           </div>
           {/* Game area skeleton */}
           <div className="flex-1 flex flex-col gap-4">
-            <div className="w-40 h-3 bg-slate-700/40 rounded animate-pulse" />
+            <div className="w-40 h-3 bg-stone-200 rounded animate-pulse" />
             <div className="space-y-2">
               {[...Array(3)].map((_, i) => (
-                <div key={i} className="h-14 rounded-lg border border-slate-700/40 bg-slate-800/40 animate-pulse" />
+                <div key={i} className="h-14 rounded-lg border border-exam-rule bg-white animate-pulse" />
               ))}
             </div>
             <div className="flex items-center gap-3 my-1">
-              <div className="flex-1 h-px bg-slate-800" />
-              <div className="w-24 h-3 bg-slate-700/40 rounded animate-pulse" />
-              <div className="flex-1 h-px bg-slate-800" />
+              <div className="flex-1 h-px bg-exam-rule" />
+              <div className="w-24 h-3 bg-stone-200 rounded animate-pulse" />
+              <div className="flex-1 h-px bg-exam-rule" />
             </div>
             <div className="space-y-3 pl-4">
               {[...Array(3)].map((_, i) => (
-                <div key={i} className="h-16 rounded-lg border-2 border-dashed border-slate-700/40 bg-slate-800/20 animate-pulse" />
+                <div key={i} className="h-16 rounded-lg border-2 border-dashed border-exam-rule bg-white animate-pulse" />
               ))}
             </div>
           </div>
@@ -213,17 +224,17 @@ export default function PlayPage({ params }: { params: Promise<{ questionId: str
     return (
       <div className="min-h-screen bg-bg-game flex items-center justify-center">
         <div className="text-center">
-          <p className="text-slate-400 mb-4">{error ?? '문제를 찾을 수 없어요.'}</p>
+          <p className="text-stone-500 mb-4">{error ?? '문제를 찾을 수 없어요.'}</p>
           <div className="flex items-center gap-3 justify-center">
             <button
               onClick={() => fetchQuestion()}
-              className="px-4 py-2 rounded-lg bg-slate-700 text-slate-200 text-sm font-semibold hover:bg-slate-600 transition-colors"
+              className="px-4 py-2 rounded-lg border border-exam-rule text-stone-700 text-sm font-semibold hover:bg-stone-100 transition-colors"
             >
               다시 시도
             </button>
             <button
               onClick={() => router.push('/levels')}
-              className="px-4 py-2 rounded-lg bg-amber-500 text-slate-900 text-sm font-semibold hover:bg-amber-400 transition-colors"
+              className="px-4 py-2 rounded-lg bg-exam-ink text-white text-sm font-semibold hover:bg-stone-800 transition-colors"
             >
               레벨 선택으로
             </button>

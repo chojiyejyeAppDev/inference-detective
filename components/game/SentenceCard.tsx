@@ -35,33 +35,33 @@ export default function SentenceCard({ sentence, index, isDimmed = false, isSele
             }
           }}
           className={[
-            'group relative flex items-start gap-2 rounded-lg border px-3 py-2.5 cursor-grab active:cursor-grabbing select-none touch-manipulation',
-            'transition-all duration-150 focus-visible:ring-2 focus-visible:ring-amber-400 focus-visible:outline-none',
+            'group relative flex items-start gap-2.5 border px-3 py-2.5 cursor-grab active:cursor-grabbing select-none touch-manipulation',
+            'transition-all duration-150 focus-visible:ring-2 focus-visible:ring-exam-ink focus-visible:outline-none',
             snapshot.isDragging
-              ? 'border-amber-400 bg-slate-700 shadow-lg shadow-amber-500/20 scale-[1.02] rotate-1 z-50'
+              ? 'border-exam-ink bg-white shadow-md scale-[1.01] z-50'
               : isSelected
-                ? 'border-amber-400 bg-amber-500/10 ring-2 ring-amber-400/50'
-                : 'border-slate-600 bg-slate-800/80 hover:border-slate-500 hover:bg-slate-700/80',
+                ? 'border-exam-ink bg-exam-highlight ring-2 ring-exam-red/20'
+                : 'border-exam-rule bg-white hover:border-stone-400 hover:bg-bg-base',
             isDimmed ? 'opacity-35' : 'opacity-100',
           ].join(' ')}
           style={provided.draggableProps.style}
         >
-          {/* Number badge */}
-          <span className="shrink-0 mt-0.5 w-5 h-5 rounded bg-amber-500/20 text-amber-400 text-[10px] font-bold flex items-center justify-center border border-amber-500/30">
+          {/* Number badge — exam circle style */}
+          <span className="problem-number-sm shrink-0 mt-0.5 font-exam-serif">
             {String.fromCharCode(65 + index)}
           </span>
 
           {/* Sentence text */}
-          <p className="flex-1 text-sm leading-relaxed text-slate-200 break-words">
+          <p className="flex-1 text-sm leading-relaxed text-exam-ink break-words">
             {sentence.text}
           </p>
 
-          {/* Drag grip */}
-          <div className="shrink-0 flex flex-col gap-[3px] opacity-30 group-hover:opacity-60 mt-0.5 p-1 transition-opacity">
+          {/* Drag grip — subtle dots */}
+          <div className="shrink-0 flex flex-col gap-[3px] opacity-20 group-hover:opacity-40 mt-0.5 p-1 transition-opacity">
             {[0, 1, 2].map((i) => (
               <div key={i} className="flex gap-[3px]">
-                <div className="w-1.5 h-1.5 rounded-full bg-slate-400" />
-                <div className="w-1.5 h-1.5 rounded-full bg-slate-400" />
+                <div className="w-1 h-1 rounded-full bg-stone-400" />
+                <div className="w-1 h-1 rounded-full bg-stone-400" />
               </div>
             ))}
           </div>

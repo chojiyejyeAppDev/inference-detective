@@ -5,6 +5,7 @@ import { LEVEL_UP_SESSIONS, LEVEL_UP_ACCURACY, CORRECT_ANSWER_HINT_BONUS, MAX_HI
 import { checkCsrf } from '@/lib/api/csrf'
 import { rateLimit, rateLimitResponse } from '@/lib/api/rateLimit'
 import { evaluateSchema } from '@/lib/api/schemas'
+import { checkAndAwardBadges } from '@/lib/game/badges'
 
 export async function POST(req: NextRequest) {
   const csrfError = checkCsrf(req)
@@ -148,6 +149,37 @@ export async function POST(req: NextRequest) {
     }
   }
 
+  // 배지 체크 & 수여
+  const { data: totalProgress } = await service
+    .from('user_progress')
+    .select('id', { count: 'exact', head: true })
+    .eq('user_id', user.id)
+
+  const totalSolved = (totalProgress as unknown as { count: number })?.count ?? 0
+
+  // 최근 20문제 정답률
+  const { data: recent20 } = await service
+    .from('user_progress')
+    .select('is_correct')
+    .eq('user_id', user.id)
+    .order('created_at', { ascending: false })
+    .limit(20)
+
+  const recent20Items = recent20 ?? []
+  const recentAccuracy = recent20Items.length >= 5
+    ? recent20Items.filter((r) => r.is_correct).length / recent20Items.length
+    : null
+
+  const newLevel = levelUp ? profile.current_level + 1 : profile.current_level
+  const newBadges = await checkAndAwardBadges(service, user.id, {
+    totalSolved,
+    streak,
+    recentAccuracy,
+    currentLevel: newLevel,
+    isCorrect: evaluation.is_correct,
+    levelUp,
+  })
+
   return NextResponse.json({
     ...evaluation,
     correct_chain: question.correct_chain,
@@ -159,5 +191,6 @@ export async function POST(req: NextRequest) {
       qualified: Math.min(qualifiedSessions, LEVEL_UP_SESSIONS),
       required: LEVEL_UP_SESSIONS,
     },
+    new_badges: newBadges,
   })
 }

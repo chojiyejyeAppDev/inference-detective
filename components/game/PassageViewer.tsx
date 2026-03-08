@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { BookOpen, ChevronDown, ChevronUp } from 'lucide-react'
+import { ChevronDown, ChevronUp } from 'lucide-react'
 
 interface PassageViewerProps {
   passage: string
@@ -33,13 +33,15 @@ export default function PassageViewer({ passage, conclusion, topic }: PassageVie
         onClick={() => setCollapsed((v) => !v)}
         className="flex items-center justify-between px-1 md:pointer-events-none"
       >
-        <div className="flex items-center gap-1.5">
-          <BookOpen size={14} className="text-amber-400" />
-          <span className="text-xs font-semibold text-amber-400 tracking-widest uppercase">
+        <div className="flex items-center gap-2">
+          <span className="problem-number-sm text-exam-ink font-exam-serif">
+            {topic ? topicLabel[topic] ?? topic : '지'}
+          </span>
+          <span className="text-xs font-semibold text-exam-ink tracking-widest uppercase font-exam-serif">
             {topic ? topicLabel[topic] ?? topic : '지문'} 독해
           </span>
         </div>
-        <span className="md:hidden text-slate-500">
+        <span className="md:hidden text-stone-400">
           {collapsed ? <ChevronDown size={16} /> : <ChevronUp size={16} />}
         </span>
       </button>
@@ -54,10 +56,10 @@ export default function PassageViewer({ passage, conclusion, topic }: PassageVie
             transition={{ duration: 0.25 }}
             className="overflow-hidden md:!h-auto md:!opacity-100 flex flex-col gap-3"
           >
-            <div className="flex-1 max-h-[40vh] sm:max-h-[45vh] md:max-h-none overflow-y-auto rounded-xl border border-slate-700 bg-slate-900/50 backdrop-blur-sm">
-              <div className="p-3 sm:p-5">
+            <div className="flex-1 max-h-[40vh] sm:max-h-[45vh] md:max-h-none overflow-y-auto border border-exam-rule bg-white">
+              <div className="p-4 sm:p-5">
                 <p
-                  className="text-sm leading-[1.95] text-slate-200 break-words"
+                  className="text-sm leading-[2] text-exam-ink break-words font-exam-serif"
                   style={{ wordBreak: 'keep-all' }}
                 >
                   {passage}
@@ -66,18 +68,18 @@ export default function PassageViewer({ passage, conclusion, topic }: PassageVie
             </div>
 
             {/* Conclusion to prove */}
-            <div className="rounded-xl border border-amber-500/50 bg-amber-500/5 p-4">
+            <div className="border-2 border-exam-ink bg-white p-4">
               <div className="flex items-start gap-3">
                 <div className="shrink-0 mt-0.5">
-                  <div className="w-6 h-6 rounded-full bg-amber-500 flex items-center justify-center">
-                    <span className="text-xs font-bold text-slate-900">?</span>
+                  <div className="problem-number font-exam-serif">
+                    ?
                   </div>
                 </div>
                 <div>
-                  <p className="text-[10px] font-semibold text-amber-400 tracking-widest uppercase mb-1">
+                  <p className="text-[10px] font-semibold text-exam-red tracking-widest uppercase mb-1 font-exam-serif">
                     증명할 결론
                   </p>
-                  <p className="text-sm leading-relaxed text-amber-100" style={{ wordBreak: 'keep-all' }}>
+                  <p className="text-sm leading-relaxed text-exam-ink font-exam-serif" style={{ wordBreak: 'keep-all' }}>
                     {conclusion}
                   </p>
                 </div>
@@ -89,8 +91,8 @@ export default function PassageViewer({ passage, conclusion, topic }: PassageVie
 
       {/* Collapsed summary on mobile */}
       {collapsed && (
-        <div className="md:hidden rounded-lg border border-slate-700/50 bg-slate-800/40 px-3 py-2">
-          <p className="text-xs text-slate-400 truncate" style={{ wordBreak: 'keep-all' }}>
+        <div className="md:hidden border border-exam-rule bg-white px-3 py-2">
+          <p className="text-xs text-stone-500 truncate" style={{ wordBreak: 'keep-all' }}>
             {passage.slice(0, 60)}...
           </p>
         </div>

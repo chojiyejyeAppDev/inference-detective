@@ -29,11 +29,11 @@ export default function InferenceSlot({
 }: InferenceSlotProps) {
   const feedbackColor = isEvaluated
     ? feedback?.is_correct
-      ? 'border-emerald-500 bg-emerald-500/10'
-      : 'border-red-500 bg-red-500/10'
+      ? 'border-green-700 bg-green-50'
+      : 'border-exam-red bg-exam-highlight'
     : sentence
-      ? 'border-amber-500/50 bg-slate-800'
-      : 'border-dashed border-slate-600 bg-slate-800/40'
+      ? 'border-exam-ink bg-white'
+      : 'border-dashed border-exam-rule bg-bg-base'
 
   return (
     <Droppable droppableId={`slot-${slotIndex}`}>
@@ -59,28 +59,28 @@ export default function InferenceSlot({
             }
           }}
           className={[
-            'relative min-h-[48px] sm:min-h-[60px] rounded-lg border-2 transition-all duration-200',
+            'relative min-h-[48px] sm:min-h-[60px] border-2 transition-all duration-200',
             !isEvaluated && 'cursor-pointer',
             snapshot.isDraggingOver
-              ? 'border-amber-400 bg-amber-500/10 scale-[1.01]'
+              ? 'border-exam-ink bg-bg-base scale-[1.005]'
               : isSelected
-                ? 'border-amber-400 bg-amber-500/10 ring-2 ring-amber-400/50'
+                ? 'border-exam-ink bg-exam-highlight ring-2 ring-exam-red/20'
                 : hasSelection && !sentence && !isEvaluated
-                  ? 'border-amber-400/50 bg-amber-500/5 animate-pulse'
+                  ? 'border-stone-400 bg-bg-base animate-pulse'
                   : feedbackColor,
           ].filter(Boolean).join(' ')}
         >
-          {/* Slot number tag */}
-          <div className="absolute -left-3 top-1/2 -translate-y-1/2 z-10">
+          {/* Slot number tag — exam problem number style */}
+          <div className="absolute -left-3.5 top-1/2 -translate-y-1/2 z-10">
             <div className={[
-              'w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold border-2',
+              'problem-number-sm font-exam-serif',
               isEvaluated
                 ? feedback?.is_correct
-                  ? 'bg-emerald-500 border-emerald-400 text-white'
-                  : 'bg-red-500 border-red-400 text-white'
+                  ? '!bg-green-700 !border-green-700 !text-white'
+                  : '!bg-exam-red !border-exam-red !text-white'
                 : sentence
-                  ? 'bg-amber-500 border-amber-400 text-slate-900'
-                  : 'bg-slate-700 border-slate-600 text-slate-400',
+                  ? '!bg-exam-ink !border-exam-ink !text-white'
+                  : '',
             ].join(' ')}>
               {slotIndex + 1}
             </div>
@@ -89,7 +89,7 @@ export default function InferenceSlot({
           {/* Content */}
           <motion.div
             className="px-5 py-2.5 sm:py-3 min-h-[48px] sm:min-h-[60px] flex items-center"
-            animate={sentence ? { scale: [1, 1.02, 1] } : {}}
+            animate={sentence ? { scale: [1, 1.01, 1] } : {}}
             transition={{ duration: 0.2 }}
             key={sentence?.id ?? 'empty'}
           >
@@ -102,7 +102,7 @@ export default function InferenceSlot({
                       {...draggableProvided.draggableProps}
                       {...draggableProvided.dragHandleProps}
                       className={[
-                        'w-full text-sm leading-relaxed text-slate-100 select-none transition-opacity duration-150 focus-visible:ring-2 focus-visible:ring-amber-400 focus-visible:outline-none',
+                        'w-full text-sm leading-relaxed text-exam-ink select-none transition-opacity duration-150 focus-visible:ring-2 focus-visible:ring-exam-ink focus-visible:outline-none',
                         isEvaluated ? 'cursor-default' : 'cursor-grab active:cursor-grabbing',
                         draggableSnapshot.isDragging ? 'opacity-50' : 'opacity-100',
                       ].join(' ')}
@@ -118,7 +118,7 @@ export default function InferenceSlot({
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
-                  className="text-sm text-slate-400 italic"
+                  className="text-sm text-stone-400 italic"
                 >
                   {snapshot.isDraggingOver
                     ? '여기에 놓으세요'
@@ -135,7 +135,7 @@ export default function InferenceSlot({
             <motion.div
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: 'auto' }}
-              className="px-5 pb-2 text-xs text-red-300"
+              className="px-5 pb-2 text-xs text-exam-red"
             >
               <Lightbulb size={12} className="inline shrink-0 -mt-0.5" /> {feedback.hint}
             </motion.div>

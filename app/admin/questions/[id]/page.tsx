@@ -48,12 +48,12 @@ export default function EditQuestionPage() {
     load()
   }, [id])
 
-  if (loading) return <p className="text-slate-400 text-sm">로딩 중...</p>
+  if (loading) return <p className="text-stone-500 text-sm">로딩 중...</p>
   if (!question) return <p className="text-red-400 text-sm">문제를 찾을 수 없습니다.</p>
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-slate-100">문제 편집</h1>
+      <h1 className="text-2xl font-bold text-exam-ink">문제 편집</h1>
       <QuestionForm initialData={question} />
     </div>
   )

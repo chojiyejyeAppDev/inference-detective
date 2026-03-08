@@ -18,10 +18,10 @@ export default function HintDependencyChart({
     : 0
 
   const color = dependencyRate <= 30
-    ? '#10B981'  // green: 독립적
+    ? '#16a34a'  // green-600: 독립적
     : dependencyRate <= 60
-      ? '#F59E0B'  // amber: 중간
-      : '#EF4444'  // red: 의존적
+      ? '#1C1917'  // ink: 중간
+      : '#C22D2D'  // red: 의존적
 
   const label = dependencyRate <= 30
     ? '우수 — 독립적으로 풀고 있어요'
@@ -30,12 +30,12 @@ export default function HintDependencyChart({
       : '주의 — 힌트 의존도가 높아요'
 
   return (
-    <div className="rounded-xl border border-slate-700 bg-slate-800/50 p-5 card-elevated">
-      <h3 className="text-sm font-semibold text-slate-300 mb-1">힌트 의존도</h3>
-      <p className="text-xs text-slate-500 mb-4">힌트 없이 문제를 풀수록 성장해요</p>
+    <div className="border border-exam-rule bg-white p-5">
+      <h3 className="text-sm font-exam-serif font-semibold text-exam-ink mb-1">힌트 의존도</h3>
+      <p className="text-xs text-stone-500 mb-4">힌트 없이 문제를 풀수록 성장해요</p>
 
       {totalQuestions === 0 ? (
-        <div className="h-32 flex items-center justify-center text-slate-500 text-sm">
+        <div className="h-32 flex items-center justify-center text-stone-500 text-sm">
           아직 데이터가 없어요
         </div>
       ) : (
@@ -44,7 +44,7 @@ export default function HintDependencyChart({
             {/* 원형 게이지 */}
             <div className="relative w-24 h-24 shrink-0">
               <svg viewBox="0 0 100 100" className="w-full h-full -rotate-90">
-                <circle cx="50" cy="50" r="40" fill="none" stroke="#1E293B" strokeWidth="10" />
+                <circle cx="50" cy="50" r="40" fill="none" stroke="#E7E5E0" strokeWidth="10" />
                 <circle
                   cx="50"
                   cy="50"
@@ -52,29 +52,29 @@ export default function HintDependencyChart({
                   fill="none"
                   stroke={color}
                   strokeWidth="10"
-                  strokeLinecap="round"
+                  strokeLinecap="butt"
                   strokeDasharray={`${2.513 * dependencyRate} 251.3`}
                   className="transition-all duration-700"
                 />
               </svg>
               <div className="absolute inset-0 flex items-center justify-center">
-                <span className="text-xl font-bold text-white">{dependencyRate}%</span>
+                <span className="text-xl font-bold text-exam-ink">{dependencyRate}%</span>
               </div>
             </div>
 
             {/* 통계 */}
             <div className="space-y-2 text-sm">
               <div>
-                <p className="text-slate-400 text-xs">전체 문제</p>
-                <p className="text-slate-200 font-semibold">{totalQuestions}개</p>
+                <p className="text-stone-400 text-xs">전체 문제</p>
+                <p className="text-exam-ink font-semibold">{totalQuestions}개</p>
               </div>
               <div>
-                <p className="text-slate-400 text-xs">힌트 사용</p>
-                <p className="text-slate-200 font-semibold">{questionsWithHints}개</p>
+                <p className="text-stone-400 text-xs">힌트 사용</p>
+                <p className="text-exam-ink font-semibold">{questionsWithHints}개</p>
               </div>
               <div>
-                <p className="text-slate-400 text-xs">평균 힌트 수</p>
-                <p className="text-slate-200 font-semibold">{avgHintsPerQuestion.toFixed(1)}회</p>
+                <p className="text-stone-400 text-xs">평균 힌트 수</p>
+                <p className="text-exam-ink font-semibold">{avgHintsPerQuestion.toFixed(1)}회</p>
               </div>
             </div>
           </div>
