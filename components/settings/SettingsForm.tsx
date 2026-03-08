@@ -32,9 +32,16 @@ export default function SettingsForm({
   const [copied, setCopied] = useState(false)
   const isActive = subscriptionStatus === 'active'
 
+  const NICKNAME_RE = /^[가-힣a-zA-Z0-9_ ]+$/
+
   async function handleSaveNickname() {
     const trimmed = nickname.trim()
     if (!trimmed || trimmed === initialNickname) return
+
+    if (!NICKNAME_RE.test(trimmed)) {
+      toast.error('닉네임에 특수문자를 사용할 수 없어요.')
+      return
+    }
 
     setSaving(true)
     const supabase = createClient()
@@ -72,7 +79,7 @@ export default function SettingsForm({
 
         {/* Profile */}
         <div className="rounded-2xl border border-slate-700 bg-slate-800/50 p-5 space-y-4">
-          <div className="flex items-center gap-2 text-sm font-semibold text-slate-300">
+          <div className="flex items-center gap-1.5 text-sm font-semibold text-slate-300">
             <User size={14} />
             프로필
           </div>
@@ -122,7 +129,7 @@ export default function SettingsForm({
 
         {/* Subscription */}
         <div className="rounded-2xl border border-slate-700 bg-slate-800/50 p-5 space-y-3">
-          <div className="flex items-center gap-2 text-sm font-semibold text-slate-300">
+          <div className="flex items-center gap-1.5 text-sm font-semibold text-slate-300">
             <CreditCard size={14} />
             구독
           </div>
@@ -149,20 +156,34 @@ export default function SettingsForm({
 
         {/* Invite code */}
         {inviteCode && (
-          <div className="rounded-2xl border border-slate-700 bg-slate-800/50 p-5 space-y-2">
-            <p className="text-xs text-slate-500">내 초대 코드</p>
+          <div className="rounded-2xl border border-slate-700 bg-slate-800/50 p-5 space-y-3">
+            <div className="flex items-center gap-1.5 text-sm font-semibold text-slate-300">
+              <Copy size={14} />
+              친구 초대
+            </div>
+            <p className="text-xs text-slate-400">
+              {isActive
+                ? '친구가 가입하면 나는 힌트 +5포인트, 친구는 +2문제 보너스!'
+                : '친구가 가입하면 둘 다 오늘 +2문제 보너스!'}
+            </p>
             <div className="flex items-center gap-2">
-              <code className="flex-1 rounded-lg bg-slate-900 border border-slate-700 px-3 py-2 text-sm text-amber-400 font-mono tracking-wider">
-                {inviteCode}
+              <code className="flex-1 rounded-lg bg-slate-900 border border-slate-700 px-3 py-2 text-xs text-amber-400 truncate">
+                {typeof window !== 'undefined' ? `${window.location.origin}/signup?ref=${inviteCode}` : inviteCode}
               </code>
               <button
-                onClick={handleCopyInvite}
-                className="p-2 rounded-lg border border-slate-700 text-slate-400 hover:text-slate-200 hover:border-slate-600 transition-colors"
+                onClick={() => {
+                  const link = `${window.location.origin}/signup?ref=${inviteCode}`
+                  navigator.clipboard.writeText(link).then(() => {
+                    setCopied(true)
+                    setTimeout(() => setCopied(false), 2000)
+                  })
+                }}
+                className="px-3 py-2 rounded-lg border border-slate-700 text-slate-400 text-xs hover:text-slate-200 hover:border-slate-600 transition-colors shrink-0 flex items-center gap-1"
               >
-                {copied ? <Check size={14} className="text-emerald-400" /> : <Copy size={14} />}
+                {copied ? <Check size={12} className="text-emerald-400" /> : <Copy size={12} />}
+                {copied ? '복사됨' : '복사'}
               </button>
             </div>
-            <p className="text-[11px] text-slate-500">친구가 이 코드로 가입하면 둘 다 보너스 문제를 받아요</p>
           </div>
         )}
 
