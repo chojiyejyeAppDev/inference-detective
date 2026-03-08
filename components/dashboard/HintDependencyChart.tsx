@@ -1,5 +1,8 @@
 'use client'
 
+import Card from '@/components/ui/Card'
+import { CHART_COLORS } from '@/lib/design-tokens'
+
 // SVG-based gauge used instead of Recharts radial chart
 
 interface HintDependencyChartProps {
@@ -18,10 +21,10 @@ export default function HintDependencyChart({
     : 0
 
   const color = dependencyRate <= 30
-    ? '#16a34a'  // green-600: 독립적
+    ? CHART_COLORS.green
     : dependencyRate <= 60
-      ? '#1C1917'  // ink: 중간
-      : '#C22D2D'  // red: 의존적
+      ? CHART_COLORS.ink
+      : CHART_COLORS.red
 
   const label = dependencyRate <= 30
     ? '우수 — 독립적으로 풀고 있어요'
@@ -30,7 +33,7 @@ export default function HintDependencyChart({
       : '주의 — 힌트 의존도가 높아요'
 
   return (
-    <div className="border border-exam-rule bg-white p-5">
+    <Card>
       <h3 className="text-sm font-exam-serif font-semibold text-exam-ink mb-1">힌트 의존도</h3>
       <p className="text-xs text-stone-500 mb-4">힌트 없이 문제를 풀수록 성장해요</p>
 
@@ -44,7 +47,7 @@ export default function HintDependencyChart({
             {/* 원형 게이지 */}
             <div className="relative w-24 h-24 shrink-0">
               <svg viewBox="0 0 100 100" className="w-full h-full -rotate-90">
-                <circle cx="50" cy="50" r="40" fill="none" stroke="#E7E5E0" strokeWidth="10" />
+                <circle cx="50" cy="50" r="40" fill="none" stroke={CHART_COLORS.background} strokeWidth="10" />
                 <circle
                   cx="50"
                   cy="50"
@@ -84,6 +87,6 @@ export default function HintDependencyChart({
           </p>
         </>
       )}
-    </div>
+    </Card>
   )
 }

@@ -3,6 +3,7 @@
 import * as Sentry from '@sentry/nextjs'
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import Button from '@/components/ui/Button'
 
 export default function AppError({
   error,
@@ -37,12 +38,9 @@ export default function AppError({
           예상치 못한 오류가 발생했어요. 다시 시도해주세요.
         </p>
         <div className="flex gap-3 justify-center">
-          <button
-            onClick={reset}
-            className="px-5 py-2.5 bg-exam-ink text-white text-sm font-bold hover:bg-stone-800 transition-colors"
-          >
+          <Button variant="primary" size="md" onClick={reset} className="px-5">
             다시 시도
-          </button>
+          </Button>
           <Link
             href="/"
             className="px-5 py-2.5 border border-exam-rule text-exam-ink text-sm font-medium hover:bg-bg-base transition-colors"

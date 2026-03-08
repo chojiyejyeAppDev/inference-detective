@@ -5,6 +5,9 @@ import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { toast } from 'sonner'
 import { createClient } from '@/lib/supabase/client'
+import Button from '@/components/ui/Button'
+import Input from '@/components/ui/Input'
+import Card from '@/components/ui/Card'
 
 export default function ResetPasswordPage() {
   const router = useRouter()
@@ -88,7 +91,7 @@ export default function ResetPasswordPage() {
           <p className="text-stone-500 text-sm">비밀번호 재설정</p>
         </div>
 
-        <div className="border border-exam-rule bg-white p-6">
+        <Card className="p-6">
           <h2 className="text-lg font-semibold text-exam-ink mb-5">새 비밀번호 입력</h2>
 
           <form onSubmit={handleReset} className="space-y-4">
@@ -96,13 +99,12 @@ export default function ResetPasswordPage() {
               <label className="block text-xs font-medium text-stone-500 mb-1.5">
                 새 비밀번호
               </label>
-              <input
+              <Input
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 minLength={8}
-                className="w-full rounded-lg border border-exam-rule bg-white px-3 py-2.5 text-sm text-exam-ink placeholder-stone-400 focus:border-exam-ink focus:outline-none transition-colors"
                 placeholder="8자 이상"
               />
             </div>
@@ -111,26 +113,21 @@ export default function ResetPasswordPage() {
               <label className="block text-xs font-medium text-stone-500 mb-1.5">
                 비밀번호 확인
               </label>
-              <input
+              <Input
                 type="password"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 required
                 minLength={8}
-                className="w-full rounded-lg border border-exam-rule bg-white px-3 py-2.5 text-sm text-exam-ink placeholder-stone-400 focus:border-exam-ink focus:outline-none transition-colors"
                 placeholder="비밀번호 재입력"
               />
             </div>
 
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full py-2.5 bg-exam-ink text-white text-sm font-bold hover:bg-stone-800 transition-colors disabled:opacity-50"
-            >
+            <Button variant="primary" size="lg" fullWidth loading={loading} type="submit">
               {loading ? '변경 중...' : '비밀번호 변경'}
-            </button>
+            </Button>
           </form>
-        </div>
+        </Card>
       </motion.div>
     </div>
   )

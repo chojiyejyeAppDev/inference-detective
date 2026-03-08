@@ -9,6 +9,8 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from 'recharts'
+import Card from '@/components/ui/Card'
+import { CHART_COLORS } from '@/lib/design-tokens'
 
 interface DataPoint {
   date: string
@@ -42,7 +44,7 @@ function CustomTooltip({ active, payload, label }: { active?: boolean; payload?:
 
 export default function AccuracyChart({ data }: AccuracyChartProps) {
   return (
-    <div className="border border-exam-rule bg-white p-5">
+    <Card>
       <h3 className="text-sm font-exam-serif font-semibold text-exam-ink mb-4">정확도 추이</h3>
       {data.length === 0 ? (
         <div className="h-40 flex items-center justify-center text-stone-500 text-sm">
@@ -63,17 +65,17 @@ export default function AccuracyChart({ data }: AccuracyChartProps) {
       ) : (
         <ResponsiveContainer width="100%" height={180} aria-label="정확도 추이 차트">
           <LineChart data={data} margin={{ top: 5, right: 5, bottom: 5, left: -20 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#E7E5E0" />
+            <CartesianGrid strokeDasharray="3 3" stroke={CHART_COLORS.grid} />
             <XAxis
               dataKey="date"
-              tick={{ fill: '#78716C', fontSize: 10 }}
+              tick={{ fill: CHART_COLORS.muted, fontSize: 10 }}
               axisLine={false}
               tickLine={false}
             />
             <YAxis
               domain={[0, 1]}
               tickFormatter={(v) => `${Math.round(v * 100)}%`}
-              tick={{ fill: '#78716C', fontSize: 10 }}
+              tick={{ fill: CHART_COLORS.muted, fontSize: 10 }}
               axisLine={false}
               tickLine={false}
             />
@@ -81,14 +83,14 @@ export default function AccuracyChart({ data }: AccuracyChartProps) {
             <Line
               type="monotone"
               dataKey="accuracy"
-              stroke="#1C1917"
+              stroke={CHART_COLORS.ink}
               strokeWidth={2}
-              dot={{ fill: '#C22D2D', r: 3 }}
-              activeDot={{ r: 5, fill: '#C22D2D' }}
+              dot={{ fill: CHART_COLORS.red, r: 3 }}
+              activeDot={{ r: 5, fill: CHART_COLORS.red }}
             />
           </LineChart>
         </ResponsiveContainer>
       )}
-    </div>
+    </Card>
   )
 }

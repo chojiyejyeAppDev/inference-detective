@@ -2,6 +2,8 @@
 
 import { useState } from 'react'
 import { Copy, Check, Gift, Lightbulb, Users } from 'lucide-react'
+import Button from '@/components/ui/Button'
+import Card from '@/components/ui/Card'
 
 interface InviteSectionProps {
   inviteCode: string
@@ -20,7 +22,7 @@ export default function InviteSection({ inviteCode, appUrl, isPremium }: InviteS
   }
 
   return (
-    <div className="mt-6 border border-exam-rule bg-white p-5">
+    <Card className="mt-6">
       <div className="flex items-center gap-2 mb-2">
         <Users size={14} className="text-exam-ink" />
         <h3 className="text-sm font-exam-serif font-semibold text-exam-ink">친구 초대하기</h3>
@@ -50,26 +52,19 @@ export default function InviteSection({ inviteCode, appUrl, isPremium }: InviteS
         <code className="flex-1 border border-exam-rule bg-bg-base px-3 py-2 text-xs text-exam-ink truncate font-mono">
           {link}
         </code>
-        <button
+        <Button
+          variant="secondary"
+          size="sm"
           onClick={copyLink}
-          className="px-3 py-2 border border-exam-rule text-exam-ink text-xs hover:bg-bg-base transition-colors shrink-0 flex items-center gap-1"
+          icon={copied ? <Check size={12} className="text-green-700" /> : <Copy size={12} />}
+          className="shrink-0"
         >
-          {copied ? (
-            <>
-              <Check size={12} className="text-green-700" />
-              복사됨
-            </>
-          ) : (
-            <>
-              <Copy size={12} />
-              복사
-            </>
-          )}
-        </button>
+          {copied ? '복사됨' : '복사'}
+        </Button>
       </div>
       <p className="text-xs text-stone-400 mt-2">
         내 초대 코드: <span className="text-exam-ink font-mono">{inviteCode}</span>
       </p>
-    </div>
+    </Card>
   )
 }

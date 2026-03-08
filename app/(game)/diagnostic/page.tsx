@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Zap, ArrowRight, CheckCircle2, XCircle, Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
+import Button from '@/components/ui/Button'
 import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd'
 
 interface DiagnosticQuestion {
@@ -169,14 +170,16 @@ export default function DiagnosticPage() {
                   <span className="text-stone-500">사용 불가</span>
                 </div>
               </div>
-              <button
+              <Button
+                variant="primary"
+                size="lg"
+                loading={loading}
                 onClick={startTest}
-                disabled={loading}
-                className="px-8 py-3 bg-exam-ink text-white font-black text-sm hover:bg-stone-800 transition-colors disabled:opacity-50 flex items-center gap-2 mx-auto"
+                icon={loading ? undefined : <Zap size={16} />}
+                className="mx-auto font-black"
               >
-                {loading ? <Loader2 size={16} className="animate-spin" /> : <Zap size={16} />}
                 {loading ? '준비 중...' : '테스트 시작'}
-              </button>
+              </Button>
               <button
                 onClick={() => router.push('/levels')}
                 className="text-stone-500 text-xs hover:text-stone-400 transition-colors"
@@ -295,28 +298,34 @@ export default function DiagnosticPage() {
 
               {/* Navigation */}
               <div className="flex items-center justify-between pt-4">
-                <button
-                  onClick={() => setCurrentIndex(Math.max(0, currentIndex - 1))}
+                <Button
+                  variant="secondary"
+                  size="sm"
                   disabled={currentIndex === 0}
-                  className="px-4 py-2 rounded-lg border border-exam-rule text-stone-500 text-xs hover:text-exam-ink transition-colors disabled:opacity-30"
+                  onClick={() => setCurrentIndex(Math.max(0, currentIndex - 1))}
                 >
                   이전
-                </button>
+                </Button>
                 {currentIndex < questions.length - 1 ? (
-                  <button
+                  <Button
+                    variant="secondary"
+                    size="sm"
                     onClick={() => setCurrentIndex(currentIndex + 1)}
-                    className="px-4 py-2 rounded-lg bg-stone-100 border border-exam-rule text-exam-ink text-xs font-semibold hover:bg-stone-200 transition-colors flex items-center gap-1"
+                    icon={<ArrowRight size={12} />}
+                    className="bg-stone-100 hover:bg-stone-200 font-semibold"
                   >
-                    다음 <ArrowRight size={12} />
-                  </button>
+                    다음
+                  </Button>
                 ) : (
-                  <button
-                    onClick={submitAll}
+                  <Button
+                    variant="primary"
+                    size="md"
                     disabled={!questions.every((q) => (chains[q.id] ?? []).length > 0)}
-                    className="px-6 py-2.5 bg-exam-ink text-white text-xs font-black hover:bg-stone-800 transition-colors disabled:opacity-40"
+                    onClick={submitAll}
+                    className="font-black"
                   >
                     결과 확인
-                  </button>
+                  </Button>
                 )}
               </div>
             </motion.div>
@@ -381,12 +390,9 @@ export default function DiagnosticPage() {
                 </div>
               </div>
 
-              <button
-                onClick={() => router.push('/levels')}
-                className="px-8 py-3 bg-exam-ink text-white font-black text-sm hover:bg-stone-800 transition-colors"
-              >
+              <Button variant="primary" size="lg" onClick={() => router.push('/levels')} className="font-black">
                 레벨 선택으로 돌아가기
-              </button>
+              </Button>
             </motion.div>
           )}
         </AnimatePresence>
