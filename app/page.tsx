@@ -11,29 +11,29 @@ import { createClient } from '@/lib/supabase/client'
 const FEATURES = [
   {
     icon: Brain,
-    title: '추론 체인 조립',
-    desc: '흩어진 문장을 논리 순서로 드래그해 이어붙이세요. 수능 지문의 흐름이 눈에 들어옵니다.',
+    title: '수능 기출 패턴 기반',
+    desc: '실제 수능·모의고사 비문학 논리 구조를 재현한 문제로 훈련해요. 단순 독해가 아닌 추론 조립이에요.',
     color: 'amber',
   },
   {
     icon: Target,
-    title: '7단계 레벨업',
-    desc: '3단계 추론부터 7단계까지. 3회 연속 80% 이상이면 다음 레벨로 자동 승급됩니다.',
+    title: '약점 자동 분석',
+    desc: '어떤 주제, 어떤 추론 단계에서 자주 틀리는지 AI가 분석하고 집중 연습을 추천해줘요.',
     color: 'amber',
   },
   {
     icon: TrendingUp,
-    title: '성장 대시보드',
-    desc: '정확도 추이, 오류 패턴, 힌트 의존도를 분석해 약점을 정확히 파악하세요.',
+    title: '7단계 점진적 난이도',
+    desc: '3슬롯 입문부터 7슬롯 마스터까지. 80% 이상 3회 연속 달성하면 자동 레벨업돼요.',
     color: 'amber',
   },
 ]
 
 const STEPS = [
-  { n: '01', title: '지문 읽기', desc: '왼쪽 패널에서 수능 비문학 지문을 꼼꼼히 읽습니다' },
-  { n: '02', title: '카드 배치', desc: '오른쪽 슬롯에 문장 카드를 논리 순서로 드래그합니다' },
-  { n: '03', title: '연결 확인', desc: '🟢🟡🔴 표시로 추론 연결 강도를 실시간 확인합니다' },
-  { n: '04', title: '즉시 피드백', desc: '정확도와 어느 단계가 틀렸는지 바로 알려드립니다' },
+  { n: '01', title: '지문 읽기', desc: '왼쪽 패널에서 수능 비문학 지문을 꼼꼼히 읽어요' },
+  { n: '02', title: '카드 배치', desc: '오른쪽 슬롯에 문장 카드를 논리 순서로 드래그해요' },
+  { n: '03', title: '연결 확인', desc: '🟢🟡🔴 표시로 추론 연결 강도를 실시간 확인해요' },
+  { n: '04', title: '즉시 피드백', desc: '정확도와 어느 단계가 틀렸는지 바로 알려줘요' },
 ]
 
 const STATS = [
@@ -47,7 +47,6 @@ const DEMO_CARDS = [
   { id: 'a', text: '정보 수용 방식이 인식에 영향을 준다' },
   { id: 'c', text: '따라서 리터러시 교육이 필요하다' },
 ]
-const DEMO_CORRECT_ORDER = ['a', 'b', 'c']
 const DEMO_LABELS: Record<string, string> = {
   a: '정보 수용 방식이 인식에 영향을 준다',
   b: '인식 체계가 판단력을 결정한다',
@@ -136,7 +135,7 @@ function LandingDemo() {
           <div className="rounded-xl bg-slate-900/70 border border-white/[0.05] p-3.5 text-xs text-slate-400 leading-[1.7]">
             현대 사회에서 정보는 단순한 사실의 집합이 아니라 의미를 구성하는 체계이다. 특히 디지털 환경에서 정보의 수용과 해석은 개인의 인식 체계와 밀접하게 연결되어 있다.
           </div>
-          <div className="rounded-xl bg-amber-500/8 border border-amber-500/25 p-3.5 text-xs text-amber-300/90 leading-[1.7]">
+          <div className="rounded-xl bg-amber-500/5 border border-amber-500/30 p-3.5 text-xs text-amber-300/90 leading-[1.7]">
             <span className="font-bold text-amber-400">결론 —</span>{' '}
             디지털 리터러시는 현대인의 필수 역량이다.
           </div>
@@ -267,7 +266,7 @@ export default function LandingPage() {
       <nav className="sticky top-0 z-50 border-b border-white/[0.06] bg-bg-base/90 backdrop-blur-md">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <div className="w-7 h-7 rounded-lg bg-amber-500 flex items-center justify-center shadow-lg shadow-amber-500/30">
+            <div className="w-7 h-7 rounded-lg bg-amber-500 flex items-center justify-center shadow-md shadow-amber-500/25">
               <span className="text-slate-900 font-black text-xs">르</span>
             </div>
             <span className="font-bold text-base tracking-tight">이:르다</span>
@@ -289,7 +288,7 @@ export default function LandingPage() {
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             aria-label={mobileMenuOpen ? '메뉴 닫기' : '메뉴 열기'}
             aria-expanded={mobileMenuOpen}
-            className="sm:hidden p-1.5 text-slate-400 hover:text-slate-200 transition-colors"
+            className="sm:hidden p-2.5 -m-1 text-slate-400 hover:text-slate-200 transition-colors"
           >
             {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
           </button>
@@ -350,14 +349,14 @@ export default function LandingPage() {
             initial={{ opacity: 0, scale: 0.85 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.4, delay: 0.15 }}
-            className="inline-flex items-center gap-2 rounded-full border border-amber-500/35 bg-amber-500/10 px-4 py-1.5 text-xs text-amber-400 font-semibold mb-7 shadow-inner shadow-amber-500/10"
+            className="inline-flex items-center gap-1 rounded-full border border-amber-500/30 bg-amber-500/10 px-4 py-1.5 text-xs text-amber-400 font-semibold mb-7 shadow-inner shadow-amber-500/10"
           >
             <Zap size={11} className="fill-amber-400" />
             수능 비문학 추론 훈련 앱
           </motion.div>
 
           {/* Headline */}
-          <h1 className="text-[2.6rem] sm:text-[3.4rem] font-black leading-[1.12] tracking-tight mb-6">
+          <h1 className="text-[2.6rem] sm:text-[3.4rem] font-black leading-[1.12] tracking-[-0.015em] mb-6">
             수능 비문학,
             <br />
             <span className="text-shimmer">추론을 직접 조립하며</span>
@@ -381,7 +380,7 @@ export default function LandingPage() {
             </Link>
             <Link
               href="/demo"
-              className="flex items-center gap-2 px-9 py-3.5 rounded-xl border border-white/10 text-slate-300 font-medium text-base hover:border-white/20 hover:bg-white/[0.04] transition-all"
+              className="flex items-center gap-1.5 px-9 py-3.5 rounded-xl border border-white/10 text-slate-300 font-medium text-base hover:border-white/20 hover:bg-white/[0.04] transition-all"
             >
               바로 체험하기
               <ChevronRight size={14} className="text-slate-500" />
@@ -400,6 +399,10 @@ export default function LandingPage() {
           transition={{ duration: 0.85, delay: 0.28, ease: [0.25, 0.46, 0.45, 0.94] }}
           className="animate-float-y mt-16 relative z-10"
         >
+          <p className="text-xs text-slate-500 mb-3 flex items-center justify-center gap-1.5">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+            실제 플레이 미리보기
+          </p>
           <LandingDemo />
           {/* Bottom glow reflection */}
           <div
@@ -460,13 +463,13 @@ export default function LandingPage() {
               <motion.div
                 key={f.title}
                 variants={item}
-                className="group rounded-2xl border border-white/[0.08] bg-bg-surface/60 p-6 hover:border-amber-500/30 hover:bg-amber-500/[0.04] transition-all duration-300"
+                className="group rounded-2xl border border-white/[0.08] bg-bg-surface/60 p-6 hover:border-amber-500/30 hover:bg-amber-500/5 transition-all duration-300"
               >
-                <div className="w-11 h-11 rounded-xl bg-amber-500/12 border border-amber-500/20 flex items-center justify-center mb-5 group-hover:bg-amber-500/20 group-hover:border-amber-500/40 transition-all">
+                <div className="w-11 h-11 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center mb-5 group-hover:bg-amber-500/20 group-hover:border-amber-500/50 transition-all">
                   <f.icon size={19} className="text-amber-400" />
                 </div>
                 <h3 className="font-bold text-slate-100 mb-2.5 text-base">{f.title}</h3>
-                <p className="text-sm text-slate-500 leading-relaxed">{f.desc}</p>
+                <p className="text-sm text-slate-400 leading-relaxed">{f.desc}</p>
               </motion.div>
             ))}
           </motion.div>
@@ -499,11 +502,11 @@ export default function LandingPage() {
                 transition={{ delay: i * 0.1 }}
                 className="text-center relative"
               >
-                <div className="w-10 h-10 rounded-full bg-bg-base border-2 border-amber-500/40 flex items-center justify-center text-xs font-black text-amber-400 mx-auto mb-4 relative z-10">
+                <div className="w-10 h-10 rounded-full bg-bg-base border-2 border-amber-500/50 flex items-center justify-center text-xs font-black text-amber-400 mx-auto mb-4 relative z-10">
                   {s.n}
                 </div>
                 <p className="font-bold text-sm text-slate-200 mb-1.5">{s.title}</p>
-                <p className="text-xs text-slate-500 leading-relaxed">{s.desc}</p>
+                <p className="text-xs text-slate-400 leading-relaxed">{s.desc}</p>
               </motion.div>
             ))}
           </div>
@@ -553,7 +556,7 @@ export default function LandingPage() {
             {/* Premium */}
             <motion.div
               variants={item}
-              className="animate-level-pulse rounded-2xl border border-amber-500/45 bg-gradient-to-b from-amber-500/8 to-amber-500/3 p-7 text-left relative overflow-hidden"
+              className="animate-level-pulse rounded-2xl border border-amber-500/50 bg-gradient-to-b from-amber-500/5 to-amber-500/5 p-7 text-left relative overflow-hidden"
             >
               <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-amber-500/50 to-transparent" />
               <div className="flex items-center justify-between mb-4">
@@ -597,7 +600,7 @@ export default function LandingPage() {
             ].map((stat) => (
               <div key={stat.label}>
                 <p className="text-2xl sm:text-3xl font-black text-amber-400">{stat.value}</p>
-                <p className="text-xs text-slate-500 mt-1">{stat.label}</p>
+                <p className="text-xs text-slate-400 mt-1">{stat.label}</p>
               </div>
             ))}
           </motion.div>
@@ -648,7 +651,7 @@ export default function LandingPage() {
                 className="rounded-2xl border border-white/[0.08] bg-bg-surface/60 p-6"
               >
                 <div className="flex items-center gap-3 mb-4">
-                  <div className="w-9 h-9 rounded-full bg-amber-500/15 border border-amber-500/25 flex items-center justify-center text-amber-400 font-black text-xs">
+                  <div className="w-9 h-9 rounded-full bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400 font-black text-xs">
                     {t.name[0]}
                   </div>
                   <div>
@@ -670,7 +673,7 @@ export default function LandingPage() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.55 }}
-          className="relative rounded-3xl border border-amber-500/30 bg-gradient-to-b from-amber-500/[0.07] to-amber-500/[0.02] p-8 sm:p-14 text-center overflow-hidden"
+          className="relative rounded-3xl border border-amber-500/30 bg-gradient-to-b from-amber-500/5 to-amber-500/5 p-8 sm:p-14 text-center overflow-hidden"
         >
           {/* Top glow line */}
           <div className="absolute top-0 left-1/2 -translate-x-1/2 w-1/2 h-px bg-gradient-to-r from-transparent via-amber-500/60 to-transparent" />
@@ -683,7 +686,7 @@ export default function LandingPage() {
             </p>
             <Link
               href="/signup"
-              className="animate-cta-glow inline-flex items-center gap-2.5 px-11 py-4 rounded-2xl bg-amber-500 text-slate-900 font-black text-base hover:bg-amber-400 transition-all hover:scale-105 shadow-2xl shadow-amber-500/30"
+              className="animate-cta-glow inline-flex items-center gap-2 px-11 py-4 rounded-xl bg-amber-500 text-slate-900 font-black text-base hover:bg-amber-400 transition-all hover:scale-105 shadow-2xl shadow-amber-500/30"
             >
               무료로 시작하기
               <ArrowRight size={17} />

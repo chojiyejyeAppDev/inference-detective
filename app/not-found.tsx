@@ -4,7 +4,7 @@ export default function NotFound() {
   return (
     <div className="min-h-screen bg-[#0C1628] flex items-center justify-center px-4">
       <div className="text-center">
-        <div className="w-16 h-16 rounded-2xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center mx-auto mb-6">
+        <div className="w-16 h-16 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center mx-auto mb-6">
           <span className="text-3xl font-black text-amber-400">?</span>
         </div>
         <h1 className="text-2xl font-black text-white mb-2">페이지를 찾을 수 없어요</h1>

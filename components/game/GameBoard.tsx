@@ -283,7 +283,7 @@ export default function GameBoard({
             <span className="text-slate-500 hidden sm:inline">·</span>
             <span className="text-sm text-slate-400 truncate hidden sm:inline">{levelConfig.name}</span>
             <span className="text-slate-500 hidden sm:inline">·</span>
-            <span className="text-xs text-slate-500 shrink-0">{levelConfig.slots}단계</span>
+            <span className="text-xs text-slate-400 shrink-0">{levelConfig.slots}단계</span>
             {isReviewMode && (
               <span className="text-[10px] font-bold text-blue-400 bg-blue-500/15 px-1.5 py-0.5 rounded-full border border-blue-500/30">
                 복습
@@ -302,7 +302,7 @@ export default function GameBoard({
                 {dailyRemaining}개 남음
               </span>
             )}
-            <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-1">
               <Lightbulb size={12} className="text-amber-400" />
               <span className="text-amber-400 font-semibold">{hintPoints}</span>
               <span className="hidden sm:inline">힌트 포인트</span>
@@ -330,7 +330,7 @@ export default function GameBoard({
           <div className="flex-1 flex flex-col gap-4 min-w-0 overflow-y-auto">
             {/* Sentence pool */}
             <div>
-              <p className="text-[10px] font-semibold text-slate-500 tracking-widest uppercase mb-2 px-1">
+              <p className="text-[10px] font-semibold text-slate-400 tracking-widest uppercase mb-2 px-1">
                 문장 카드 — 끌어서 배치하거나 클릭하여 선택
               </p>
               <Droppable droppableId="pool" direction="vertical">
@@ -344,7 +344,7 @@ export default function GameBoard({
                     ].join(' ')}
                   >
                     {pool.length === 0 ? (
-                      <div className="flex items-center justify-center h-12 text-xs text-slate-500 italic">
+                      <div className="flex items-center justify-center h-12 text-xs text-slate-400 italic">
                         모든 문장이 슬롯에 배치되었어요
                       </div>
                     ) : (
@@ -367,7 +367,7 @@ export default function GameBoard({
             {/* Divider */}
             <div className="flex items-center gap-3">
               <div className="flex-1 h-px bg-slate-800" />
-              <span className="text-[10px] font-semibold text-slate-500 tracking-widest uppercase">
+              <span className="text-[10px] font-semibold text-slate-400 tracking-widest uppercase">
                 추론 경로 조립
               </span>
               <div className="flex-1 h-px bg-slate-800" />
@@ -471,7 +471,7 @@ export default function GameBoard({
                   {evaluationResult.level_progress && !evaluationResult.level_up && levelConfig.level < 7 && (
                     <div className="mt-3 pt-3 border-t border-slate-700/50">
                       <div className="flex items-center justify-between mb-1.5">
-                        <span className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider">
+                        <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
                           레벨업 진행
                         </span>
                         <span className="text-[10px] text-slate-400">
@@ -491,7 +491,7 @@ export default function GameBoard({
                           />
                         ))}
                       </div>
-                      <p className="text-[10px] text-slate-500 mt-1">
+                      <p className="text-[10px] text-slate-400 mt-1">
                         최근 {evaluationResult.level_progress.required}세션 중 80% 이상 정확도를 모두 달성하면 레벨업
                       </p>
                       {levelConfig.level === 6 && (
@@ -566,7 +566,7 @@ export default function GameBoard({
                             ? '힌트 포인트 부족'
                             : undefined
                       }
-                      className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg border border-amber-500/30 bg-amber-500/10 text-amber-400 text-sm font-medium hover:bg-amber-500/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-amber-500/30 bg-amber-500/10 text-amber-400 text-sm font-medium hover:bg-amber-500/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       <Lightbulb size={14} />
                       {isHintLoading ? '로딩...' : '힌트'}
@@ -575,7 +575,7 @@ export default function GameBoard({
                       onClick={handleUndo}
                       disabled={history.length === 0}
                       aria-label="마지막 동작 되돌리기"
-                      className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-lg border border-slate-700 text-slate-400 text-sm hover:border-slate-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl border border-slate-700 text-slate-400 text-sm hover:border-slate-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       <Undo2 size={13} />
                       되돌리기
@@ -588,14 +588,14 @@ export default function GameBoard({
                         onReset()
                       }}
                       aria-label="모든 배치 초기화"
-                      className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-lg border border-slate-700 text-slate-400 text-sm hover:border-slate-600 transition-colors"
+                      className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl border border-slate-700 text-slate-400 text-sm hover:border-slate-600 transition-colors"
                     >
                       <RefreshCw size={13} />
                       초기화
                     </button>
                   </div>
                   {hintPoints <= 0 && levelConfig.level !== 7 && (
-                    <p className="text-[11px] text-slate-500 mt-1">
+                    <p className="text-[11px] text-slate-400 mt-1">
                       힌트 포인트가 없어요. 매일 +3 자동 충전되고, 정답 시 +1 보너스를 받아요.
                     </p>
                   )}
@@ -604,7 +604,7 @@ export default function GameBoard({
                     disabled={!isChainComplete || isSubmitting}
                     aria-label="추론 경로 제출"
                     aria-busy={isSubmitting}
-                    className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-amber-500 text-slate-900 text-sm font-bold hover:bg-amber-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-amber-500 text-slate-900 text-sm font-bold hover:bg-amber-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {isSubmitting ? (
                       <Loader2 size={14} className="animate-spin" />
@@ -615,30 +615,42 @@ export default function GameBoard({
                   </button>
                 </>
               ) : (
-                <div className="flex gap-2 sm:gap-3">
-                  {!evaluationResult.is_correct && (
+                <>
+                  <div className="flex gap-2 sm:gap-3">
+                    {!evaluationResult.is_correct && (
+                      <button
+                        onClick={() => {
+                          setChain(Array(levelConfig.slots).fill(null))
+                          setPool(question.sentences)
+                          setHistory([])
+                          setShowCorrectAnswer(false)
+                          onReset()
+                        }}
+                        className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-slate-600 text-slate-300 text-sm font-medium hover:bg-white/[0.04] transition-colors"
+                      >
+                        <RefreshCw size={14} />
+                        다시 풀기
+                      </button>
+                    )}
                     <button
-                      onClick={() => {
-                        setChain(Array(levelConfig.slots).fill(null))
-                        setPool(question.sentences)
-                        setHistory([])
-                        setShowCorrectAnswer(false)
-                        onReset()
-                      }}
-                      className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg border border-slate-600 text-slate-300 text-sm font-medium hover:bg-white/[0.04] transition-colors"
+                      onClick={onNextQuestion}
+                      className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-amber-500 text-slate-900 text-sm font-bold hover:bg-amber-400 transition-colors"
                     >
-                      <RefreshCw size={14} />
-                      다시 풀기
+                      다음 문제
+                      <ChevronRight size={14} />
                     </button>
+                  </div>
+
+                  {/* Dashboard link for premium users */}
+                  {dailyRemaining === null && (
+                    <Link
+                      href="/dashboard"
+                      className="block text-center text-xs text-slate-500 hover:text-slate-400 transition-colors mt-2"
+                    >
+                      성장 분석 보기 →
+                    </Link>
                   )}
-                  <button
-                    onClick={onNextQuestion}
-                    className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-amber-500 text-slate-900 text-sm font-bold hover:bg-amber-400 transition-colors"
-                  >
-                    다음 문제
-                    <ChevronRight size={14} />
-                  </button>
-                </div>
+                </>
               )}
             </div>
           </div>

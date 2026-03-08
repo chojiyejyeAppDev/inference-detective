@@ -81,7 +81,7 @@ export default function ReviewList({ items }: ReviewListProps) {
               className={[
                 'px-3 py-1.5 rounded-lg text-xs font-medium transition-colors',
                 filter === key
-                  ? 'bg-amber-500/15 text-amber-400 border border-amber-500/30'
+                  ? 'bg-amber-500/10 text-amber-400 border border-amber-500/30'
                   : 'text-slate-400 border border-slate-700 hover:border-slate-600',
               ].join(' ')}
             >

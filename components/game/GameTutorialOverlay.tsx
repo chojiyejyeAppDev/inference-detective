@@ -150,7 +150,7 @@ export default function GameTutorialOverlay({ forceOpen, onClose }: Props) {
           </div>
 
           {/* Icon */}
-          <div className="w-14 h-14 rounded-2xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center mb-4">
+          <div className="w-14 h-14 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center mb-4">
             <Icon size={24} className="text-amber-400" />
           </div>
 
@@ -177,7 +177,7 @@ export default function GameTutorialOverlay({ forceOpen, onClose }: Props) {
                   <motion.div
                     animate={{ y: [0, 40, 40, 0], x: [0, 0, 0, 0], scale: [1, 1.05, 1, 1] }}
                     transition={{ duration: 2.5, repeat: Infinity, repeatDelay: 1, ease: 'easeInOut' }}
-                    className="absolute top-2 left-1/2 -translate-x-1/2 w-36 h-8 rounded-lg bg-amber-500/20 border border-amber-500/40 flex items-center justify-center gap-1.5"
+                    className="absolute top-2 left-1/2 -translate-x-1/2 w-36 h-8 rounded-lg bg-amber-500/20 border border-amber-500/50 flex items-center justify-center gap-1.5"
                   >
                     <GripVertical size={10} className="text-amber-400/60" />
                     <span className="text-[10px] text-amber-300 font-medium">문장 카드</span>
@@ -205,7 +205,7 @@ export default function GameTutorialOverlay({ forceOpen, onClose }: Props) {
             </button>
             <button
               onClick={nextStep}
-              className="px-5 py-2 rounded-xl bg-amber-500 text-slate-900 text-sm font-bold hover:bg-amber-400 transition-colors"
+              className="px-5 py-2 rounded-lg bg-amber-500 text-slate-900 text-sm font-bold hover:bg-amber-400 transition-colors"
             >
               {step < STEPS.length - 1 ? '다음' : '시작하기'}
             </button>

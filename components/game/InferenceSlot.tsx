@@ -64,7 +64,7 @@ export default function InferenceSlot({
             snapshot.isDraggingOver
               ? 'border-amber-400 bg-amber-500/10 scale-[1.01]'
               : isSelected
-                ? 'border-amber-400 bg-amber-500/15 ring-2 ring-amber-400/50'
+                ? 'border-amber-400 bg-amber-500/10 ring-2 ring-amber-400/50'
                 : hasSelection && !sentence && !isEvaluated
                   ? 'border-amber-400/50 bg-amber-500/5 animate-pulse'
                   : feedbackColor,
@@ -87,7 +87,12 @@ export default function InferenceSlot({
           </div>
 
           {/* Content */}
-          <div className="px-5 py-2.5 sm:py-3 min-h-[48px] sm:min-h-[60px] flex items-center">
+          <motion.div
+            className="px-5 py-2.5 sm:py-3 min-h-[48px] sm:min-h-[60px] flex items-center"
+            animate={sentence ? { scale: [1, 1.02, 1] } : {}}
+            transition={{ duration: 0.2 }}
+            key={sentence?.id ?? 'empty'}
+          >
             <AnimatePresence mode="wait">
               {sentence ? (
                 <Draggable draggableId={sentence.id} index={0} isDragDisabled={isEvaluated}>
@@ -113,7 +118,7 @@ export default function InferenceSlot({
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
-                  className="text-sm text-slate-500 italic"
+                  className="text-sm text-slate-400 italic"
                 >
                   {snapshot.isDraggingOver
                     ? '여기에 놓으세요'
@@ -123,7 +128,7 @@ export default function InferenceSlot({
                 </motion.span>
               )}
             </AnimatePresence>
-          </div>
+          </motion.div>
 
           {/* Feedback hint */}
           {isEvaluated && feedback?.hint && !feedback.is_correct && (

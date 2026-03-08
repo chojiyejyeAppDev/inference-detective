@@ -60,10 +60,6 @@ export default function DemoPage() {
   const [pool, setPool] = useState<Sentence[]>(DEMO_QUESTION.sentences)
   const [result, setResult] = useState<EvaluationResult | null>(null)
 
-  const filledSentences = chain
-    .filter(Boolean)
-    .map((id) => DEMO_QUESTION.sentences.find((s) => s.id === id)!)
-    .filter(Boolean)
   const connectionMap = buildConnectionMap(
     chain.map((id) => (id ? DEMO_QUESTION.sentences.find((s) => s.id === id) ?? null : null)),
   )
@@ -155,7 +151,7 @@ export default function DemoPage() {
               </div>
 
               {/* Conclusion */}
-              <div className="rounded-xl border border-amber-500/25 bg-amber-500/[0.06] p-4">
+              <div className="rounded-xl border border-amber-500/30 bg-amber-500/5 p-4">
                 <span className="text-xs font-bold text-amber-400">결론 — </span>
                 <span className="text-xs text-amber-300/90">{DEMO_QUESTION.conclusion}</span>
               </div>
@@ -272,12 +268,12 @@ export default function DemoPage() {
               </div>
 
               {/* CTA */}
-              <div className="rounded-xl border border-amber-500/20 bg-amber-500/[0.04] p-4 text-center">
+              <div className="rounded-xl border border-amber-500/30 bg-amber-500/5 p-4 text-center">
                 <p className="text-sm text-slate-300 font-medium mb-1">매일 5문제 무료!</p>
                 <p className="text-xs text-slate-500 mb-3">회원가입하면 7레벨까지 도전하고 성장 기록을 확인할 수 있어요.</p>
                 <Link
                   href="/signup"
-                  className="inline-flex items-center gap-1.5 px-5 py-2 rounded-lg bg-amber-500 text-slate-900 text-xs font-bold hover:bg-amber-400 transition-colors"
+                  className="inline-flex items-center gap-1 px-5 py-2 rounded-lg bg-amber-500 text-slate-900 text-xs font-bold hover:bg-amber-400 transition-colors"
                 >
                   무료로 시작하기 <ArrowRight size={12} />
                 </Link>

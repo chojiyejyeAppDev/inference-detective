@@ -1,7 +1,7 @@
 'use client'
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useState, useEffect, useRef } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { toast } from 'sonner'
 import { User, CreditCard, Lightbulb, LogOut, Star, Copy, Check } from 'lucide-react'
@@ -27,10 +27,19 @@ export default function SettingsForm({
   inviteCode,
 }: SettingsFormProps) {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const setupNickname = searchParams.get('setup_nickname') === 'true'
+  const nicknameInputRef = useRef<HTMLInputElement>(null)
   const [nickname, setNickname] = useState(initialNickname)
   const [saving, setSaving] = useState(false)
   const [copied, setCopied] = useState(false)
   const isActive = subscriptionStatus === 'active'
+
+  useEffect(() => {
+    if (setupNickname && nicknameInputRef.current) {
+      nicknameInputRef.current.focus()
+    }
+  }, [setupNickname])
 
   const NICKNAME_RE = /^[가-힣a-zA-Z0-9_ ]+$/
 
@@ -55,7 +64,11 @@ export default function SettingsForm({
       toast.error('닉네임 변경에 실패했어요.')
     } else {
       toast.success('닉네임이 변경되었어요!')
-      router.refresh()
+      if (setupNickname) {
+        router.replace('/settings')
+      } else {
+        router.refresh()
+      }
     }
   }
 
@@ -65,17 +78,20 @@ export default function SettingsForm({
     window.location.href = '/login'
   }
 
-  function handleCopyInvite() {
-    navigator.clipboard.writeText(inviteCode).then(() => {
-      setCopied(true)
-      setTimeout(() => setCopied(false), 2000)
-    })
-  }
 
   return (
     <div className="min-h-screen bg-bg-base px-4 sm:px-6 py-8 sm:py-10">
       <div className="max-w-md mx-auto space-y-5">
         <h1 className="text-xl font-bold text-white">설정</h1>
+
+        {setupNickname && (
+          <div className="rounded-2xl border border-amber-500/30 bg-amber-500/10 p-4">
+            <p className="text-sm font-semibold text-amber-300">환영해요! 닉네임을 설정해 주세요</p>
+            <p className="text-xs text-amber-400/70 mt-1">
+              다른 학습자에게 보여질 이름이에요. 언제든 변경할 수 있어요.
+            </p>
+          </div>
+        )}
 
         {/* Profile */}
         <div className="rounded-2xl border border-slate-700 bg-slate-800/50 p-5 space-y-4">
@@ -93,10 +109,12 @@ export default function SettingsForm({
             <label className="block text-xs text-slate-500 mb-1">닉네임</label>
             <div className="flex gap-2">
               <input
+                ref={nicknameInputRef}
                 type="text"
                 value={nickname}
                 onChange={(e) => setNickname(e.target.value)}
                 maxLength={20}
+                placeholder={setupNickname ? '닉네임을 입력하세요' : undefined}
                 className="flex-1 rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-100 focus:border-amber-500 focus:outline-none transition-colors"
               />
               <button

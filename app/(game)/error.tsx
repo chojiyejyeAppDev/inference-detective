@@ -35,13 +35,13 @@ export default function GameError({
         <div className="flex gap-3 justify-center">
           <button
             onClick={reset}
-            className="px-5 py-2.5 rounded-lg bg-amber-500 text-slate-900 text-sm font-bold hover:bg-amber-400 transition-colors"
+            className="px-5 py-2.5 rounded-xl bg-amber-500 text-slate-900 text-sm font-bold hover:bg-amber-400 transition-colors"
           >
             다시 시도
           </button>
           <Link
             href="/levels"
-            className="px-5 py-2.5 rounded-lg border border-slate-700 text-slate-300 text-sm font-medium hover:bg-slate-800 transition-colors"
+            className="px-5 py-2.5 rounded-xl border border-slate-700 text-slate-300 text-sm font-medium hover:bg-slate-800 transition-colors"
           >
             레벨 선택
           </Link>

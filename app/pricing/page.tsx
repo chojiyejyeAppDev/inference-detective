@@ -242,7 +242,7 @@ export default function PricingPage() {
         router.push(`/subscription-complete?plan=${selectedPlan}${levelParam}`)
         router.refresh()
       }, 800)
-    } catch (err) {
+    } catch (_err) {
       toast.error('결제 처리 중 오류가 발생했어요.')
       setLoading(false)
       setPaymentStep('idle')
@@ -343,7 +343,7 @@ export default function PricingPage() {
                   className={[
                     'w-full flex items-center justify-between rounded-xl border px-4 py-3.5 transition-all duration-200 text-left relative overflow-hidden',
                     isSelected
-                      ? 'border-amber-500/60 bg-amber-500/[0.08]'
+                      ? 'border-amber-500/50 bg-amber-500/10'
                       : 'border-white/[0.07] hover:border-white/[0.13] hover:bg-white/[0.03]',
                   ].join(' ')}
                 >
@@ -555,15 +555,15 @@ export default function PricingPage() {
                 <div className="rounded-xl border border-amber-500/30 bg-amber-500/5 p-4 mb-4">
                   <p className="text-amber-300 font-semibold text-sm mb-2">지금 유지하면</p>
                   <ul className="space-y-1.5 text-xs text-slate-400">
-                    <li className="flex items-center gap-2">
+                    <li className="flex items-center gap-1">
                       <Check size={12} className="text-amber-400 shrink-0" />
                       무제한 문제 + 전체 힌트
                     </li>
-                    <li className="flex items-center gap-2">
+                    <li className="flex items-center gap-1">
                       <Check size={12} className="text-amber-400 shrink-0" />
                       성장 대시보드 & 오답 분석
                     </li>
-                    <li className="flex items-center gap-2">
+                    <li className="flex items-center gap-1">
                       <Check size={12} className="text-amber-400 shrink-0" />
                       레벨업 진행 상황 유지
                     </li>
@@ -580,6 +580,19 @@ export default function PricingPage() {
                   >
                     구독 유지하기
                   </button>
+                  {cancelReason === 'no_time' && (
+                    <button
+                      onClick={() => {
+                        closeCancelModal()
+                        toast.info('구독 일시정지는 준비 중이에요.', {
+                          description: '곧 1개월 일시정지 기능이 추가될 예정이에요. 그때까지 구독은 유지됩니다.',
+                        })
+                      }}
+                      className="w-full py-3 rounded-xl border border-slate-600 text-slate-300 text-sm font-medium hover:bg-slate-700/60 transition-colors"
+                    >
+                      1개월 일시정지 (준비 중)
+                    </button>
+                  )}
                   <button
                     onClick={() => setCancelStep('confirm')}
                     className="w-full py-3 rounded-xl text-slate-500 text-sm hover:text-slate-400 transition-colors"

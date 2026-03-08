@@ -173,8 +173,11 @@ function SignupForm() {
 
           {refCode && (
             <div className="mb-4 rounded-lg bg-amber-500/10 border border-amber-500/30 px-3 py-2.5">
-              <p className="text-xs text-amber-300">
-                🎁 초대 코드 <span className="font-bold">{refCode}</span> 적용됨 — 가입 후 보너스 문제 지급!
+              <p className="text-xs text-amber-300 font-semibold">
+                초대 코드 <span className="font-bold">{refCode}</span> 적용됨
+              </p>
+              <p className="text-[11px] text-amber-400/70 mt-0.5">
+                가입하면 오늘 7문제를 풀 수 있어요! (기본 5 + 보너스 2)
               </p>
             </div>
           )}

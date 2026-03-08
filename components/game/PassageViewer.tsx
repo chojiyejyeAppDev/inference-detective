@@ -33,7 +33,7 @@ export default function PassageViewer({ passage, conclusion, topic }: PassageVie
         onClick={() => setCollapsed((v) => !v)}
         className="flex items-center justify-between px-1 md:pointer-events-none"
       >
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5">
           <BookOpen size={14} className="text-amber-400" />
           <span className="text-xs font-semibold text-amber-400 tracking-widest uppercase">
             {topic ? topicLabel[topic] ?? topic : '지문'} 독해
@@ -66,7 +66,7 @@ export default function PassageViewer({ passage, conclusion, topic }: PassageVie
             </div>
 
             {/* Conclusion to prove */}
-            <div className="rounded-xl border border-amber-500/40 bg-amber-500/5 p-4">
+            <div className="rounded-xl border border-amber-500/50 bg-amber-500/5 p-4">
               <div className="flex items-start gap-3">
                 <div className="shrink-0 mt-0.5">
                   <div className="w-6 h-6 rounded-full bg-amber-500 flex items-center justify-center">

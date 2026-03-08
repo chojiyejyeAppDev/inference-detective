@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { motion } from 'framer-motion'
-import { Lock, ChevronRight, Lightbulb, Star, Loader2 } from 'lucide-react'
+import { Lock, ChevronRight, Lightbulb, Star, Loader2, Zap } from 'lucide-react'
 import { toast } from 'sonner'
 import { LEVEL_CONFIGS, FREE_DAILY_LIMIT } from '@/lib/game/levelConfig'
 import { SubscriptionStatus } from '@/types'
@@ -43,7 +43,6 @@ export default function LevelGrid({
         duration: 5000,
       })
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [focusTopic])
 
   // 구독 만료 임박 감지 (3일 이내)
@@ -58,7 +57,8 @@ export default function LevelGrid({
     if (isFree && remaining !== null && remaining <= 0) return
     setLoadingLevel(level)
     try {
-      const res = await fetch(`/api/game/question?level=${level}`)
+      const topicQuery = focusTopic && TOPIC_LABELS[focusTopic] ? `&topic=${focusTopic}` : ''
+      const res = await fetch(`/api/game/question?level=${level}${topicQuery}`)
       const data = await res.json()
 
       if (res.status === 403 && data.error === 'daily_limit_reached') {
@@ -109,7 +109,7 @@ export default function LevelGrid({
       >
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-0 mb-1">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-amber-500 flex items-center justify-center shadow-lg shadow-amber-500/30">
+            <div className="w-8 h-8 rounded-lg bg-amber-500 flex items-center justify-center shadow-md shadow-amber-500/25">
               <span className="text-slate-900 font-black text-xs">르</span>
             </div>
             <h1 className="text-xl sm:text-2xl font-black text-white tracking-tight">이:르다</h1>
@@ -139,7 +139,7 @@ export default function LevelGrid({
         <motion.div
           initial={{ opacity: 0, scale: 0.98 }}
           animate={{ opacity: 1, scale: 1 }}
-          className="relative mb-6 rounded-2xl border border-amber-500/35 bg-amber-500/[0.07] p-4 flex items-center justify-between overflow-hidden"
+          className="relative mb-6 rounded-2xl border border-amber-500/30 bg-amber-500/5 p-4 flex items-center justify-between overflow-hidden"
         >
           <div className="absolute inset-0 bg-dot-grid-dense opacity-50 pointer-events-none" />
           <div className="relative">
@@ -148,7 +148,7 @@ export default function LevelGrid({
           </div>
           <button
             onClick={() => router.push('/pricing')}
-            className="relative px-4 py-2 rounded-xl bg-amber-500 text-slate-900 text-xs font-black hover:bg-amber-400 transition-colors shadow-lg shadow-amber-500/25"
+            className="relative px-4 py-2 rounded-lg bg-amber-500 text-slate-900 text-xs font-black hover:bg-amber-400 transition-colors shadow-lg shadow-amber-500/25"
           >
             구독하기
           </button>
@@ -160,7 +160,7 @@ export default function LevelGrid({
         <motion.div
           initial={{ opacity: 0, scale: 0.98 }}
           animate={{ opacity: 1, scale: 1 }}
-          className="relative mb-6 rounded-2xl border border-amber-500/35 bg-amber-500/[0.07] p-4 flex items-center justify-between overflow-hidden"
+          className="relative mb-6 rounded-2xl border border-amber-500/30 bg-amber-500/5 p-4 flex items-center justify-between overflow-hidden"
         >
           <div className="absolute inset-0 bg-dot-grid-dense opacity-50 pointer-events-none" />
           <div className="relative">
@@ -173,7 +173,7 @@ export default function LevelGrid({
           </div>
           <button
             onClick={() => router.push('/pricing')}
-            className="relative px-4 py-2 rounded-xl bg-amber-500 text-slate-900 text-xs font-black hover:bg-amber-400 transition-colors shadow-lg shadow-amber-500/25"
+            className="relative px-4 py-2 rounded-lg bg-amber-500 text-slate-900 text-xs font-black hover:bg-amber-400 transition-colors shadow-lg shadow-amber-500/25"
           >
             플랜 변경
           </button>
@@ -185,14 +185,24 @@ export default function LevelGrid({
         <motion.div
           initial={{ opacity: 0, scale: 0.98 }}
           animate={{ opacity: 1, scale: 1 }}
-          className="relative mb-6 rounded-2xl border border-emerald-500/35 bg-emerald-500/[0.07] p-5 text-center overflow-hidden"
+          className="relative mb-6 rounded-2xl border border-emerald-500/30 bg-emerald-500/5 p-5 overflow-hidden"
         >
           <div className="absolute inset-0 bg-dot-grid-dense opacity-50 pointer-events-none" />
           <div className="relative">
-            <p className="text-emerald-300 font-black text-base mb-1">최고 레벨 도달!</p>
-            <p className="text-emerald-400/70 text-xs">
-              모든 레벨을 해금했어요. 아래에서 원하는 레벨을 자유롭게 선택해 연습하세요.
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-emerald-300 font-black text-base">마스터 모드</p>
+              <span className="text-[10px] font-bold text-emerald-400 bg-emerald-500/20 px-2 py-0.5 rounded-full border border-emerald-500/30">
+                Lv.7
+              </span>
+            </div>
+            <p className="text-emerald-400/70 text-xs mb-3">
+              모든 레벨을 해금했어요! 힌트 없이 7단계 추론에 도전하거나, 이전 레벨을 자유롭게 복습하세요.
             </p>
+            <div className="flex items-center gap-4 text-xs text-emerald-400/60">
+              <span>7단계 추론 · 힌트 없음</span>
+              <span>·</span>
+              <span>고난도 추상 지문</span>
+            </div>
           </div>
         </motion.div>
       )}
@@ -229,12 +239,12 @@ export default function LevelGrid({
                   'w-full text-left rounded-2xl border p-5 transition-all duration-250 group relative overflow-hidden',
                   isClickable && loadingLevel === null
                     ? isCurrent
-                      ? 'border-amber-500/60 bg-amber-500/[0.08] hover:bg-amber-500/12 cursor-pointer animate-level-pulse'
+                      ? 'border-amber-500/50 bg-amber-500/10 hover:bg-amber-500/10 cursor-pointer animate-level-pulse'
                       : isCompleted
                         ? 'border-emerald-500/30 bg-emerald-500/[0.05] hover:border-emerald-500/50 cursor-pointer animate-level-complete'
                         : 'border-white/[0.08] bg-bg-surface/60 hover:border-white/15 hover:bg-white/[0.04] cursor-pointer'
                     : isThisLoading
-                      ? 'border-amber-500/50 bg-amber-500/[0.08] cursor-wait'
+                      ? 'border-amber-500/50 bg-amber-500/10 cursor-wait'
                       : 'border-white/[0.04] bg-bg-game/60 cursor-not-allowed opacity-40',
                 ].join(' ')}
               >
@@ -273,11 +283,11 @@ export default function LevelGrid({
                 {/* Info */}
                 <div>
                   <p className="font-bold text-sm text-slate-200 mb-0.5">{config.name}</p>
-                  <p className="text-xs text-slate-500 leading-relaxed">{config.description}</p>
+                  <p className="text-xs text-slate-400 leading-relaxed">{config.description}</p>
                 </div>
 
                 {/* Stats */}
-                <div className="mt-3 flex items-center gap-3 text-xs text-slate-500">
+                <div className="mt-3 flex items-center gap-3 text-xs text-slate-400">
                   <span>{config.slots}단계 추론</span>
                   <span>·</span>
                   <span>

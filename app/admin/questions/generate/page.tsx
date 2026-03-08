@@ -245,7 +245,7 @@ export default function GenerateQuestionsPage() {
               onClick={() => toggleSelect(idx)}
               className={`rounded-xl border p-5 cursor-pointer transition-colors ${
                 selected.has(idx)
-                  ? 'border-amber-500/60 bg-amber-500/5'
+                  ? 'border-amber-500/50 bg-amber-500/5'
                   : 'border-slate-800 bg-slate-900/50 hover:border-slate-700'
               }`}
             >

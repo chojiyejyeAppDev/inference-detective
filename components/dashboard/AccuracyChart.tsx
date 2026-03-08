@@ -42,7 +42,7 @@ function CustomTooltip({ active, payload, label }: { active?: boolean; payload?:
 
 export default function AccuracyChart({ data }: AccuracyChartProps) {
   return (
-    <div className="rounded-xl border border-slate-700 bg-slate-800/50 p-5">
+    <div className="rounded-xl border border-slate-700 bg-slate-800/50 p-5 card-elevated">
       <h3 className="text-sm font-semibold text-slate-300 mb-4">정확도 추이</h3>
       {data.length === 0 ? (
         <div className="h-40 flex items-center justify-center text-slate-500 text-sm">
@@ -66,14 +66,14 @@ export default function AccuracyChart({ data }: AccuracyChartProps) {
             <CartesianGrid strokeDasharray="3 3" stroke="#1E293B" />
             <XAxis
               dataKey="date"
-              tick={{ fill: '#64748B', fontSize: 10 }}
+              tick={{ fill: '#94A3B8', fontSize: 10 }}
               axisLine={false}
               tickLine={false}
             />
             <YAxis
               domain={[0, 1]}
               tickFormatter={(v) => `${Math.round(v * 100)}%`}
-              tick={{ fill: '#64748B', fontSize: 10 }}
+              tick={{ fill: '#94A3B8', fontSize: 10 }}
               axisLine={false}
               tickLine={false}
             />

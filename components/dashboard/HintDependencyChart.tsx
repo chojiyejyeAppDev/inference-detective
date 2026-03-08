@@ -30,7 +30,7 @@ export default function HintDependencyChart({
       : '주의 — 힌트 의존도가 높아요'
 
   return (
-    <div className="rounded-xl border border-slate-700 bg-slate-800/50 p-5">
+    <div className="rounded-xl border border-slate-700 bg-slate-800/50 p-5 card-elevated">
       <h3 className="text-sm font-semibold text-slate-300 mb-1">힌트 의존도</h3>
       <p className="text-xs text-slate-500 mb-4">힌트 없이 문제를 풀수록 성장해요</p>
 
@@ -65,15 +65,15 @@ export default function HintDependencyChart({
             {/* 통계 */}
             <div className="space-y-2 text-sm">
               <div>
-                <p className="text-slate-500 text-xs">전체 문제</p>
+                <p className="text-slate-400 text-xs">전체 문제</p>
                 <p className="text-slate-200 font-semibold">{totalQuestions}개</p>
               </div>
               <div>
-                <p className="text-slate-500 text-xs">힌트 사용</p>
+                <p className="text-slate-400 text-xs">힌트 사용</p>
                 <p className="text-slate-200 font-semibold">{questionsWithHints}개</p>
               </div>
               <div>
-                <p className="text-slate-500 text-xs">평균 힌트 수</p>
+                <p className="text-slate-400 text-xs">평균 힌트 수</p>
                 <p className="text-slate-200 font-semibold">{avgHintsPerQuestion.toFixed(1)}회</p>
               </div>
             </div>

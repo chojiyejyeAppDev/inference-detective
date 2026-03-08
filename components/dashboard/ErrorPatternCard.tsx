@@ -33,7 +33,7 @@ export default function ErrorPatternCard({ patterns }: ErrorPatternCardProps) {
   const topErrors = [...patterns].sort((a, b) => b.count - a.count).slice(0, 5)
 
   return (
-    <div className="rounded-xl border border-slate-700 bg-slate-800/50 p-5">
+    <div className="rounded-xl border border-slate-700 bg-slate-800/50 p-5 card-elevated">
       <h3 className="text-sm font-semibold text-slate-300 mb-1">오류 패턴 분석</h3>
       <p className="text-xs text-slate-500 mb-4">어느 단계에서 자주 실수하나요?</p>
 

@@ -17,33 +17,33 @@ const CONFIG: Record<Strength, { color: string; label: string; tooltip: string; 
 }
 
 function StrengthIcon({ type, color }: { type: 'check' | 'wave' | 'x' | 'dot'; color: string }) {
-  const size = 14
+  const size = 16
   switch (type) {
     case 'check':
       return (
-        <svg width={size} height={size} viewBox="0 0 14 14" fill="none">
-          <circle cx="7" cy="7" r="6" stroke={color} strokeWidth="1.5" opacity="0.3" />
-          <path d="M4 7.5L6 9.5L10 5" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+        <svg width={size} height={size} viewBox="0 0 16 16" fill="none">
+          <circle cx="8" cy="8" r="7" stroke={color} strokeWidth="1.5" opacity="0.3" />
+          <path d="M4.5 8.5L7 11L11.5 5.5" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
       )
     case 'wave':
       return (
-        <svg width={size} height={size} viewBox="0 0 14 14" fill="none">
-          <circle cx="7" cy="7" r="6" stroke={color} strokeWidth="1.5" opacity="0.3" />
-          <path d="M3.5 7C4.5 5.5 5.5 8.5 7 7C8.5 5.5 9.5 8.5 10.5 7" stroke={color} strokeWidth="1.5" strokeLinecap="round" />
+        <svg width={size} height={size} viewBox="0 0 16 16" fill="none">
+          <circle cx="8" cy="8" r="7" stroke={color} strokeWidth="1.5" opacity="0.3" />
+          <path d="M4 8C5 6.5 6.5 9.5 8 8C9.5 6.5 11 9.5 12 8" stroke={color} strokeWidth="1.5" strokeLinecap="round" />
         </svg>
       )
     case 'x':
       return (
-        <svg width={size} height={size} viewBox="0 0 14 14" fill="none">
-          <circle cx="7" cy="7" r="6" stroke={color} strokeWidth="1.5" opacity="0.3" />
-          <path d="M5 5L9 9M9 5L5 9" stroke={color} strokeWidth="1.5" strokeLinecap="round" />
+        <svg width={size} height={size} viewBox="0 0 16 16" fill="none">
+          <circle cx="8" cy="8" r="7" stroke={color} strokeWidth="1.5" opacity="0.3" />
+          <path d="M5.5 5.5L10.5 10.5M10.5 5.5L5.5 10.5" stroke={color} strokeWidth="1.5" strokeLinecap="round" />
         </svg>
       )
     case 'dot':
       return (
-        <svg width={size} height={size} viewBox="0 0 14 14" fill="none">
-          <circle cx="7" cy="7" r="2" fill={color} opacity="0.4" />
+        <svg width={size} height={size} viewBox="0 0 16 16" fill="none">
+          <circle cx="8" cy="8" r="2.5" fill={color} opacity="0.4" />
         </svg>
       )
   }
@@ -90,12 +90,12 @@ export default function ConnectionIndicator({ strength }: ConnectionIndicatorPro
         </motion.svg>
       </div>
 
-      {/* Label */}
+      {/* Label — always visible on desktop, below icon on mobile */}
       {strength !== 'empty' && (
         <motion.span
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          className="absolute left-[calc(50%+20px)] text-[10px] font-medium px-1.5 py-0.5 rounded"
+          className="hidden sm:block absolute left-[calc(50%+20px)] text-[10px] font-medium px-1.5 py-0.5 rounded whitespace-nowrap"
           style={{ color, backgroundColor: `${color}18` }}
         >
           {label}

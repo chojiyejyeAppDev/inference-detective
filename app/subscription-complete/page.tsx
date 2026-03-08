@@ -71,7 +71,7 @@ function SubscriptionCompleteContent() {
           initial={{ scale: 0 }}
           animate={{ scale: 1 }}
           transition={{ type: 'spring', delay: 0.2, duration: 0.6 }}
-          className="w-20 h-20 rounded-3xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center mx-auto mb-6"
+          className="w-20 h-20 rounded-3xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center mx-auto mb-6"
         >
           <PartyPopper size={36} className="text-amber-400" />
         </motion.div>
@@ -100,7 +100,7 @@ function SubscriptionCompleteContent() {
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.45 }}
-          className="rounded-xl border border-amber-500/25 bg-amber-500/[0.06] p-4 mb-8"
+          className="rounded-xl border border-amber-500/30 bg-amber-500/5 p-4 mb-8"
         >
           <div className="flex items-center justify-center gap-2 mb-2">
             <Crown size={14} className="text-amber-400" />
@@ -141,7 +141,7 @@ function SubscriptionCompleteContent() {
                 className={[
                   'flex items-center gap-4 rounded-2xl border p-4 text-left transition-all group',
                   step.primary
-                    ? 'border-amber-500/40 bg-amber-500/[0.08] hover:bg-amber-500/[0.12]'
+                    ? 'border-amber-500/50 bg-amber-500/10 hover:bg-amber-500/10'
                     : 'border-slate-700 bg-slate-800/40 hover:border-slate-600',
                 ].join(' ')}
               >

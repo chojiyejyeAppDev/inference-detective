@@ -15,6 +15,7 @@ export async function GET(req: NextRequest) {
 
     if (!error) {
       // 환영 이메일 발송 (최초 인증 시)
+      let needsNickname = false
       try {
         const { data: { user } } = await supabase.auth.getUser()
         if (user?.email) {
@@ -32,6 +33,11 @@ export async function GET(req: NextRequest) {
               .from('profiles')
               .update({ welcome_email_sent: true })
               .eq('id', user.id)
+          }
+
+          // Google OAuth 사용자의 닉네임 미설정 감지
+          if (profile && !profile.nickname) {
+            needsNickname = true
           }
         }
       } catch {
@@ -51,6 +57,10 @@ export async function GET(req: NextRequest) {
         }
       }
 
+      // 닉네임 미설정 시 설정 페이지로, 아니면 레벨로
+      if (needsNickname) {
+        return NextResponse.redirect(`${origin}/settings?setup_nickname=true`)
+      }
       return NextResponse.redirect(`${origin}${next}`)
     }
   }

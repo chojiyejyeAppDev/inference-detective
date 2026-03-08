@@ -51,7 +51,7 @@ export default class ErrorBoundary extends Component<Props, State> {
           </div>
           <button
             onClick={this.handleReset}
-            className="flex items-center gap-1.5 px-4 py-2 rounded-lg border border-slate-700 text-slate-400 text-xs font-medium hover:bg-slate-800 transition-colors"
+            className="flex items-center gap-1 px-4 py-2 rounded-lg border border-slate-700 text-slate-400 text-xs font-medium hover:bg-slate-800 transition-colors"
           >
             <RefreshCw size={12} />
             다시 시도

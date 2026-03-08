@@ -40,7 +40,7 @@ export default function SentenceCard({ sentence, index, isDimmed = false, isSele
             snapshot.isDragging
               ? 'border-amber-400 bg-slate-700 shadow-lg shadow-amber-500/20 scale-[1.02] rotate-1 z-50'
               : isSelected
-                ? 'border-amber-400 bg-amber-500/15 ring-2 ring-amber-400/50'
+                ? 'border-amber-400 bg-amber-500/10 ring-2 ring-amber-400/50'
                 : 'border-slate-600 bg-slate-800/80 hover:border-slate-500 hover:bg-slate-700/80',
             isDimmed ? 'opacity-35' : 'opacity-100',
           ].join(' ')}

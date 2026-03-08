@@ -79,7 +79,7 @@ export default function RefundPage() {
                 </p>
               </div>
 
-              <div className="rounded-xl border border-amber-500/20 bg-amber-500/[0.05] p-4">
+              <div className="rounded-xl border border-amber-500/30 bg-amber-500/5 p-4">
                 <p className="text-xs font-bold text-amber-400 mb-2">부분 환불</p>
                 <p className="text-slate-400">
                   결제일로부터 7일 경과 또는 서비스 이용 이력이 있는 경우,

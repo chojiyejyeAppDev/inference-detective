@@ -35,7 +35,6 @@ export default function PlayPage({ params }: { params: Promise<{ questionId: str
 
   useEffect(() => {
     fetchQuestion(currentQuestionId)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   async function fetchQuestion(id?: string | null) {
@@ -181,7 +180,7 @@ export default function PlayPage({ params }: { params: Promise<{ questionId: str
                 <div key={i} className="h-4 bg-slate-700/30 rounded animate-pulse" style={{ width: `${85 - i * 8}%` }} />
               ))}
             </div>
-            <div className="rounded-xl border border-amber-500/20 bg-amber-500/5 p-4">
+            <div className="rounded-xl border border-amber-500/30 bg-amber-500/5 p-4">
               <div className="w-20 h-3 bg-amber-500/20 rounded animate-pulse mb-2" />
               <div className="h-4 bg-amber-500/10 rounded animate-pulse w-3/4" />
             </div>

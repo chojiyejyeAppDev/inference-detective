@@ -53,7 +53,7 @@ export default function TopicAnalysisCard({ data }: TopicAnalysisCardProps) {
   const weakest = sorted.length > 0 ? sorted[0] : null
 
   return (
-    <div className="rounded-xl border border-slate-700 bg-slate-800/50 p-5">
+    <div className="rounded-xl border border-slate-700 bg-slate-800/50 p-5 card-elevated">
       <h3 className="text-sm font-semibold text-slate-300 mb-1">주제별 정답률</h3>
       <p className="text-xs text-slate-500 mb-4">어떤 주제가 약한지 파악하세요</p>
 
@@ -67,14 +67,14 @@ export default function TopicAnalysisCard({ data }: TopicAnalysisCardProps) {
             <XAxis
               dataKey="topic"
               tickFormatter={(v) => TOPIC_LABELS[v] ?? v}
-              tick={{ fill: '#64748B', fontSize: 10 }}
+              tick={{ fill: '#94A3B8', fontSize: 10 }}
               axisLine={false}
               tickLine={false}
             />
             <YAxis
               domain={[0, 1]}
               tickFormatter={(v) => `${Math.round(v * 100)}%`}
-              tick={{ fill: '#64748B', fontSize: 10 }}
+              tick={{ fill: '#94A3B8', fontSize: 10 }}
               axisLine={false}
               tickLine={false}
             />

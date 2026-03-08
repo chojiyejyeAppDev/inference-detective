@@ -141,7 +141,7 @@ export default function ShareResultButton(props: ShareResultButtonProps) {
       <button
         onClick={handleNativeShare}
         aria-label="결과 공유"
-        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-600 text-slate-400 text-xs hover:border-slate-500 hover:text-slate-300 transition-colors"
+        className="flex items-center gap-1 px-3 py-1.5 rounded-lg border border-slate-600 text-slate-400 text-xs hover:border-slate-500 hover:text-slate-300 transition-colors"
       >
         <Share2 size={12} />
         공유
@@ -158,14 +158,14 @@ export default function ShareResultButton(props: ShareResultButtonProps) {
           >
             <button
               onClick={shareTwitter}
-              className="w-full flex items-center gap-2.5 px-4 py-2.5 text-xs text-slate-300 hover:bg-slate-700/60 transition-colors"
+              className="w-full flex items-center gap-1.5 px-4 py-2.5 text-xs text-slate-300 hover:bg-slate-700/60 transition-colors"
             >
               <Twitter size={13} className="text-sky-400" />
               X (Twitter)에 공유
             </button>
             <button
               onClick={shareKakao}
-              className="w-full flex items-center gap-2.5 px-4 py-2.5 text-xs text-slate-300 hover:bg-slate-700/60 transition-colors"
+              className="w-full flex items-center gap-1.5 px-4 py-2.5 text-xs text-slate-300 hover:bg-slate-700/60 transition-colors"
             >
               <MessageCircle size={13} className="text-yellow-400" />
               카카오톡에 공유
@@ -173,7 +173,7 @@ export default function ShareResultButton(props: ShareResultButtonProps) {
             <div className="h-px bg-slate-700/60" />
             <button
               onClick={copyToClipboard}
-              className="w-full flex items-center gap-2.5 px-4 py-2.5 text-xs text-slate-300 hover:bg-slate-700/60 transition-colors"
+              className="w-full flex items-center gap-1.5 px-4 py-2.5 text-xs text-slate-300 hover:bg-slate-700/60 transition-colors"
             >
               {copied ? (
                 <>

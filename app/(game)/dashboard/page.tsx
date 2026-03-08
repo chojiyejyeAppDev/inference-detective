@@ -6,7 +6,7 @@ import HintDependencyChart from '@/components/dashboard/HintDependencyChart'
 import TopicAnalysisCard from '@/components/dashboard/TopicAnalysisCard'
 import InviteSection from '@/components/dashboard/InviteSection'
 import Link from 'next/link'
-import { BookOpen } from 'lucide-react'
+import { BookOpen, TrendingUp, TrendingDown, Target, Zap } from 'lucide-react'
 
 export default async function DashboardPage() {
   const supabase = await createClient()
@@ -34,7 +34,7 @@ export default async function DashboardPage() {
   const thirtyDaysAgo = new Date()
   thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
 
-  const [{ data: sessions }, { data: progress }] = await Promise.all([
+  const [{ data: sessions }, { data: progress }, { data: subscription }] = await Promise.all([
     service
       .from('level_sessions')
       .select('*')
@@ -45,7 +45,17 @@ export default async function DashboardPage() {
       .from('user_progress')
       .select('*, questions(correct_chain, topic)')
       .eq('user_id', user.id),
+    service
+      .from('subscriptions')
+      .select('plan')
+      .eq('user_id', user.id)
+      .eq('status', 'active')
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle(),
   ])
+
+  const isWeeklyPlan = subscription?.plan === 'weekly'
 
   // 차트 데이터 변환
   const accuracyData = (sessions ?? []).map((s) => ({
@@ -102,6 +112,21 @@ export default async function DashboardPage() {
   const totalCorrect = progress?.filter((p) => p.is_correct).length ?? 0
   const overallAccuracy = totalQ > 0 ? Math.round((totalCorrect / totalQ) * 100) : 0
 
+  // 정확도 추세 계산 (최근 5세션 vs 이전 5세션)
+  const recentSessions = sessions?.slice(-5) ?? []
+  const olderSessions = sessions?.slice(-10, -5) ?? []
+  const recentAvg = recentSessions.length > 0
+    ? recentSessions.reduce((s, r) => s + Number(r.accuracy), 0) / recentSessions.length
+    : 0
+  const olderAvg = olderSessions.length > 0
+    ? olderSessions.reduce((s, r) => s + Number(r.accuracy), 0) / olderSessions.length
+    : 0
+  const accuracyTrend: 'improving' | 'declining' | 'stable' =
+    olderSessions.length < 3 ? 'stable'
+      : recentAvg - olderAvg > 0.05 ? 'improving'
+      : olderAvg - recentAvg > 0.05 ? 'declining'
+      : 'stable'
+
   return (
     <div className="min-h-screen bg-bg-game px-4 sm:px-6 py-8 sm:py-10">
       <div className="max-w-3xl mx-auto">
@@ -130,7 +155,7 @@ export default async function DashboardPage() {
             </p>
             <Link
               href="/pricing"
-              className="inline-block px-6 py-2.5 rounded-lg bg-amber-500 text-slate-900 text-sm font-bold hover:bg-amber-400 transition-colors"
+              className="inline-block px-6 py-2.5 rounded-xl bg-amber-500 text-slate-900 text-sm font-bold hover:bg-amber-400 transition-colors"
             >
               구독 플랜 보기
             </Link>
@@ -146,13 +171,13 @@ export default async function DashboardPage() {
           ].map((stat) => (
             <div
               key={stat.label}
-              className="rounded-xl border border-slate-700 bg-slate-800/50 p-4 text-center"
+              className="rounded-xl border border-slate-700 bg-slate-800/50 p-4 text-center card-elevated"
             >
               <p className="text-xl sm:text-2xl font-bold text-white">
                 {stat.value}
                 <span className="text-base font-normal text-slate-400">{stat.unit}</span>
               </p>
-              <p className="text-xs text-slate-500 mt-0.5">{stat.label}</p>
+              <p className="text-xs text-slate-400 mt-0.5">{stat.label}</p>
             </div>
           ))}
         </div>
@@ -212,32 +237,111 @@ export default async function DashboardPage() {
             </div>
             <TopicAnalysisCard data={topicData} />
 
-            {/* 약점 주제 집중 훈련 CTA */}
-            {topicData.length > 0 && (() => {
-              const weakest = [...topicData].sort((a, b) => a.accuracy - b.accuracy)[0]
-              if (!weakest || weakest.accuracy >= 0.8) return null
-              const TOPIC_LABELS: Record<string, string> = {
-                humanities: '인문', social: '사회', science: '과학', tech: '기술', arts: '예술',
-              }
-              return (
-                <div className="rounded-xl border border-amber-500/25 bg-amber-500/[0.04] p-5 flex items-center justify-between gap-4">
-                  <div>
-                    <p className="text-sm font-semibold text-amber-300">
-                      약점 주제: {TOPIC_LABELS[weakest.topic] ?? weakest.topic}
-                    </p>
-                    <p className="text-xs text-slate-400 mt-0.5">
-                      정답률 {Math.round(weakest.accuracy * 100)}% — 집중 연습으로 개선해보세요
-                    </p>
+            {/* 다음 추천 행동 */}
+            <div className="rounded-xl border border-slate-700 bg-slate-800/50 p-5 card-elevated">
+              <h3 className="text-sm font-bold text-slate-200 mb-3 flex items-center gap-1.5">
+                <Target size={14} className="text-amber-400" />
+                다음 추천
+              </h3>
+              <div className="space-y-3">
+                {/* 정확도 추세 */}
+                {accuracyTrend === 'improving' && (
+                  <div className="flex items-start gap-2.5">
+                    <TrendingUp size={14} className="text-emerald-400 mt-0.5 shrink-0" />
+                    <div>
+                      <p className="text-xs font-semibold text-emerald-300">정확도가 올라가고 있어요!</p>
+                      <p className="text-[11px] text-slate-400 mt-0.5">
+                        {profile.current_level < 7
+                          ? `레벨 ${profile.current_level}에서 80% 이상 3회 연속 달성하면 레벨업!`
+                          : '마스터 레벨에서 꾸준히 성장 중이에요.'}
+                      </p>
+                    </div>
                   </div>
-                  <Link
-                    href={`/levels?focus_topic=${weakest.topic}`}
-                    className="shrink-0 px-4 py-2 rounded-lg bg-amber-500 text-slate-900 text-xs font-bold hover:bg-amber-400 transition-colors"
-                  >
-                    연습하기
-                  </Link>
+                )}
+                {accuracyTrend === 'declining' && (
+                  <div className="flex items-start gap-2.5">
+                    <TrendingDown size={14} className="text-amber-400 mt-0.5 shrink-0" />
+                    <div>
+                      <p className="text-xs font-semibold text-amber-300">힌트를 활용해보세요</p>
+                      <p className="text-[11px] text-slate-400 mt-0.5">
+                        최근 정답률이 낮아지고 있어요. 힌트로 논리 흐름을 확인하면 도움이 돼요.
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                {/* 약점 주제 */}
+                {topicData.length > 0 && (() => {
+                  const weakest = [...topicData].sort((a, b) => a.accuracy - b.accuracy)[0]
+                  if (!weakest || weakest.accuracy >= 0.8) return null
+                  const TOPIC_LABELS: Record<string, string> = {
+                    humanities: '인문', social: '사회', science: '과학', tech: '기술', arts: '예술',
+                  }
+                  return (
+                    <div className="flex items-center justify-between gap-3 rounded-lg bg-amber-500/5 border border-amber-500/20 px-4 py-3">
+                      <div className="flex items-start gap-2.5">
+                        <Zap size={14} className="text-amber-400 mt-0.5 shrink-0" />
+                        <div>
+                          <p className="text-xs font-semibold text-amber-300">
+                            약점 주제: {TOPIC_LABELS[weakest.topic] ?? weakest.topic}
+                          </p>
+                          <p className="text-[11px] text-slate-400 mt-0.5">
+                            정답률 {Math.round(weakest.accuracy * 100)}% — 집중 연습으로 개선해보세요
+                          </p>
+                        </div>
+                      </div>
+                      <Link
+                        href={`/levels?focus_topic=${weakest.topic}`}
+                        className="shrink-0 px-3 py-1.5 rounded-lg bg-amber-500 text-slate-900 text-[11px] font-bold hover:bg-amber-400 transition-colors"
+                      >
+                        연습하기
+                      </Link>
+                    </div>
+                  )
+                })()}
+
+                {/* 레벨업 가이드 */}
+                {profile.current_level < 7 && overallAccuracy >= 70 && (
+                  <div className="flex items-start gap-2.5">
+                    <Target size={14} className="text-slate-400 mt-0.5 shrink-0" />
+                    <div>
+                      <p className="text-xs font-semibold text-slate-300">
+                        레벨 {profile.current_level + 1}을 향해
+                      </p>
+                      <p className="text-[11px] text-slate-400 mt-0.5">
+                        레벨 {profile.current_level}에서 정확도 80% 이상을 3회 연속 달성하면 다음 레벨이 열려요.
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                {/* 바로 연습하기 링크 */}
+                <Link
+                  href="/levels"
+                  className="block text-center text-xs font-semibold text-amber-400 hover:text-amber-300 transition-colors pt-1"
+                >
+                  연습하러 가기 →
+                </Link>
+              </div>
+            </div>
+
+            {/* 주간→월간 업셀 */}
+            {isWeeklyPlan && (
+              <div className="rounded-xl border border-amber-500/20 bg-amber-500/5 p-5 flex items-center justify-between gap-4">
+                <div>
+                  <p className="text-sm font-semibold text-amber-300">월간 구독으로 전환하세요</p>
+                  <p className="text-xs text-slate-400 mt-0.5">
+                    월 ₩9,900으로 매일 무제한 문제를 풀 수 있어요. 주간 이용권보다 60% 이상 저렴해요.
+                  </p>
                 </div>
-              )
-            })()}
+                <Link
+                  href="/pricing"
+                  className="shrink-0 px-4 py-2 rounded-lg bg-amber-500 text-slate-900 text-xs font-bold hover:bg-amber-400 transition-colors"
+                >
+                  플랜 변경
+                </Link>
+              </div>
+            )}
           </div>
         )}
 
