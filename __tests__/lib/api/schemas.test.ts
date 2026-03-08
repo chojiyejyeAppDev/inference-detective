@@ -128,6 +128,27 @@ describe('subscribeSchema', () => {
     const result = subscribeSchema.safeParse({})
     expect(result.success).toBe(false)
   })
+
+  it('accepts paymentMethod kakaopay', () => {
+    const result = subscribeSchema.safeParse({ plan: 'monthly', paymentMethod: 'kakaopay' })
+    expect(result.success).toBe(true)
+    if (result.success) {
+      expect(result.data.paymentMethod).toBe('kakaopay')
+    }
+  })
+
+  it('defaults paymentMethod to card', () => {
+    const result = subscribeSchema.safeParse({ plan: 'monthly' })
+    expect(result.success).toBe(true)
+    if (result.success) {
+      expect(result.data.paymentMethod).toBe('card')
+    }
+  })
+
+  it('rejects invalid paymentMethod', () => {
+    const result = subscribeSchema.safeParse({ plan: 'monthly', paymentMethod: 'bitcoin' })
+    expect(result.success).toBe(false)
+  })
 })
 
 describe('redeemSchema', () => {

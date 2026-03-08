@@ -25,6 +25,7 @@ export const subscribeSchema = z.object({
   billingKey: z.string().optional(),
   paymentId: z.string().optional(),
   plan: z.string().min(1),
+  paymentMethod: z.enum(['card', 'kakaopay']).optional().default('card'),
 })
 
 // ── Invite API ──
