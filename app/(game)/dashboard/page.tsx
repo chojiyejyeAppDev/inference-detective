@@ -180,13 +180,19 @@ export default async function DashboardPage() {
               <TopicAnalysisCard data={[]} />
             </div>
           </div>
-        ) : totalQ === 0 ? (
+        ) : totalQ === 0 || totalQ < 5 ? (
           <div className="rounded-xl border border-slate-700 bg-slate-800/50 p-10 text-center">
             <div className="w-12 h-12 rounded-full bg-slate-700 flex items-center justify-center mx-auto mb-3">
               <BookOpen size={20} className="text-slate-500" />
             </div>
-            <p className="text-slate-400 font-medium text-sm mb-1">아직 풀어본 문제가 없어요</p>
-            <p className="text-slate-600 text-xs mb-4">문제를 풀면 여기서 성장 그래프를 확인할 수 있어요.</p>
+            <p className="text-slate-400 font-medium text-sm mb-1">
+              {totalQ === 0 ? '아직 풀어본 문제가 없어요' : `${totalQ}문제 풀었어요!`}
+            </p>
+            <p className="text-slate-600 text-xs mb-4">
+              {totalQ === 0
+                ? '문제를 풀면 여기서 성장 그래프를 확인할 수 있어요.'
+                : '최소 5문제를 풀면 의미 있는 분석이 시작돼요. 조금만 더 풀어보세요!'}
+            </p>
             <Link
               href="/levels"
               className="inline-block px-5 py-2 rounded-lg bg-amber-500 text-slate-900 text-xs font-bold hover:bg-amber-400 transition-colors"
@@ -206,6 +212,33 @@ export default async function DashboardPage() {
               />
             </div>
             <TopicAnalysisCard data={topicData} />
+
+            {/* 약점 주제 집중 훈련 CTA */}
+            {topicData.length > 0 && (() => {
+              const weakest = [...topicData].sort((a, b) => a.accuracy - b.accuracy)[0]
+              if (!weakest || weakest.accuracy >= 0.8) return null
+              const TOPIC_LABELS: Record<string, string> = {
+                humanities: '인문', social: '사회', science: '과학', tech: '기술', arts: '예술',
+              }
+              return (
+                <div className="rounded-xl border border-amber-500/25 bg-amber-500/[0.04] p-5 flex items-center justify-between gap-4">
+                  <div>
+                    <p className="text-sm font-semibold text-amber-300">
+                      약점 주제: {TOPIC_LABELS[weakest.topic] ?? weakest.topic}
+                    </p>
+                    <p className="text-xs text-slate-400 mt-0.5">
+                      정답률 {Math.round(weakest.accuracy * 100)}% — 집중 연습으로 개선해보세요
+                    </p>
+                  </div>
+                  <Link
+                    href="/levels"
+                    className="shrink-0 px-4 py-2 rounded-lg bg-amber-500 text-slate-900 text-xs font-bold hover:bg-amber-400 transition-colors"
+                  >
+                    연습하기
+                  </Link>
+                </div>
+              )
+            })()}
           </div>
         )}
 
