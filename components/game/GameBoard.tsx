@@ -4,7 +4,7 @@ import { useState, useCallback, useEffect, useRef } from 'react'
 import { DragDropContext, Droppable, DropResult } from '@hello-pangea/dnd'
 import { motion, AnimatePresence } from 'framer-motion'
 import Link from 'next/link'
-import { Lightbulb, Send, RefreshCw, ChevronRight, Trophy, Undo2, Flame, HelpCircle, CheckCircle2, XCircle, Loader2 } from 'lucide-react'
+import { Lightbulb, Send, RefreshCw, ChevronRight, Undo2, Flame, HelpCircle, XCircle, Loader2 } from 'lucide-react'
 import { Question, Sentence, EvaluationResult, LevelConfig } from '@/types'
 import { buildConnectionMap } from '@/lib/game/connectionStrength'
 import PassageViewer from './PassageViewer'
@@ -406,45 +406,141 @@ export default function GameBoard({
 
             {/* Evaluation result */}
             <AnimatePresence>
-              {evaluationResult && (
+              {evaluationResult && evaluationResult.is_correct && (
                 <motion.div
                   initial={{ opacity: 0, y: 12 }}
                   animate={{ opacity: 1, y: 0 }}
                   role="status"
                   aria-live="polite"
-                  aria-atomic="true"
-                  className={[
-                    'border p-4',
-                    evaluationResult.is_correct
-                      ? 'border-green-700 bg-green-50'
-                      : 'border-exam-rule bg-white',
-                  ].join(' ')}
+                  className="border border-green-200 bg-green-50 p-5 text-center"
+                >
+                  {/* Big score stamp */}
+                  <motion.div
+                    initial={{ scale: 2.5, opacity: 0, rotate: -20 }}
+                    animate={{ scale: 1, opacity: 1, rotate: -8 }}
+                    transition={{ type: 'spring', stiffness: 200, damping: 15, delay: 0.2 }}
+                    className="inline-flex flex-col items-center justify-center w-20 h-20 border-3 border-green-700 rounded-full text-green-700 mb-3"
+                  >
+                    <span className="text-2xl font-black leading-none">{Math.round(evaluationResult.accuracy * 100)}</span>
+                    <span className="text-[9px] font-semibold mt-0.5">정답</span>
+                  </motion.div>
+                  <p className="text-sm font-bold text-green-700 mb-1">
+                    {evaluationResult.level_up
+                      ? `레벨업! Lv.${levelConfig.level + 1}로 올라갔어요!`
+                      : '완벽한 추론 경로예요!'}
+                  </p>
+                  <p className="text-xs text-stone-500">{evaluationResult.explanation}</p>
+
+                  {/* Streak + hint bonus inline */}
+                  <div className="flex items-center justify-center gap-4 mt-3 text-xs">
+                    {(evaluationResult.streak ?? 0) >= 2 && (
+                      <span className="flex items-center gap-1 font-semibold text-exam-red">
+                        <Flame size={13} /> {evaluationResult.streak}연속 정답!
+                      </span>
+                    )}
+                    {(evaluationResult.daily_streak ?? 0) >= 2 && (
+                      <span className="flex items-center gap-1 font-semibold text-orange-600">
+                        <Flame size={13} /> {evaluationResult.daily_streak}일 연속 훈련
+                      </span>
+                    )}
+                    <span className="text-green-600 font-medium">+1 힌트 포인트</span>
+                  </div>
+
+                  {/* Share button */}
+                  <div className="flex justify-center mt-3">
+                    <ShareResultButton
+                      level={levelConfig.level}
+                      accuracy={evaluationResult.accuracy}
+                      isCorrect={evaluationResult.is_correct}
+                      levelUp={evaluationResult.level_up}
+                      slots={levelConfig.slots}
+                      inviteCode={inviteCode ?? undefined}
+                    />
+                  </div>
+
+                  {/* 정답 시 추론 과정 해설 */}
+                  {evaluationResult.chain_explanations && evaluationResult.chain_explanations.length > 0 && (
+                    <div className="mt-3 pt-3 border-t border-exam-rule">
+                      <button
+                        onClick={() => setShowCorrectAnswer(!showCorrectAnswer)}
+                        className="text-xs text-green-700 hover:text-green-900 transition-colors font-medium"
+                      >
+                        {showCorrectAnswer ? '해설 숨기기' : '왜 이 순서가 맞을까?'}
+                      </button>
+                      <AnimatePresence>
+                        {showCorrectAnswer && (
+                          <motion.div
+                            initial={{ opacity: 0, height: 0 }}
+                            animate={{ opacity: 1, height: 'auto' }}
+                            exit={{ opacity: 0, height: 0 }}
+                            className="mt-2 flex flex-col gap-1 overflow-hidden"
+                          >
+                            {evaluationResult.chain_explanations.map((explanation, i) => (
+                              <div key={i} className="flex items-start gap-2 px-3 py-1.5">
+                                <span className="text-[10px] font-bold text-green-700 mt-0.5 shrink-0">{i + 1}.</span>
+                                <p className="text-[11px] text-stone-600 leading-relaxed">{explanation}</p>
+                              </div>
+                            ))}
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </div>
+                  )}
+
+                  {/* 레벨업 진행 상황 */}
+                  {evaluationResult.level_progress && !evaluationResult.level_up && levelConfig.level < 7 && (
+                    <div className="mt-3 pt-3 border-t border-exam-rule">
+                      <div className="flex items-center justify-between mb-1.5">
+                        <span className="text-[10px] font-semibold text-stone-500 uppercase tracking-wider">
+                          레벨업 진행
+                        </span>
+                        <span className="text-[10px] text-stone-500">
+                          {evaluationResult.level_progress.qualified}/{evaluationResult.level_progress.required} 세션 달성
+                        </span>
+                      </div>
+                      <div className="flex gap-1.5">
+                        {Array.from({ length: evaluationResult.level_progress.required }).map((_, i) => (
+                          <div
+                            key={i}
+                            className={[
+                              'flex-1 h-2 rounded-sm transition-all',
+                              i < evaluationResult.level_progress!.qualified
+                                ? 'bg-exam-ink'
+                                : 'bg-stone-200',
+                            ].join(' ')}
+                          />
+                        ))}
+                      </div>
+                      <p className="text-[10px] text-stone-500 mt-1">
+                        최근 {evaluationResult.level_progress.required}세션 중 80% 이상 정확도를 모두 달성하면 레벨업
+                      </p>
+                      {levelConfig.level === 6 && (
+                        <p className="text-[10px] text-exam-red mt-1.5">
+                          레벨 7에서는 힌트를 사용할 수 없어요. 지금 실력을 충분히 다져두세요!
+                        </p>
+                      )}
+                    </div>
+                  )}
+                </motion.div>
+              )}
+
+              {evaluationResult && !evaluationResult.is_correct && (
+                <motion.div
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  role="status"
+                  aria-live="polite"
+                  className="border border-exam-rule bg-white p-5"
                 >
                   <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center gap-2">
-                      {evaluationResult.level_up ? (
-                        <Trophy size={16} className="text-exam-ink" />
-                      ) : evaluationResult.is_correct ? (
-                        <CheckCircle2 size={16} className="text-green-700" />
-                      ) : (
-                        <XCircle size={16} className="text-exam-red" />
-                      )}
-                      <span className={[
-                        'text-sm font-semibold',
-                        evaluationResult.is_correct ? 'text-green-700' : 'text-exam-ink',
-                      ].join(' ')}>
-                        {evaluationResult.level_up
-                          ? `레벨업! Lv.${levelConfig.level + 1}로 올라갔어요!`
-                          : evaluationResult.is_correct
-                            ? '정답! 완벽한 추론 경로예요.'
-                            : <><span className="mark-red">정확도 {Math.round(evaluationResult.accuracy * 100)}%</span></>}
-                      </span>
-                      {evaluationResult.is_correct && (
-                        <div className="score-stamp animate-stamp">
-                          <span className="score-stamp-value">100</span>
-                          <span className="score-stamp-label">정답</span>
-                        </div>
-                      )}
+                    <div className="flex items-center gap-3">
+                      <XCircle size={18} className="text-exam-red shrink-0" />
+                      <div>
+                        <span className="text-lg font-black text-exam-ink">
+                          <span className="mark-red">{Math.round(evaluationResult.accuracy * 100)}%</span>
+                        </span>
+                        <p className="text-xs text-stone-500 mt-0.5">{evaluationResult.explanation}</p>
+                      </div>
                     </div>
                     <ShareResultButton
                       level={levelConfig.level}
@@ -455,16 +551,13 @@ export default function GameBoard({
                       inviteCode={inviteCode ?? undefined}
                     />
                   </div>
-                  <p className="text-xs text-stone-600 leading-relaxed">
-                    {evaluationResult.explanation}
-                  </p>
 
-                  {/* 연속 정답 스트릭 */}
-                  {evaluationResult.is_correct && (evaluationResult.streak ?? 0) >= 2 && (
+                  {/* 일일 스트릭 (오답에서도 표시) */}
+                  {(evaluationResult.daily_streak ?? 0) >= 2 && (
                     <div className="mt-2 flex items-center gap-1.5">
-                      <Flame size={13} className="text-exam-red" />
-                      <span className="text-xs font-semibold text-exam-red">
-                        {evaluationResult.streak}연속 정답!
+                      <Flame size={13} className="text-orange-500" />
+                      <span className="text-xs font-semibold text-orange-600">
+                        {evaluationResult.daily_streak}일 연속 훈련
                       </span>
                     </div>
                   )}
@@ -480,12 +573,12 @@ export default function GameBoard({
                           {evaluationResult.level_progress.qualified}/{evaluationResult.level_progress.required} 세션 달성
                         </span>
                       </div>
-                      <div className="flex gap-1">
+                      <div className="flex gap-1.5">
                         {Array.from({ length: evaluationResult.level_progress.required }).map((_, i) => (
                           <div
                             key={i}
                             className={[
-                              'flex-1 h-1.5 transition-all',
+                              'flex-1 h-2 rounded-sm transition-all',
                               i < evaluationResult.level_progress!.qualified
                                 ? 'bg-exam-ink'
                                 : 'bg-stone-200',
@@ -505,7 +598,7 @@ export default function GameBoard({
                   )}
 
                   {/* 정답 보기 토글 (오답일 때만) */}
-                  {!evaluationResult.is_correct && evaluationResult.correct_chain && (
+                  {evaluationResult.correct_chain && (
                     <div className="mt-3">
                       <button
                         onClick={() => setShowCorrectAnswer(!showCorrectAnswer)}
@@ -523,17 +616,24 @@ export default function GameBoard({
                           >
                             {evaluationResult.correct_chain.map((sentenceId, i) => {
                               const sentence = getSentenceById(sentenceId)
+                              const stepExplanation = evaluationResult.chain_explanations?.[i]
                               return (
-                                <div
-                                  key={sentenceId}
-                                  className="flex items-start gap-2 border border-green-700/30 bg-green-50 px-3 py-2"
-                                >
-                                  <span className="problem-number-sm shrink-0 !bg-green-700 !border-green-700 !text-white font-exam-serif">
-                                    {i + 1}
-                                  </span>
-                                  <p className="text-xs text-exam-ink leading-relaxed">
-                                    {sentence?.text ?? '(알 수 없는 문장)'}
-                                  </p>
+                                <div key={sentenceId} className="space-y-0">
+                                  <div className="flex items-start gap-2 border border-green-700/30 bg-green-50 px-3 py-2">
+                                    <span className="problem-number-sm shrink-0 !bg-green-700 !border-green-700 !text-white font-exam-serif">
+                                      {i + 1}
+                                    </span>
+                                    <div>
+                                      <p className="text-xs text-exam-ink leading-relaxed">
+                                        {sentence?.text ?? '(알 수 없는 문장)'}
+                                      </p>
+                                      {stepExplanation && (
+                                        <p className="text-[11px] text-green-800/70 mt-1 leading-relaxed italic">
+                                          {stepExplanation}
+                                        </p>
+                                      )}
+                                    </div>
+                                  </div>
                                 </div>
                               )
                             })}

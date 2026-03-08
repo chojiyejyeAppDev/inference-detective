@@ -16,6 +16,7 @@ export async function checkAndAwardBadges(
   context: {
     totalSolved: number
     streak: number
+    dailyStreak?: number
     recentAccuracy: number | null // 0-1, based on last 20
     currentLevel: number
     isCorrect: boolean
@@ -61,6 +62,9 @@ export async function checkAndAwardBadges(
         // condition_value = number of perfect scores required (consecutive or total)
         // For now, isCorrect means this session was perfect; condition_value=1 means single perfect
         qualifies = context.isCorrect && badge.condition_value <= 1
+        break
+      case 'daily_streak':
+        qualifies = (context.dailyStreak ?? 0) >= badge.condition_value
         break
       default:
         break

@@ -11,7 +11,7 @@ export default async function LevelsPage() {
 
   const { data: profile } = await supabase
     .from('profiles')
-    .select('current_level, subscription_status, subscription_expires_at, daily_questions_used, hint_points, role')
+    .select('current_level, subscription_status, subscription_expires_at, daily_questions_used, hint_points, role, streak_days, longest_streak, streak_freeze_count, last_active_date')
     .eq('id', user.id)
     .single()
 
@@ -34,6 +34,12 @@ export default async function LevelsPage() {
     ).length
   }
 
+  // Calculate if streak is at risk (last_active_date is yesterday or earlier)
+  const kstNow = new Date(Date.now() + 9 * 60 * 60 * 1000)
+  const todayKST = kstNow.toISOString().split('T')[0]
+  const lastActive = profile?.last_active_date ?? null
+  const streakAtRisk = lastActive !== null && lastActive !== todayKST && (profile?.streak_days ?? 0) > 0
+
   return (
     <LevelGrid
       currentLevel={currentLevel}
@@ -42,6 +48,11 @@ export default async function LevelsPage() {
       dailyUsed={isAdmin ? 0 : (profile?.daily_questions_used ?? 0)}
       hintPoints={profile?.hint_points ?? 10}
       levelProgress={{ qualified: qualifiedSessions, required: LEVEL_UP_SESSIONS }}
+      streakDays={profile?.streak_days ?? 0}
+      longestStreak={profile?.longest_streak ?? 0}
+      streakFreezeCount={profile?.streak_freeze_count ?? 0}
+      streakAtRisk={streakAtRisk}
+      streak={profile?.streak_days ?? 0}
     />
   )
 }

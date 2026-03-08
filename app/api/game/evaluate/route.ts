@@ -155,6 +155,16 @@ export async function POST(req: NextRequest) {
     }
   }
 
+  // 일일 스트릭 업데이트 (KST 기준)
+  const now = new Date()
+  const kstOffset = 9 * 60 * 60 * 1000
+  const todayKST = new Date(now.getTime() + kstOffset).toISOString().split('T')[0]
+  const { data: streakResult } = await service.rpc('update_daily_streak', {
+    uid: user.id,
+    today_date: todayKST,
+  })
+  const dailyStreak = streakResult?.streak_days ?? 0
+
   // 배지 체크 & 수여
   const { data: totalProgress } = await service
     .from('user_progress')
@@ -180,6 +190,7 @@ export async function POST(req: NextRequest) {
   const newBadges = await checkAndAwardBadges(service, user.id, {
     totalSolved,
     streak,
+    dailyStreak,
     recentAccuracy,
     currentLevel: newLevel,
     isCorrect: evaluation.is_correct,
@@ -191,6 +202,7 @@ export async function POST(req: NextRequest) {
     correct_chain: question.correct_chain,
     level_up: levelUp,
     streak,
+    daily_streak: dailyStreak,
     hint_points_bonus: hintPointsBonus,
     hint_points_remaining: hintPointsRemaining,
     level_progress: {

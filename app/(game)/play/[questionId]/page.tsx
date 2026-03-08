@@ -28,6 +28,7 @@ export default function PlayPage({ params }: { params: Promise<{ questionId: str
   const [dailyInfo, setDailyInfo] = useState<{ used: number; limit: number | null } | null>(null)
   const [isReviewMode, setIsReviewMode] = useState(false)
   const [hintsUsedCount, setHintsUsedCount] = useState(0)
+  const [activeHints, setActiveHints] = useState<string[]>([])
   const [inviteCode, setInviteCode] = useState<string | null>(null)
   const [currentStreak, setCurrentStreak] = useState(0)
   const [error, setError] = useState<string | null>(null)
@@ -41,6 +42,7 @@ export default function PlayPage({ params }: { params: Promise<{ questionId: str
     setLoading(true)
     setError(null)
     setEvaluationResult(null)
+    setActiveHints([])
 
     try {
       const params = id ? `?id=${id}` : ''
@@ -149,7 +151,7 @@ export default function PlayPage({ params }: { params: Promise<{ questionId: str
         const data = await res.json()
         setHintPoints(data.hint_points_remaining)
         if (data.hint) {
-          toast.info(data.hint, { duration: 6000 })
+          setActiveHints((prev) => [...prev, data.hint])
           setHintStep((prev) => prev + 1)
           setHintsUsedCount((prev) => prev + 1)
         } else {
@@ -260,6 +262,7 @@ export default function PlayPage({ params }: { params: Promise<{ questionId: str
       onHintRequest={handleHintRequest}
       onNextQuestion={() => fetchQuestion()}
       onReset={() => setEvaluationResult(null)}
+      activeHints={activeHints}
     />
   )
 }
