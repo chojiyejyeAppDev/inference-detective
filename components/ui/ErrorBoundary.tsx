@@ -1,7 +1,7 @@
 'use client'
 
 import { Component, ReactNode } from 'react'
-import { AlertTriangle, RefreshCw } from 'lucide-react'
+import { RefreshCw } from 'lucide-react'
 import Button from '@/components/ui/Button'
 
 interface Props {
@@ -39,14 +39,16 @@ export default class ErrorBoundary extends Component<Props, State> {
       if (this.props.fallback) return this.props.fallback
 
       return (
-        <div className="min-h-[200px] flex flex-col items-center justify-center gap-3 border border-exam-red/30 bg-exam-highlight p-8">
+        <div className="min-h-[200px] flex flex-col items-center justify-center gap-3 border border-exam-rule bg-bg-base p-8">
           <div className="w-10 h-10 rounded-full border-2 border-exam-ink flex items-center justify-center">
-            <AlertTriangle size={18} className="text-exam-red" />
+            <span className="text-sm font-black text-exam-red">!</span>
           </div>
           <div className="text-center">
-            <p className="text-exam-ink font-semibold text-sm">페이지 로딩 중 오류가 발생했어요</p>
+            <p className="text-exam-ink font-semibold text-sm">
+              일시적인 오류가 발생했어요
+            </p>
             <p className="text-stone-500 text-xs mt-1">
-              {this.state.error?.message ?? '알 수 없는 오류'}
+              잠시 후 다시 시도해 주세요.
             </p>
           </div>
           <Button

@@ -3,6 +3,7 @@ import { Noto_Sans_KR, Noto_Serif_KR } from 'next/font/google'
 import { Toaster } from 'sonner'
 import { Suspense } from 'react'
 import PostHogProvider from '@/components/providers/PostHogProvider'
+import { ThemeProvider } from '@/components/providers/ThemeProvider'
 import GlobalNav from '@/components/layout/GlobalNav'
 import './globals.css'
 
@@ -46,15 +47,24 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="ko">
+    <html lang="ko" suppressHydrationWarning>
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var t=localStorage.getItem('theme');var d=t==='dark'||(t!=='light'&&matchMedia('(prefers-color-scheme:dark)').matches);if(d)document.documentElement.classList.add('dark')}catch(e){}})()`,
+          }}
+        />
+      </head>
       <body className={`${notoSansKR.variable} ${notoSerifKR.variable} font-sans antialiased`}>
         <a href="#main-content" className="skip-nav">본문으로 건너뛰기</a>
         <Suspense fallback={null}>
           <PostHogProvider>
-            <GlobalNav />
-            <main id="main-content">
-              {children}
-            </main>
+            <ThemeProvider>
+              <GlobalNav />
+              <main id="main-content">
+                {children}
+              </main>
+            </ThemeProvider>
           </PostHogProvider>
         </Suspense>
         <Toaster
