@@ -52,7 +52,7 @@ export async function POST(req: NextRequest) {
 
   if (!question) return NextResponse.json({ error: 'Question not found' }, { status: 404 })
 
-  // 레벨 7 (힌트 없음) 또는 유료 전용 힌트 레벨 체크
+  // 레벨 7 (힌트 없음) 체크
   if (question.difficulty_level === 7) {
     return NextResponse.json({ error: 'No hints available at this level' }, { status: 403 })
   }

@@ -15,17 +15,17 @@ import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import type { Question, Topic } from '@/lib/questions/types'
 import { LEVEL3_QUESTIONS, LEVEL4_QUESTIONS } from '@/lib/questions/question-bank-l3-l4'
-import { LEVEL5_QUESTIONS, LEVEL6_QUESTIONS, LEVEL7_QUESTIONS } from '@/lib/questions/question-bank-l5-l7'
+import { LEVEL5_QUESTIONS } from '@/lib/questions/question-bank-l5-l7'
 
 // ── Level Configuration ────────────────────────────
 const _LEVEL_CONFIG: Record<number, { slots: number; hintCount: number }> = {
   1: { slots: 3, hintCount: 3 },
   2: { slots: 3, hintCount: 3 },
   3: { slots: 4, hintCount: 2 },
-  4: { slots: 4, hintCount: 2 },
+  4: { slots: 4, hintCount: 1 },
   5: { slots: 5, hintCount: 1 },
-  6: { slots: 6, hintCount: 1 },
-  7: { slots: 7, hintCount: 0 },
+  6: { slots: 5, hintCount: 1 },
+  7: { slots: 5, hintCount: 0 },
 }
 
 const TOPICS: Topic[] = ['humanities', 'social', 'science', 'tech', 'arts']
@@ -483,8 +483,8 @@ const QUESTION_BANK: Record<number, Record<Topic, Question[]>> = {
   3: groupByTopic(LEVEL3_QUESTIONS),
   4: groupByTopic(LEVEL4_QUESTIONS),
   5: groupByTopic(LEVEL5_QUESTIONS),
-  6: groupByTopic(LEVEL6_QUESTIONS),
-  7: groupByTopic(LEVEL7_QUESTIONS),
+  6: groupByTopic(LEVEL5_QUESTIONS),
+  7: groupByTopic(LEVEL5_QUESTIONS),
 }
 
 // ── Date-based pseudo-random selection ──────────

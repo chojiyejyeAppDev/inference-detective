@@ -369,7 +369,7 @@ export default function LevelGrid({
           </motion.div>
         )}
 
-        {/* Level 7 master banner */}
+        {/* Level 5 master banner */}
         {currentLevel === 7 && (
           <motion.div
             initial={{ opacity: 0, scale: 0.98 }}

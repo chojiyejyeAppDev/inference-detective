@@ -11,6 +11,7 @@
     "lint": "eslint . --max-warnings 0"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.78.0",
     "@ducanh2912/next-pwa": "^10.2.9",
     "@hello-pangea/dnd": "^18.0.1",
     "@portone/browser-sdk": "^0.1.3",

@@ -123,15 +123,74 @@ const QUESTIONS = [
       { id: 'f', text: '과학혁명은 종교와 과학을 통합시켰다' },
     ],
     conclusion: '과학적 객관성은 절대적이 아니라 공동체적 검증에 기반한다.',
-    correct_chain: ['a', 'b', 'c', 'd', null],
+    correct_chain: ['a', 'b', 'c', 'd'],
     hints: [
       { level: 1, text: '역사적 관점 → 반례 등장 → 전제 붕괴 → 새로운 이해 흐름을 따르세요' },
     ],
   },
 ]
 
+const LEVEL_SLOTS: Record<number, number> = {
+  1: 3, 2: 3, 3: 4, 4: 5, 5: 5,
+}
+
+function validateQuestion(q: typeof QUESTIONS[number], index: number): string[] {
+  const errors: string[] = []
+  const expectedSlots = LEVEL_SLOTS[q.difficulty_level]
+
+  if (!expectedSlots) {
+    errors.push(`유효하지 않은 레벨: ${q.difficulty_level}`)
+    return errors
+  }
+
+  // null/undefined 체크
+  if (q.correct_chain.some((id) => id == null || id === '')) {
+    errors.push(`correct_chain에 null/빈 값이 있습니다: [${q.correct_chain}]`)
+  }
+
+  // 슬롯 수 일치 체크
+  if (q.correct_chain.length !== expectedSlots) {
+    errors.push(`correct_chain 길이(${q.correct_chain.length})가 레벨 ${q.difficulty_level} 슬롯 수(${expectedSlots})와 불일치`)
+  }
+
+  // 체인 ID가 sentences에 존재하는지 체크
+  const sentenceIds = new Set(q.sentences.map((s) => s.id))
+  for (const chainId of q.correct_chain) {
+    if (chainId && !sentenceIds.has(chainId)) {
+      errors.push(`correct_chain의 "${chainId}"가 sentences에 없습니다`)
+    }
+  }
+
+  // 중복 체인 ID 체크
+  const seen = new Set<string>()
+  for (const chainId of q.correct_chain) {
+    if (chainId && seen.has(chainId)) {
+      errors.push(`correct_chain에 중복 ID: "${chainId}"`)
+    }
+    if (chainId) seen.add(chainId)
+  }
+
+  return errors
+}
+
 async function seed() {
   console.log('📚 문제 데이터 시딩 시작...\n')
+
+  // 시딩 전 전체 검증
+  let hasErrors = false
+  for (let i = 0; i < QUESTIONS.length; i++) {
+    const errors = validateQuestion(QUESTIONS[i], i)
+    if (errors.length > 0) {
+      hasErrors = true
+      console.error(`❌ 문제 #${i + 1} (레벨 ${QUESTIONS[i].difficulty_level}) 검증 실패:`)
+      errors.forEach((e) => console.error(`   - ${e}`))
+    }
+  }
+
+  if (hasErrors) {
+    console.error('\n🚫 검증 실패한 문제가 있어 시딩을 중단합니다.')
+    process.exit(1)
+  }
 
   for (const q of QUESTIONS) {
     const { data, error } = await supabase.from('questions').insert(q).select()
