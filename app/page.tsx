@@ -407,7 +407,7 @@ export default function LandingPage() {
             {[
               {
                 name: '고3 수험생 D',
-                tag: 'Lv.5 도달 · 3주 사용',
+                tag: 'Lv.7 도달 · 3주 사용',
                 text: '비문학 지문이 항상 어려웠는데, 문장 순서를 직접 맞추다 보니 논리 흐름이 자연스럽게 보이기 시작했어요.',
               },
               {

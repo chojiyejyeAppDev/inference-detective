@@ -182,7 +182,7 @@ export function inactivityReminderEmail(nickname: string, daysAway: number, segm
   const isLong = daysAway >= 7
 
   const motivationalLine = segment
-    ? segment.level >= 5
+    ? segment.level >= 7
       ? '고급 레벨에서 쌓은 실력이 아까워요!'
       : segment.accuracy != null && segment.accuracy >= 0.7
         ? `정답률 ${Math.round(segment.accuracy * 100)}%의 실력을 유지하세요!`

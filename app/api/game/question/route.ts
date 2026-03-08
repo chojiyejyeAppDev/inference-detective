@@ -133,10 +133,10 @@ export async function GET(req: NextRequest) {
     })
   }
 
-  // 이미 푼 문제 제외 (1회 쿼리로 통합)
+  // 전체 진행 기록 조회 (1회 쿼리로 통합)
   const { data: solved } = await service
     .from('user_progress')
-    .select('question_id, is_correct')
+    .select('question_id, is_correct, created_at')
     .eq('user_id', user.id)
 
   const allSolvedIds = solved?.map((s) => s.question_id) ?? []
@@ -144,121 +144,225 @@ export async function GET(req: NextRequest) {
 
   // UUID 형식 검증 (SQL 인젝션 방지)
   const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
-  const safeIds = solved
+  const correctlyDoneIds = solved
     ?.filter((s) => s.is_correct && typeof s.question_id === 'string' && UUID_RE.test(s.question_id))
     .map((s) => s.question_id) ?? []
 
-  // 문제 조회
-  let query = service
-    .from('questions')
-    .select('id, difficulty_level, topic, passage, sentences, conclusion, hints')
-    .eq('difficulty_level', level)
+  const QUESTION_COLS = 'id, difficulty_level, topic, passage, sentences, conclusion, hints' as const
 
-  if (topic) {
-    query = query.eq('topic', topic)
+  // 문제 선택 결과
+  type QuestionRow = {
+    id: string
+    difficulty_level: number
+    topic: string
+    passage: string
+    sentences: unknown
+    conclusion: string
+    hints: unknown
   }
-
-  if (safeIds.length > 0) {
-    query = query.not('id', 'in', `(${safeIds.join(',')})`)
-  }
-
-  // 첫 사용자: 가장 오래된(쉬운) 문제 1개 / 기존 사용자: 랜덤 10개
-  if (isFirstTime) {
-    query = query.order('created_at', { ascending: true }).limit(1)
-  } else {
-    query = query.limit(10)
-  }
-
-  const { data: questions, error: qError } = await query
-
-  // 새 문제가 없으면 이미 푼 문제에서 복습 모드로 제공
+  let question: QuestionRow | null = null
   let isReview = false
-  let pool: typeof questions = questions
+  let adaptiveHint: string | null = null
+  let questionSource: 'first-time' | 'retry' | 'weak-topic' | 'fresh' | 'review' = 'fresh'
 
-  if (qError || !questions?.length) {
-    const { data: reviewQuestions } = await service
+  // 첫 사용자: 가장 오래된(쉬운) 문제 1개 제공
+  if (isFirstTime) {
+    let firstQuery = service
       .from('questions')
-      .select('id, difficulty_level, topic, passage, sentences, conclusion, hints')
+      .select(QUESTION_COLS)
+      .eq('difficulty_level', level)
+      .order('created_at', { ascending: true })
+      .limit(1)
+
+    if (topic) firstQuery = firstQuery.eq('topic', topic)
+    const { data: firstQuestions } = await firstQuery
+    question = firstQuestions?.[0] ?? null
+    questionSource = 'first-time'
+  } else if (topic) {
+    // 토픽 지정 시: 해당 토픽에서 미풀이 문제 랜덤 선택
+    let topicQuery = service
+      .from('questions')
+      .select(QUESTION_COLS)
+      .eq('difficulty_level', level)
+      .eq('topic', topic)
+      .limit(10)
+
+    if (correctlyDoneIds.length > 0) {
+      topicQuery = topicQuery.not('id', 'in', `(${correctlyDoneIds.join(',')})`)
+    }
+    const { data: topicQuestions } = await topicQuery
+    if (topicQuestions && topicQuestions.length > 0) {
+      question = topicQuestions[Math.floor(Math.random() * topicQuestions.length)]
+      questionSource = 'fresh'
+    }
+  } else {
+    // ─── Spaced Repetition Priority Queue ───
+    const roll = Math.random() * 100
+    const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
+
+    const TOPIC_LABELS: Record<string, string> = {
+      humanities: '인문', social: '사회', science: '과학', tech: '기술', arts: '예술',
+    }
+
+    // Queue 1: Wrong answer re-test (30%) — recent wrong answers not yet solved correctly
+    if (roll < 30) {
+      // Find question IDs answered wrong, excluding those later answered correctly
+      const wrongOnlyIds = solved
+        ?.filter((s) => !s.is_correct && typeof s.question_id === 'string' && UUID_RE.test(s.question_id))
+        .filter((s) => !correctlyDoneIds.includes(s.question_id))
+        .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+        .map((s) => s.question_id) ?? []
+
+      // Deduplicate (keep first = most recent)
+      const uniqueWrongIds = [...new Set(wrongOnlyIds)]
+
+      if (uniqueWrongIds.length > 0) {
+        // Filter out questions retried within the last 24 hours
+        const recentAttemptIds = solved
+          ?.filter((s) => s.created_at >= twentyFourHoursAgo)
+          .map((s) => s.question_id) ?? []
+        const recentSet = new Set(recentAttemptIds)
+
+        const cooledDownIds = uniqueWrongIds.filter((id) => !recentSet.has(id))
+        const retryIds = cooledDownIds.length > 0 ? cooledDownIds.slice(0, 5) : uniqueWrongIds.slice(0, 5)
+
+        const { data: retryQuestions } = await service
+          .from('questions')
+          .select(QUESTION_COLS)
+          .eq('difficulty_level', level)
+          .in('id', retryIds)
+
+        if (retryQuestions && retryQuestions.length > 0) {
+          question = retryQuestions[Math.floor(Math.random() * retryQuestions.length)]
+          questionSource = 'retry'
+          adaptiveHint = '이전에 틀렸던 문제를 다시 도전해요!'
+        }
+      }
+    }
+
+    // Queue 2: Weak topic targeting (25%) — new unsolved questions in weakest topic
+    if (!question && roll < 55) {
+      // Calculate per-topic accuracy from last 20 attempts
+      const recentAttempts = [...(solved ?? [])]
+        .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+        .slice(0, 20)
+
+      if (recentAttempts.length > 0) {
+        const recentQIds = recentAttempts
+          .map((s) => s.question_id)
+          .filter((id): id is string => typeof id === 'string' && UUID_RE.test(id))
+        const uniqueRecentIds = [...new Set(recentQIds)]
+
+        if (uniqueRecentIds.length > 0) {
+          const { data: recentQuestions } = await service
+            .from('questions')
+            .select('id, topic')
+            .in('id', uniqueRecentIds)
+
+          if (recentQuestions && recentQuestions.length > 0) {
+            const topicMap = new Map(recentQuestions.map((q) => [q.id, q.topic]))
+
+            // Compute per-topic accuracy
+            const topicStats: Record<string, { correct: number; total: number }> = {}
+            for (const attempt of recentAttempts) {
+              const t = topicMap.get(attempt.question_id)
+              if (!t) continue
+              if (!topicStats[t]) topicStats[t] = { correct: 0, total: 0 }
+              topicStats[t].total++
+              if (attempt.is_correct) topicStats[t].correct++
+            }
+
+            // Find topic with lowest accuracy (minimum 2 attempts to be considered)
+            let weakestTopic: string | null = null
+            let lowestAccuracy = Infinity
+            for (const [t, stats] of Object.entries(topicStats)) {
+              if (stats.total < 2) continue
+              const accuracy = stats.correct / stats.total
+              if (accuracy < lowestAccuracy) {
+                lowestAccuracy = accuracy
+                weakestTopic = t
+              }
+            }
+
+            if (weakestTopic) {
+              let weakQuery = service
+                .from('questions')
+                .select(QUESTION_COLS)
+                .eq('difficulty_level', level)
+                .eq('topic', weakestTopic)
+                .limit(10)
+
+              if (correctlyDoneIds.length > 0) {
+                weakQuery = weakQuery.not('id', 'in', `(${correctlyDoneIds.join(',')})`)
+              }
+
+              const { data: weakQuestions } = await weakQuery
+              if (weakQuestions && weakQuestions.length > 0) {
+                question = weakQuestions[Math.floor(Math.random() * weakQuestions.length)]
+                questionSource = 'weak-topic'
+                adaptiveHint = `약점 영역(${TOPIC_LABELS[weakestTopic] ?? weakestTopic})을 집중 연습해요`
+              }
+            }
+          }
+        }
+      }
+    }
+
+    // Queue 3: Fresh questions (45% or fallthrough) — random unsolved at current level
+    if (!question) {
+      let freshQuery = service
+        .from('questions')
+        .select(QUESTION_COLS)
+        .eq('difficulty_level', level)
+        .limit(10)
+
+      if (correctlyDoneIds.length > 0) {
+        freshQuery = freshQuery.not('id', 'in', `(${correctlyDoneIds.join(',')})`)
+      }
+
+      const { data: freshQuestions } = await freshQuery
+      if (freshQuestions && freshQuestions.length > 0) {
+        question = freshQuestions[Math.floor(Math.random() * freshQuestions.length)]
+        questionSource = 'fresh'
+      }
+    }
+
+    // Fallback: Review mode — already solved, oldest first
+    if (!question) {
+      const { data: reviewQuestions } = await service
+        .from('questions')
+        .select(QUESTION_COLS)
+        .eq('difficulty_level', level)
+        .order('created_at', { ascending: true })
+        .limit(10)
+
+      if (reviewQuestions && reviewQuestions.length > 0) {
+        question = reviewQuestions[Math.floor(Math.random() * reviewQuestions.length)]
+        questionSource = 'review'
+        isReview = true
+      }
+    }
+  }
+
+  // No question found from any source
+  if (!question) {
+    // Try review fallback for first-time / topic-filtered cases too
+    const { data: lastResort } = await service
+      .from('questions')
+      .select(QUESTION_COLS)
       .eq('difficulty_level', level)
       .limit(10)
 
-    if (!reviewQuestions?.length) {
+    if (lastResort && lastResort.length > 0) {
+      question = lastResort[Math.floor(Math.random() * lastResort.length)]
+      questionSource = 'review'
+      isReview = true
+    } else {
       // C-7: Rollback consumed daily question since no question was served
       if (!isUnlimited) {
         await service.rpc('rollback_daily_question', { uid: user.id })
       }
       return NextResponse.json({ error: 'No questions available' }, { status: 404 })
-    }
-
-    pool = reviewQuestions
-    isReview = true
-  }
-
-  // 선택: 첫 사용자는 첫 번째(가장 쉬운), 기존 사용자는 약점 기반 가중 선택
-  if (!pool || pool.length === 0) {
-    // C-7: Rollback consumed daily question since no question was served
-    if (!isUnlimited) {
-      await service.rpc('rollback_daily_question', { uid: user.id })
-    }
-    return NextResponse.json({ error: '사용 가능한 문제가 없습니다.' }, { status: 404 })
-  }
-
-  let question = pool[0]
-  let adaptiveHint: string | null = null
-
-  if (isFirstTime) {
-    question = pool[0]
-  } else if (!topic && pool.length > 1) {
-    // Adaptive selection: weight questions toward weak topics
-    const wrongTopics: Record<string, number> = {}
-    for (const s of solved ?? []) {
-      if (!s.is_correct) {
-        // Find topic from pool or solved questions
-        const q = pool.find((p) => p.id === s.question_id)
-        if (q) {
-          wrongTopics[q.topic] = (wrongTopics[q.topic] ?? 0) + 1
-        }
-      }
-    }
-
-    // Also check wrong answers by topic from progress data
-    const { data: recentWrong } = await service
-      .from('user_progress')
-      .select('question_id')
-      .eq('user_id', user.id)
-      .eq('is_correct', false)
-      .order('created_at', { ascending: false })
-      .limit(30)
-
-    if (recentWrong && recentWrong.length > 0) {
-      const wrongQIds = recentWrong.map((r) => r.question_id)
-      const { data: wrongQuestions } = await service
-        .from('questions')
-        .select('topic')
-        .in('id', wrongQIds)
-
-      for (const wq of wrongQuestions ?? []) {
-        wrongTopics[wq.topic] = (wrongTopics[wq.topic] ?? 0) + 1
-      }
-    }
-
-    // Weight pool: questions matching weak topics get higher selection probability
-    if (Object.keys(wrongTopics).length > 0) {
-      const TOPIC_LABELS: Record<string, string> = {
-        humanities: '인문', social: '사회', science: '과학', tech: '기술', arts: '예술',
-      }
-      const weakestTopic = Object.entries(wrongTopics).sort((a, b) => b[1] - a[1])[0]
-      const weakTopicQuestions = pool.filter((p) => p.topic === weakestTopic[0])
-
-      // 40% chance to serve from weak topic if available
-      if (weakTopicQuestions.length > 0 && Math.random() < 0.4) {
-        question = weakTopicQuestions[Math.floor(Math.random() * weakTopicQuestions.length)]
-        adaptiveHint = `약점 영역(${TOPIC_LABELS[weakestTopic[0]] ?? weakestTopic[0]})을 집중 연습해요`
-      } else {
-        question = pool[Math.floor(Math.random() * pool.length)]
-      }
-    } else {
-      question = pool[Math.floor(Math.random() * pool.length)]
     }
   }
 
@@ -267,8 +371,9 @@ export async function GET(req: NextRequest) {
   const longestStreak = profile.longest_streak ?? 0
   const streakFreezeCount = profile.streak_freeze_count ?? 0
 
-  return NextResponse.json({
+  const response = NextResponse.json({
     question,
+    question_source: questionSource,
     is_review: isReview,
     adaptive_hint: adaptiveHint,
     hint_points: currentHintPoints,
@@ -282,4 +387,8 @@ export async function GET(req: NextRequest) {
       freeze_count: streakFreezeCount,
     },
   })
+
+  response.headers.set('X-Question-Source', questionSource)
+
+  return response
 }

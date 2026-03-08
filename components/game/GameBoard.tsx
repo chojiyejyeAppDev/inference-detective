@@ -4,7 +4,7 @@ import { useState, useCallback, useEffect, useRef } from 'react'
 import { DragDropContext, Droppable, DropResult } from '@hello-pangea/dnd'
 import { motion, AnimatePresence } from 'framer-motion'
 import Link from 'next/link'
-import { Lightbulb, Send, RefreshCw, ChevronRight, Undo2, Flame, HelpCircle, XCircle } from 'lucide-react'
+import { Lightbulb, Send, RefreshCw, ChevronRight, Undo2, Flame, HelpCircle, XCircle, BookOpen, AlertCircle } from 'lucide-react'
 import { Question, Sentence, EvaluationResult, LevelConfig } from '@/types'
 import { buildConnectionMap } from '@/lib/game/connectionStrength'
 import Button from '@/components/ui/Button'
@@ -88,6 +88,7 @@ export default function GameBoard({
   const [pool, setPool] = useState<Sentence[]>(saved?.pool ?? shuffleArray(question.sentences))
   const [showLevelUp, setShowLevelUp] = useState(false)
   const [showCorrectAnswer, setShowCorrectAnswer] = useState(false)
+  const [showDetailedExplanation, setShowDetailedExplanation] = useState(false)
   const [history, setHistory] = useState<{ chain: (string | null)[]; pool: Sentence[] }[]>([])
   const [showTutorial, setShowTutorial] = useState(false)
   const [selectedCardId, setSelectedCardId] = useState<string | null>(null)
@@ -115,6 +116,7 @@ export default function GameBoard({
     setChain(Array(levelConfig.slots).fill(null))
     setPool(shuffleArray(question.sentences))
     setShowCorrectAnswer(false)
+    setShowDetailedExplanation(false)
     setHistory([])
     try { sessionStorage.removeItem(STORAGE_KEY) } catch { /* ignore */ }
   }, [question.id, levelConfig.slots, question.sentences, STORAGE_KEY])
@@ -524,6 +526,35 @@ export default function GameBoard({
                   </p>
                   <p className="text-xs text-stone-500">{evaluationResult.explanation}</p>
 
+                  {/* 상세 해설 (정답) */}
+                  {evaluationResult.detailed_explanation && (
+                    <div className="mt-3 pt-3 border-t border-exam-rule text-left">
+                      <button
+                        onClick={() => setShowDetailedExplanation(!showDetailedExplanation)}
+                        className="flex items-center gap-1.5 text-xs text-stone-600 hover:text-exam-ink transition-colors font-medium"
+                      >
+                        <BookOpen size={13} />
+                        {showDetailedExplanation ? '상세 해설 숨기기' : '상세 해설'}
+                      </button>
+                      <AnimatePresence>
+                        {showDetailedExplanation && (
+                          <motion.div
+                            initial={{ opacity: 0, height: 0 }}
+                            animate={{ opacity: 1, height: 'auto' }}
+                            exit={{ opacity: 0, height: 0 }}
+                            className="overflow-hidden"
+                          >
+                            <div className="mt-2 bg-bg-base border border-exam-rule p-4">
+                              <p className="text-sm text-exam-ink leading-relaxed">
+                                {evaluationResult.detailed_explanation}
+                              </p>
+                            </div>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </div>
+                  )}
+
                   {/* Streak + hint bonus inline — subtle */}
                   <div className="flex items-center justify-center gap-3 mt-2 text-[10px] text-stone-400">
                     {(evaluationResult.streak ?? 0) >= 2 && (
@@ -664,6 +695,60 @@ export default function GameBoard({
                       </AnimatePresence>
                     </div>
                   )}
+
+                  {/* 상세 해설 (오답) */}
+                  {evaluationResult.detailed_explanation && (
+                    <div className="mt-3 pt-3 border-t border-exam-rule">
+                      <button
+                        onClick={() => setShowDetailedExplanation(!showDetailedExplanation)}
+                        className="flex items-center gap-1.5 text-xs text-stone-600 hover:text-exam-ink transition-colors font-medium"
+                      >
+                        <BookOpen size={13} />
+                        {showDetailedExplanation ? '상세 해설 숨기기' : '상세 해설'}
+                      </button>
+                      <AnimatePresence>
+                        {showDetailedExplanation && (
+                          <motion.div
+                            initial={{ opacity: 0, height: 0 }}
+                            animate={{ opacity: 1, height: 'auto' }}
+                            exit={{ opacity: 0, height: 0 }}
+                            className="overflow-hidden"
+                          >
+                            <div className="mt-2 bg-bg-base border border-exam-rule p-4">
+                              <p className="text-sm text-exam-ink leading-relaxed">
+                                {evaluationResult.detailed_explanation}
+                              </p>
+                            </div>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </div>
+                  )}
+
+                  {/* 오답 분석 */}
+                  {evaluationResult.wrong_analysis && evaluationResult.wrong_analysis.length > 0 && (
+                    <div className="mt-3 pt-3 border-t border-exam-rule">
+                      <p className="flex items-center gap-1.5 text-[10px] font-semibold text-stone-500 uppercase tracking-wider mb-2">
+                        <AlertCircle size={12} className="text-exam-red" />
+                        오답 분석
+                      </p>
+                      <div className="space-y-2">
+                        {evaluationResult.wrong_analysis.map((item, i) => {
+                          const sentence = getSentenceById(item.sentence_id)
+                          return (
+                            <div key={i} className="border-l-2 border-exam-red pl-3">
+                              <p className="font-medium text-sm text-exam-ink">
+                                {sentence?.text ?? `(문장 ${item.sentence_id})`}
+                              </p>
+                              <p className="text-xs text-stone-500 mt-1">
+                                {item.why_wrong}
+                              </p>
+                            </div>
+                          )
+                        })}
+                      </div>
+                    </div>
+                  )}
                   </Card>
                 </motion.div>
               )}
@@ -784,6 +869,7 @@ export default function GameBoard({
                           setPool(shuffleArray(question.sentences))
                           setHistory([])
                           setShowCorrectAnswer(false)
+                          setShowDetailedExplanation(false)
                           onReset()
                         }}
                       >

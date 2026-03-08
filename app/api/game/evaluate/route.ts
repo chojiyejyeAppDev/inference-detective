@@ -80,6 +80,7 @@ export async function POST(req: NextRequest) {
     submitted_chain,
     is_correct: evaluation.is_correct,
     hints_used,
+    wrong_analysis: evaluation.wrong_analysis ?? null,
   })
 
   if (insertError) {

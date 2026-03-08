@@ -22,6 +22,10 @@ export interface Question {
   correct_chain: string[] // sentence ids in order
   hints: Hint[]
   chain_explanations?: string[] // why each step follows the previous
+  detailed_explanation?: string // 정답 체인의 전체 상세 해설
+  wrong_answer_analysis?: { sentence_id: string; why_wrong: string }[] // 오답별 분석
+  source?: string // 출처
+  source_url?: string // 출처 URL
 }
 
 export interface Profile {
@@ -72,6 +76,8 @@ export interface EvaluationResult {
   feedback: SlotFeedback[]
   explanation: string
   chain_explanations?: string[]
+  detailed_explanation?: string // 상세 해설
+  wrong_analysis?: { sentence_id: string; why_wrong: string; user_placed_at: number }[] // 사용자의 오답 분석
   streak?: number
   daily_streak?: number
   hint_points_bonus?: number
