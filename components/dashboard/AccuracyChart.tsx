@@ -48,6 +48,18 @@ export default function AccuracyChart({ data }: AccuracyChartProps) {
         <div className="h-40 flex items-center justify-center text-slate-500 text-sm">
           아직 데이터가 없어요. 문제를 풀어보세요!
         </div>
+      ) : data.length < 3 ? (
+        <div className="h-40 flex flex-col items-center justify-center gap-2">
+          <div className="flex items-center gap-3">
+            {data.map((d, i) => (
+              <div key={i} className="text-center">
+                <p className="text-2xl font-black text-amber-400">{Math.round(d.accuracy * 100)}%</p>
+                <p className="text-[10px] text-slate-500 mt-0.5">{d.date}</p>
+              </div>
+            ))}
+          </div>
+          <p className="text-xs text-slate-500 mt-1">{3 - data.length}문제 더 풀면 추이 그래프가 나타나요</p>
+        </div>
       ) : (
         <ResponsiveContainer width="100%" height={180} aria-label="정확도 추이 차트">
           <LineChart data={data} margin={{ top: 5, right: 5, bottom: 5, left: -20 }}>

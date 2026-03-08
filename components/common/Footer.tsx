@@ -26,26 +26,34 @@ export default function Footer() {
         </div>
 
         {/* 사업자 정보 */}
-        <div className="text-[11px] leading-relaxed text-slate-500 space-y-1">
+        <address className="text-[11px] leading-relaxed text-slate-500 space-y-1 not-italic">
+          <dl className="grid grid-cols-[auto_1fr] gap-x-2 gap-y-0.5 sm:flex sm:flex-wrap sm:gap-x-0 sm:gap-y-1">
+            <div className="contents sm:flex sm:items-center">
+              <dt className="sr-only">상호</dt>
+              <dd>이온랩</dd>
+              <span className="hidden sm:inline mx-1.5" aria-hidden="true">|</span>
+            </div>
+            <div className="contents sm:flex sm:items-center">
+              <dt className="sr-only">대표자</dt>
+              <dd>대표자: 조지예</dd>
+              <span className="hidden sm:inline mx-1.5" aria-hidden="true">|</span>
+            </div>
+            <div className="contents sm:flex sm:items-center">
+              <dt className="sr-only">사업자등록번호</dt>
+              <dd>사업자등록번호: 263-54-01020</dd>
+            </div>
+          </dl>
+          <p>통신판매업신고: 제2026-충북청주-0103호</p>
+          <p>주소: 충청북도 청주시 서원구 내수동로108번길 33, 4층</p>
           <p>
-            <span className="text-slate-500">이온랩</span>
-            <span className="mx-1.5">|</span>대표자: 조지예
-            <span className="mx-1.5">|</span>사업자등록번호: 263-54-01020
-          </p>
-          <p>
-            통신판매업신고: 제2026-충북청주-0103호
-          </p>
-          <p>
-            주소: 충청북도 청주시 서원구 내수동로108번길 33, 4층
-          </p>
-          <p>
-            전화: 043-260-2520
-            <span className="mx-1.5">|</span>이메일:{' '}
+            전화: <a href="tel:043-260-2520" className="hover:text-slate-400 transition-colors">043-260-2520</a>
+            <span className="mx-1.5" aria-hidden="true">|</span>
+            이메일:{' '}
             <a href="mailto:eonlab@2onlab.com" className="hover:text-slate-400 transition-colors">
               eonlab@2onlab.com
             </a>
           </p>
-        </div>
+        </address>
 
         {/* 저작권 */}
         <div className="mt-6 pt-5 border-t border-white/[0.04]">

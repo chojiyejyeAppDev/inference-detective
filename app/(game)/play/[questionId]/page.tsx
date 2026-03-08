@@ -6,6 +6,7 @@ import { toast } from 'sonner'
 import GameBoard from '@/components/game/GameBoard'
 import { Question, EvaluationResult, LevelConfig } from '@/types'
 import { getLevelConfig } from '@/lib/game/levelConfig'
+import { fetchWithTimeout } from '@/lib/api/fetchWithTimeout'
 
 interface DailyLimitError {
   error: 'daily_limit_reached'
@@ -27,6 +28,8 @@ export default function PlayPage({ params }: { params: Promise<{ questionId: str
   const [dailyInfo, setDailyInfo] = useState<{ used: number; limit: number | null } | null>(null)
   const [isReviewMode, setIsReviewMode] = useState(false)
   const [hintsUsedCount, setHintsUsedCount] = useState(0)
+  const [inviteCode, setInviteCode] = useState<string | null>(null)
+  const [currentStreak, setCurrentStreak] = useState(0)
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
 
@@ -42,7 +45,7 @@ export default function PlayPage({ params }: { params: Promise<{ questionId: str
 
     try {
       const params = id ? `?id=${id}` : ''
-      const res = await fetch(`/api/game/question${params}`)
+      const res = await fetchWithTimeout(`/api/game/question${params}`)
 
       if (res.status === 403) {
         const data: DailyLimitError = await res.json()
@@ -66,11 +69,19 @@ export default function PlayPage({ params }: { params: Promise<{ questionId: str
       setLevelConfig(getLevelConfig(data.question.difficulty_level))
       setDailyInfo({ used: data.daily_used, limit: data.daily_limit })
       if (data.hint_points != null) setHintPoints(data.hint_points)
+      if (data.invite_code) setInviteCode(data.invite_code)
       if (data.is_review) {
         toast.info('이 레벨의 새 문제를 모두 풀었어요! 복습 문제입니다.', { duration: 4000 })
       }
-    } catch (_err) {
-      setError('문제를 불러오지 못했어요. 다시 시도해주세요.')
+      // 마지막 1문제 남았을 때 경고 토스트
+      if (data.daily_limit != null && data.daily_limit - data.daily_used === 1) {
+        toast.warning('오늘의 마지막 문제예요! 신중하게 풀어보세요.', { duration: 5000 })
+      }
+    } catch (err) {
+      const msg = err instanceof DOMException && err.name === 'AbortError'
+        ? '요청 시간이 초과되었어요. 네트워크를 확인하고 다시 시도해주세요.'
+        : '문제를 불러오지 못했어요. 다시 시도해주세요.'
+      setError(msg)
     } finally {
       setLoading(false)
     }
@@ -81,7 +92,7 @@ export default function PlayPage({ params }: { params: Promise<{ questionId: str
     setIsSubmitting(true)
 
     try {
-      const res = await fetch('/api/game/evaluate', {
+      const res = await fetchWithTimeout('/api/game/evaluate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ question_id: question.id, submitted_chain: chain, hints_used: hintsUsedCount }),
@@ -92,6 +103,10 @@ export default function PlayPage({ params }: { params: Promise<{ questionId: str
       const result = await res.json()
       setEvaluationResult(result as EvaluationResult)
 
+      // 스트릭 업데이트
+      if (result.streak != null) setCurrentStreak(result.streak)
+      else if (!result.is_correct) setCurrentStreak(0)
+
       // 정답 시 힌트 포인트 보너스 반영
       if (result.hint_points_remaining != null) {
         setHintPoints(result.hint_points_remaining)
@@ -99,8 +114,11 @@ export default function PlayPage({ params }: { params: Promise<{ questionId: str
           toast.success(`힌트 포인트 +${result.hint_points_bonus}`, { duration: 2000 })
         }
       }
-    } catch {
-      toast.error('평가 중 오류가 발생했어요. 다시 시도해주세요.')
+    } catch (err) {
+      const msg = err instanceof DOMException && err.name === 'AbortError'
+        ? '요청 시간이 초과되었어요. 네트워크를 확인해주세요.'
+        : '평가 중 오류가 발생했어요. 다시 시도해주세요.'
+      toast.error(msg)
     } finally {
       setIsSubmitting(false)
     }
@@ -111,7 +129,7 @@ export default function PlayPage({ params }: { params: Promise<{ questionId: str
     setIsHintLoading(true)
 
     try {
-      const res = await fetch('/api/game/hint', {
+      const res = await fetchWithTimeout('/api/game/hint', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ question_id: question.id, hint_step: hintStep }),
@@ -222,6 +240,8 @@ export default function PlayPage({ params }: { params: Promise<{ questionId: str
       levelConfig={levelConfig}
       hintPoints={hintPoints}
       dailyRemaining={dailyInfo?.limit != null ? Math.max(0, dailyInfo.limit - dailyInfo.used) : null}
+      inviteCode={inviteCode}
+      streak={currentStreak}
       isSubmitting={isSubmitting}
       isHintLoading={isHintLoading}
       isReviewMode={isReviewMode}

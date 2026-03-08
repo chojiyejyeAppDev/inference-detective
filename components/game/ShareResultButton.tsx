@@ -10,6 +10,12 @@ interface ShareResultButtonProps {
   isCorrect: boolean
   levelUp: boolean
   slots: number
+  inviteCode?: string
+}
+
+function buildShareUrl(inviteCode?: string): string {
+  const base = process.env.NEXT_PUBLIC_APP_URL ?? 'https://eruda.today'
+  return inviteCode ? `${base}?ref=${inviteCode}` : base
 }
 
 function buildShareText({
@@ -18,6 +24,7 @@ function buildShareText({
   isCorrect,
   levelUp,
   slots,
+  inviteCode,
 }: ShareResultButtonProps): string {
   const pct = Math.round(accuracy * 100)
   const emoji = isCorrect ? '🎯' : '🧩'
@@ -29,7 +36,7 @@ function buildShareText({
     lvlEmoji,
     '',
     '수능 비문학 추론 훈련, 매일 5문제 무료!',
-    'https://eruda.today',
+    buildShareUrl(inviteCode),
   ]
     .filter(Boolean)
     .join('\n')
@@ -40,7 +47,7 @@ export default function ShareResultButton(props: ShareResultButtonProps) {
   const [copied, setCopied] = useState(false)
 
   const shareText = buildShareText(props)
-  const appUrl = 'https://eruda.today'
+  const appUrl = buildShareUrl(props.inviteCode)
   const pct = Math.round(props.accuracy * 100)
   const title = `이:르다 Lv.${props.level} — 정확도 ${pct}%`
 
@@ -80,7 +87,7 @@ export default function ShareResultButton(props: ShareResultButtonProps) {
         content: {
           title,
           description: `${props.isCorrect ? '정답!' : '도전 중!'} 수능 비문학 추론 훈련, 매일 5문제 무료`,
-          imageUrl: `${appUrl}/og-image.png`,
+          imageUrl: `${process.env.NEXT_PUBLIC_APP_URL ?? 'https://eruda.today'}/og-image.png`,
           link: { mobileWebUrl: appUrl, webUrl: appUrl },
         },
         buttons: [

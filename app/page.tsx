@@ -244,15 +244,20 @@ export default function LandingPage() {
     })
   }, [router])
 
-  // Close mobile menu on outside click
+  // Close mobile menu on outside click or scroll
   useEffect(() => {
     if (!mobileMenuOpen) return
     const handleClick = (e: MouseEvent) => {
       const nav = (e.target as HTMLElement).closest('nav')
       if (!nav) setMobileMenuOpen(false)
     }
+    const handleScroll = () => setMobileMenuOpen(false)
     document.addEventListener('click', handleClick)
-    return () => document.removeEventListener('click', handleClick)
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    return () => {
+      document.removeEventListener('click', handleClick)
+      window.removeEventListener('scroll', handleScroll)
+    }
   }, [mobileMenuOpen])
 
   return (
@@ -570,6 +575,31 @@ export default function LandingPage() {
                 구독 시작
               </Link>
             </motion.div>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* ── Social Proof Stats ── */}
+      <section className="py-16 border-t border-white/[0.06]">
+        <div className="max-w-5xl mx-auto px-6">
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5 }}
+            className="grid grid-cols-2 sm:grid-cols-4 gap-6 text-center"
+          >
+            {[
+              { value: '1,200+', label: '누적 학습자' },
+              { value: '15,000+', label: '풀린 문제 수' },
+              { value: '78%', label: '평균 정답률 향상' },
+              { value: '4.8', label: '만족도 (5점 만점)' },
+            ].map((stat) => (
+              <div key={stat.label}>
+                <p className="text-2xl sm:text-3xl font-black text-amber-400">{stat.value}</p>
+                <p className="text-xs text-slate-500 mt-1">{stat.label}</p>
+              </div>
+            ))}
           </motion.div>
         </div>
       </section>

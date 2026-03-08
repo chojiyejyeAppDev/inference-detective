@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { ArrowLeft } from 'lucide-react'
+
 import Footer from '@/components/common/Footer'
 
 export const metadata = {
@@ -10,13 +10,13 @@ export default function RefundPage() {
   return (
     <div className="min-h-screen bg-bg-base text-slate-300">
       <div className="max-w-2xl mx-auto px-6 py-12">
-        <Link
-          href="/"
-          className="inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-300 transition-colors mb-8"
-        >
-          <ArrowLeft size={14} />
-          홈으로
-        </Link>
+        <nav aria-label="breadcrumb" className="mb-8">
+          <ol className="flex items-center gap-1.5 text-sm text-slate-500">
+            <li><Link href="/" className="hover:text-slate-300 transition-colors">홈</Link></li>
+            <li aria-hidden="true">/</li>
+            <li className="text-slate-300 font-medium">환불규정</li>
+          </ol>
+        </nav>
 
         <h1 className="text-3xl font-black text-white tracking-tight mb-2">환불·교환·취소 규정</h1>
         <p className="text-sm text-slate-500 mb-10">시행일: 2026년 3월 1일</p>
