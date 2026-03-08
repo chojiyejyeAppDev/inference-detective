@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { LayoutGrid, BarChart3, CreditCard, LogOut, BookMarked, Settings } from 'lucide-react'
+import { LayoutGrid, BarChart3, CreditCard, BookMarked, Settings } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 
 const NAV_ITEMS = [
@@ -11,6 +11,7 @@ const NAV_ITEMS = [
   { href: '/review', label: '오답 노트', icon: BookMarked },
   { href: '/dashboard', label: '대시보드', icon: BarChart3 },
   { href: '/pricing', label: '구독', icon: CreditCard },
+  { href: '/settings', label: '설정', icon: Settings },
 ]
 
 export default function GlobalNav() {
@@ -31,12 +32,6 @@ export default function GlobalNav() {
   }, [])
 
   if (isHidden || !isLoggedIn) return null
-
-  async function handleLogout() {
-    const supabase = createClient()
-    await supabase.auth.signOut()
-    window.location.href = '/login'
-  }
 
   if (isCompact) {
     return (
@@ -82,15 +77,6 @@ export default function GlobalNav() {
               </Link>
             )
           })}
-          <div className="w-px h-4 bg-slate-700 mx-1" />
-          <button
-            onClick={handleLogout}
-            aria-label="로그아웃"
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs text-slate-500 hover:text-red-400 hover:bg-red-500/10 transition-colors"
-          >
-            <LogOut size={13} />
-            로그아웃
-          </button>
         </div>
       </nav>
 
