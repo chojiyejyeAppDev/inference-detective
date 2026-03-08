@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient, createServiceClient } from '@/lib/supabase/server'
 import { checkCsrf } from '@/lib/api/csrf'
 import { rateLimit, rateLimitResponse } from '@/lib/api/rateLimit'
+import { hintSchema } from '@/lib/api/schemas'
 
 export async function POST(req: NextRequest) {
   const csrfError = checkCsrf(req)
@@ -18,19 +19,18 @@ export async function POST(req: NextRequest) {
   const { limited } = rateLimit(`hint:${user.id}`, { max: 30, windowMs: 60_000 })
   if (limited) return rateLimitResponse()
 
-  let body: { question_id: string; hint_step: number }
+  let rawBody: unknown
   try {
-    body = await req.json()
+    rawBody = await req.json()
   } catch {
     return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
   }
-  const { question_id, hint_step } = body
 
-  // 입력 검증
-  if (!question_id || typeof question_id !== 'string') {
-    return NextResponse.json({ error: 'Invalid question_id' }, { status: 400 })
+  const parsed = hintSchema.safeParse(rawBody)
+  if (!parsed.success) {
+    return NextResponse.json({ error: parsed.error.issues[0]?.message ?? 'Invalid input' }, { status: 400 })
   }
-  const step = Math.max(1, Math.min(10, Math.floor(Number(hint_step) || 1)))
+  const { question_id, hint_step: step } = parsed.data
 
   const service = await createServiceClient()
 

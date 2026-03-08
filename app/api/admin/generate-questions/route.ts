@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import OpenAI from 'openai'
+import { generateQuestionsSchema } from '@/lib/api/schemas'
 
 const LEVEL_GUIDE: Record<number, { slots: number; hints: number; passageLen: string; style: string }> = {
   1: { slots: 3, hints: 3, passageLen: '80~120자 (3문장)', style: '일상/기초 인과. 짧고 명확한 문장.' },
@@ -30,31 +31,18 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   }
 
-  let body: Record<string, unknown>
+  let rawBody: unknown
   try {
-    body = await request.json()
+    rawBody = await request.json()
   } catch {
     return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
   }
 
-  const { text, level: rawLevel, topic, count: rawCount } = body as {
-    text?: unknown
-    level?: unknown
-    topic?: unknown
-    count?: unknown
+  const parsed = generateQuestionsSchema.safeParse(rawBody)
+  if (!parsed.success) {
+    return NextResponse.json({ error: parsed.error.issues[0]?.message ?? 'Invalid input' }, { status: 400 })
   }
-
-  if (typeof text !== 'string' || !text.trim()) {
-    return NextResponse.json({ error: '지문 텍스트를 입력해주세요.' }, { status: 400 })
-  }
-  if (typeof topic !== 'string' || !topic.trim()) {
-    return NextResponse.json({ error: '주제를 입력해주세요.' }, { status: 400 })
-  }
-  const level = Math.max(1, Math.min(7, Math.floor(Number(rawLevel) || 0)))
-  if (!level) {
-    return NextResponse.json({ error: '유효한 레벨(1~7)을 입력해주세요.' }, { status: 400 })
-  }
-  const count = Math.max(1, Math.min(10, Math.floor(Number(rawCount) || 3)))
+  const { text, level, topic, count } = parsed.data
 
   const apiKey = process.env.OPENAI_API_KEY
   if (!apiKey) {

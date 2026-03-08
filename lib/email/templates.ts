@@ -129,6 +129,33 @@ export function dailyReminderEmail(nickname: string): string {
   `)
 }
 
+// ── 미접속 리텐션 (3일+) ──
+export function inactivityReminderEmail(nickname: string, daysAway: number): string {
+  const isLong = daysAway >= 7
+  const title = isLong ? '다시 돌아와주세요!' : '추론 실력, 쉬면 잊혀져요!'
+  const body = isLong
+    ? `${nickname}님, 벌써 ${daysAway}일이 지났어요. 새로운 문제가 계속 추가되고 있어요. 지금 다시 시작해보세요!`
+    : `${nickname}님, ${daysAway}일째 추론 훈련을 쉬고 있어요. 하루 5분이면 감각을 유지할 수 있어요.`
+
+  return layout(`
+    <h2 style="color:#f1f5f9;font-size:20px;margin:0 0 16px;">${title}</h2>
+    <p style="color:#94a3b8;font-size:14px;line-height:1.7;margin:0 0 16px;">${body}</p>
+    <div style="background:#0f172a;border-radius:12px;padding:16px;text-align:center;">
+      <p style="color:#f59e0b;font-size:32px;font-weight:700;margin:0;">${daysAway}일</p>
+      <p style="color:#94a3b8;font-size:13px;margin:4px 0 0;">마지막 접속 이후</p>
+    </div>
+    <div style="text-align:center;margin-top:24px;">
+      <a href="https://eruda.today/levels"
+         style="display:inline-block;background:linear-gradient(135deg,#f59e0b,#d97706);color:#0f172a;font-weight:700;font-size:14px;padding:12px 32px;border-radius:10px;text-decoration:none;">
+        다시 시작하기 →
+      </a>
+    </div>
+    <p style="color:#475569;font-size:11px;margin:16px 0 0;text-align:center;">
+      이 메일을 원하지 않으시면 eonlab.official@gmail.com으로 수신 거부를 요청해주세요.
+    </p>
+  `)
+}
+
 // ── 구독 결제 완료 ──
 export function subscriptionConfirmEmail(
   nickname: string,

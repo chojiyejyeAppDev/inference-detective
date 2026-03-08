@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient, createServiceClient } from '@/lib/supabase/server'
 import { evaluateChain, checkLevelUp } from '@/lib/game/evaluator'
-import { LEVEL_UP_SESSIONS, LEVEL_UP_ACCURACY } from '@/lib/game/levelConfig'
+import { LEVEL_UP_SESSIONS, LEVEL_UP_ACCURACY, CORRECT_ANSWER_HINT_BONUS, MAX_HINT_POINTS } from '@/lib/game/levelConfig'
 import { checkCsrf } from '@/lib/api/csrf'
 import { rateLimit, rateLimitResponse } from '@/lib/api/rateLimit'
+import { evaluateSchema } from '@/lib/api/schemas'
 
 export async function POST(req: NextRequest) {
   const csrfError = checkCsrf(req)
@@ -20,25 +21,18 @@ export async function POST(req: NextRequest) {
   const { limited } = rateLimit(`evaluate:${user.id}`, { max: 20, windowMs: 60_000 })
   if (limited) return rateLimitResponse()
 
-  let body: { question_id: string; submitted_chain: (string | null)[]; hints_used?: number }
+  let rawBody: unknown
   try {
-    body = await req.json()
+    rawBody = await req.json()
   } catch {
     return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
   }
-  const { question_id, submitted_chain, hints_used: rawHintsUsed = 0 } = body
 
-  // 입력 검증
-  if (!question_id || typeof question_id !== 'string') {
-    return NextResponse.json({ error: 'Invalid question_id' }, { status: 400 })
+  const parsed = evaluateSchema.safeParse(rawBody)
+  if (!parsed.success) {
+    return NextResponse.json({ error: parsed.error.issues[0]?.message ?? 'Invalid input' }, { status: 400 })
   }
-  if (!Array.isArray(submitted_chain) || submitted_chain.length > 10) {
-    return NextResponse.json({ error: 'Invalid submitted_chain' }, { status: 400 })
-  }
-  if (submitted_chain.some((v) => v !== null && typeof v !== 'string')) {
-    return NextResponse.json({ error: 'Invalid chain entries' }, { status: 400 })
-  }
-  const hints_used = Math.max(0, Math.min(10, Number(rawHintsUsed) || 0))
+  const { question_id, submitted_chain, hints_used } = parsed.data
 
   const service = await createServiceClient()
 
@@ -122,6 +116,21 @@ export async function POST(req: NextRequest) {
     }
   }
 
+  // 정답 시 힌트 포인트 보너스
+  let hintPointsBonus = 0
+  let hintPointsRemaining: number | null = null
+  if (evaluation.is_correct) {
+    const { data: newPoints } = await service.rpc('add_hint_points', {
+      uid: user.id,
+      amount: CORRECT_ANSWER_HINT_BONUS,
+      max_points: MAX_HINT_POINTS,
+    })
+    if (newPoints != null && newPoints >= 0) {
+      hintPointsBonus = CORRECT_ANSWER_HINT_BONUS
+      hintPointsRemaining = newPoints
+    }
+  }
+
   // 연속 정답 스트릭 계산
   let streak = 0
   if (evaluation.is_correct) {
@@ -144,6 +153,8 @@ export async function POST(req: NextRequest) {
     correct_chain: question.correct_chain,
     level_up: levelUp,
     streak,
+    hint_points_bonus: hintPointsBonus,
+    hint_points_remaining: hintPointsRemaining,
     level_progress: {
       qualified: Math.min(qualifiedSessions, LEVEL_UP_SESSIONS),
       required: LEVEL_UP_SESSIONS,

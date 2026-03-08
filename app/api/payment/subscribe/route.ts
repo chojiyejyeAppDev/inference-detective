@@ -6,6 +6,7 @@ import { subscriptionConfirmEmail } from '@/lib/email/templates'
 import * as Sentry from '@sentry/nextjs'
 import { checkCsrf } from '@/lib/api/csrf'
 import { rateLimit, rateLimitResponse } from '@/lib/api/rateLimit'
+import { subscribeSchema } from '@/lib/api/schemas'
 
 export async function POST(req: NextRequest) {
   const csrfError = checkCsrf(req)
@@ -22,16 +23,20 @@ export async function POST(req: NextRequest) {
   const { limited } = rateLimit(`subscribe:${user.id}`, { max: 5, windowMs: 60_000 })
   if (limited) return rateLimitResponse()
 
-  let body: { billingKey?: string; paymentId?: string; plan?: string }
+  let rawBody: unknown
   try {
-    body = await req.json()
+    rawBody = await req.json()
   } catch {
     return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
   }
 
-  const { billingKey, paymentId, plan } = body
+  const parsed = subscribeSchema.safeParse(rawBody)
+  if (!parsed.success) {
+    return NextResponse.json({ error: parsed.error.issues[0]?.message ?? 'Invalid input' }, { status: 400 })
+  }
+  const { billingKey, paymentId, plan } = parsed.data
 
-  if (!plan || typeof plan !== 'string' || !PLANS[plan as PlanKey]) {
+  if (!PLANS[plan as PlanKey]) {
     return NextResponse.json({ error: 'Invalid plan' }, { status: 400 })
   }
 
