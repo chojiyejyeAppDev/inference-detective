@@ -3,10 +3,8 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { motion, AnimatePresence } from 'framer-motion'
-import { LayoutGrid, BarChart3, CreditCard, LogOut, Menu, X, BookMarked } from 'lucide-react'
+import { LayoutGrid, BarChart3, CreditCard, LogOut, BookMarked } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
-import { useFocusTrap } from '@/lib/hooks/useFocusTrap'
 
 const NAV_ITEMS = [
   { href: '/levels', label: '레벨', icon: LayoutGrid },
@@ -17,9 +15,7 @@ const NAV_ITEMS = [
 
 export default function GlobalNav() {
   const pathname = usePathname()
-  const [isOpen, setIsOpen] = useState(false)
   const [isLoggedIn, setIsLoggedIn] = useState(false)
-  const drawerRef = useFocusTrap<HTMLDivElement>(isOpen)
 
   // Hide nav on landing, auth pages
   const hiddenPaths = ['/', '/login', '/signup', '/admin']
@@ -28,24 +24,11 @@ export default function GlobalNav() {
   const isCompact = pathname.startsWith('/play/')
 
   useEffect(() => {
-    setIsOpen(false)
-  }, [pathname])
-
-  useEffect(() => {
     const supabase = createClient()
     supabase.auth.getUser().then(({ data }) => {
       setIsLoggedIn(!!data.user)
     })
   }, [])
-
-  useEffect(() => {
-    if (!isOpen) return
-    function handleEsc(e: KeyboardEvent) {
-      if (e.key === 'Escape') setIsOpen(false)
-    }
-    document.addEventListener('keydown', handleEsc)
-    return () => document.removeEventListener('keydown', handleEsc)
-  }, [isOpen])
 
   if (isHidden || !isLoggedIn) return null
 
@@ -111,85 +94,34 @@ export default function GlobalNav() {
         </div>
       </nav>
 
-      {/* Mobile nav trigger */}
-      <button
-        onClick={() => setIsOpen(true)}
-        aria-label="네비게이션 열기"
-        className="sm:hidden fixed top-3 right-3 z-50 p-2.5 rounded-lg border border-slate-700/80 bg-slate-800/90 backdrop-blur-sm text-slate-400 shadow-lg shadow-black/30"
+      {/* Mobile bottom navigation */}
+      <nav
+        aria-label="모바일 네비게이션"
+        className="sm:hidden fixed bottom-0 left-0 right-0 z-50 border-t border-slate-800/80 bg-bg-base/95 backdrop-blur-md safe-bottom"
       >
-        <Menu size={18} />
-      </button>
+        <div className="flex items-stretch justify-around">
+          {NAV_ITEMS.map(({ href, label, icon: Icon }) => {
+            const isActive = pathname === href || pathname.startsWith(href + '/')
+            return (
+              <Link
+                key={href}
+                href={href}
+                className={[
+                  'flex flex-col items-center justify-center gap-0.5 py-2 px-1 min-w-0 flex-1 transition-colors',
+                  isActive ? 'text-amber-400' : 'text-slate-500',
+                ].join(' ')}
+              >
+                <Icon size={18} />
+                <span className="text-[10px] font-medium leading-none truncate">{label}</span>
+              </Link>
+            )
+          })}
+        </div>
+      </nav>
 
-      {/* Mobile nav drawer */}
-      <AnimatePresence>
-        {isOpen && (
-          <>
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="sm:hidden fixed inset-0 z-[60] bg-black/60 backdrop-blur-sm"
-              onClick={() => setIsOpen(false)}
-            />
-            <motion.div
-              ref={drawerRef}
-              role="dialog"
-              aria-modal="true"
-              aria-label="네비게이션 메뉴"
-              initial={{ x: '100%' }}
-              animate={{ x: 0 }}
-              exit={{ x: '100%' }}
-              transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-              className="sm:hidden fixed top-0 right-0 bottom-0 z-[61] w-64 border-l border-slate-700 bg-slate-900 p-5 flex flex-col"
-            >
-              <div className="flex items-center justify-between mb-6">
-                <span className="text-base font-black text-white">이:르다</span>
-                <button
-                  onClick={() => setIsOpen(false)}
-                  aria-label="네비게이션 닫기"
-                  className="p-2.5 rounded-lg text-slate-500 hover:text-slate-300 hover:bg-slate-800 transition-colors"
-                >
-                  <X size={18} />
-                </button>
-              </div>
-
-              <div className="flex flex-col gap-1">
-                {NAV_ITEMS.map(({ href, label, icon: Icon }) => {
-                  const isActive = pathname === href || pathname.startsWith(href + '/')
-                  return (
-                    <Link
-                      key={href}
-                      href={href}
-                      className={[
-                        'flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors',
-                        isActive
-                          ? 'bg-amber-500/15 text-amber-400'
-                          : 'text-slate-300 hover:bg-slate-800',
-                      ].join(' ')}
-                    >
-                      <Icon size={16} />
-                      {label}
-                    </Link>
-                  )
-                })}
-              </div>
-
-              <div className="mt-auto pt-4 border-t border-slate-800">
-                <button
-                  onClick={handleLogout}
-                  className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm text-slate-500 hover:text-red-400 hover:bg-red-500/10 transition-colors"
-                >
-                  <LogOut size={16} />
-                  로그아웃
-                </button>
-              </div>
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
-
-      {/* Spacer for fixed nav */}
-      <div className="h-12 sm:h-11" />
+      {/* Spacer: top for desktop, bottom for mobile */}
+      <div className="h-0 sm:h-11" />
+      <div className="h-14 sm:h-0" />
     </>
   )
 }
