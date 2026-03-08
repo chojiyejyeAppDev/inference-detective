@@ -187,7 +187,7 @@ export default async function DashboardPage() {
             <p className="text-slate-400 font-medium text-sm mb-1">
               {totalQ === 0 ? '아직 풀어본 문제가 없어요' : `${totalQ}문제 풀었어요!`}
             </p>
-            <p className="text-slate-600 text-xs mb-4">
+            <p className="text-slate-500 text-xs mb-4">
               {totalQ === 0
                 ? '문제를 풀면 여기서 성장 그래프를 확인할 수 있어요.'
                 : '최소 5문제를 풀면 의미 있는 분석이 시작돼요. 조금만 더 풀어보세요!'}

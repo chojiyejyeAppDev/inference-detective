@@ -46,7 +46,7 @@ export default function InviteSection({ inviteCode, appUrl, isPremium }: InviteS
           )}
         </button>
       </div>
-      <p className="text-xs text-slate-600 mt-2">
+      <p className="text-xs text-slate-500 mt-2">
         내 초대 코드: <span className="text-slate-400 font-mono">{inviteCode}</span>
       </p>
     </div>

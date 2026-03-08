@@ -5,6 +5,7 @@ import { sendEmail } from '@/lib/email/resend'
 import { inviteSuccessToInviter, inviteSuccessToInvitee } from '@/lib/email/templates'
 import { checkCsrf } from '@/lib/api/csrf'
 import { rateLimit, rateLimitResponse } from '@/lib/api/rateLimit'
+import { redeemSchema } from '@/lib/api/schemas'
 
 export async function POST(req: NextRequest) {
   const csrfError = checkCsrf(req)
@@ -21,16 +22,18 @@ export async function POST(req: NextRequest) {
   const { limited } = rateLimit(`invite:${user.id}`, { max: 10, windowMs: 60_000 })
   if (limited) return rateLimitResponse()
 
-  let body: { invite_code: string }
+  let rawBody: unknown
   try {
-    body = await req.json()
+    rawBody = await req.json()
   } catch {
     return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
   }
-  const { invite_code } = body
-  if (typeof invite_code !== 'string' || !invite_code.trim()) {
-    return NextResponse.json({ error: 'Invalid invite code' }, { status: 400 })
+
+  const parsed = redeemSchema.safeParse(rawBody)
+  if (!parsed.success) {
+    return NextResponse.json({ error: parsed.error.issues[0]?.message ?? 'Invalid input' }, { status: 400 })
   }
+  const { invite_code } = parsed.data
   const service = await createServiceClient()
 
   // 이미 초대 코드 사용 여부 체크

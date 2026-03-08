@@ -174,3 +174,66 @@ export function subscriptionConfirmEmail(
     `),
   }
 }
+
+// ── 주간 성과 요약 ──
+export function weeklySummaryEmail(
+  nickname: string,
+  stats: {
+    totalSolved: number
+    correctCount: number
+    accuracy: number
+    currentLevel: number
+    streak: number
+  },
+): { subject: string; html: string } {
+  const pct = Math.round(stats.accuracy * 100)
+  const emoji = pct >= 80 ? '🔥' : pct >= 50 ? '💪' : '📚'
+
+  return {
+    subject: `${emoji} ${nickname}님의 주간 추론 리포트 — 정답률 ${pct}%`,
+    html: layout(`
+      <h2 style="color:#f1f5f9;font-size:20px;margin:0 0 8px;">이번 주 추론 리포트 ${emoji}</h2>
+      <p style="color:#94a3b8;font-size:14px;line-height:1.7;margin:0 0 20px;">
+        ${nickname}님, 이번 주도 수고하셨어요!
+      </p>
+      <div style="background:#0f172a;border-radius:12px;padding:20px;">
+        <table style="width:100%;border-collapse:collapse;">
+          <tr>
+            <td style="color:#64748b;font-size:13px;padding:8px 0;border-bottom:1px solid #1e293b;">풀은 문제</td>
+            <td style="color:#f1f5f9;font-size:15px;font-weight:700;text-align:right;padding:8px 0;border-bottom:1px solid #1e293b;">${stats.totalSolved}문제</td>
+          </tr>
+          <tr>
+            <td style="color:#64748b;font-size:13px;padding:8px 0;border-bottom:1px solid #1e293b;">정답</td>
+            <td style="color:#10b981;font-size:15px;font-weight:700;text-align:right;padding:8px 0;border-bottom:1px solid #1e293b;">${stats.correctCount}문제</td>
+          </tr>
+          <tr>
+            <td style="color:#64748b;font-size:13px;padding:8px 0;border-bottom:1px solid #1e293b;">정답률</td>
+            <td style="color:#f59e0b;font-size:15px;font-weight:700;text-align:right;padding:8px 0;border-bottom:1px solid #1e293b;">${pct}%</td>
+          </tr>
+          <tr>
+            <td style="color:#64748b;font-size:13px;padding:8px 0;border-bottom:1px solid #1e293b;">현재 레벨</td>
+            <td style="color:#f1f5f9;font-size:15px;font-weight:700;text-align:right;padding:8px 0;border-bottom:1px solid #1e293b;">Lv.${stats.currentLevel}</td>
+          </tr>
+          <tr>
+            <td style="color:#64748b;font-size:13px;padding:8px 0;">이번 주 활동일</td>
+            <td style="color:#f59e0b;font-size:15px;font-weight:700;text-align:right;padding:8px 0;">${stats.streak}일</td>
+          </tr>
+        </table>
+      </div>
+      ${pct >= 80
+        ? '<p style="color:#10b981;font-size:13px;text-align:center;margin:16px 0 0;">이번 주 추론 실력이 뛰어났어요! 계속 이 흐름을 유지하세요 🎯</p>'
+        : pct >= 50
+          ? '<p style="color:#f59e0b;font-size:13px;text-align:center;margin:16px 0 0;">꾸준히 풀고 있어요! 조금만 더 집중하면 레벨업이 가까워요 💡</p>'
+          : '<p style="color:#94a3b8;font-size:13px;text-align:center;margin:16px 0 0;">어려운 문제에도 도전하고 있군요! 틀린 문제를 복습하면 실력이 빠르게 늘어요 📖</p>'}
+      <div style="text-align:center;margin-top:24px;">
+        <a href="https://eruda.today/dashboard"
+           style="display:inline-block;background:linear-gradient(135deg,#f59e0b,#d97706);color:#0f172a;font-weight:700;font-size:14px;padding:12px 32px;border-radius:10px;text-decoration:none;">
+          대시보드에서 자세히 보기 →
+        </a>
+      </div>
+      <p style="color:#475569;font-size:11px;margin:16px 0 0;text-align:center;">
+        이 메일을 원하지 않으시면 eonlab.official@gmail.com으로 수신 거부를 요청해주세요.
+      </p>
+    `),
+  }
+}
