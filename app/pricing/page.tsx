@@ -8,6 +8,8 @@ import Link from 'next/link'
 import { toast } from 'sonner'
 import { PLANS, type PlanKey } from '@/lib/payment/portone'
 import { createClient } from '@/lib/supabase/client'
+import Button from '@/components/ui/Button'
+import Input from '@/components/ui/Input'
 
 const PLAN_FEATURES: Record<PlanKey, {
   label: string
@@ -268,64 +270,100 @@ export default function PricingPage() {
         </motion.button>
 
         {/* Header */}
-        <motion.div variants={item} className="text-center mb-12">
+        <motion.div variants={item} className="text-center mb-10">
           <p className="text-xs font-bold text-exam-red uppercase tracking-[0.15em] mb-3">Pricing</p>
-          <h1 className="font-exam-serif text-4xl font-black text-exam-ink tracking-tight mb-3">프리미엄 플랜</h1>
+          <h1 className="font-exam-serif text-4xl font-black text-exam-ink tracking-tight mb-3">플랜 선택</h1>
           <p className="text-stone-500 text-base">
-            무료로 하루 5문제, 프리미엄이면{' '}
-            <span className="text-exam-red font-bold">무제한</span>으로
+            나에게 맞는 플랜을 골라보세요
           </p>
         </motion.div>
 
-        {/* Feature comparison table */}
-        <motion.div variants={item} className="border border-exam-rule bg-white overflow-hidden mb-8">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-exam-rule">
-                <th className="text-left px-5 py-3 text-xs font-bold text-stone-500 uppercase tracking-wider">기능</th>
-                <th className="px-4 py-3 text-xs font-bold text-stone-500 uppercase tracking-wider text-center">무료</th>
-                <th className="px-4 py-3 text-xs font-bold text-exam-red uppercase tracking-wider text-center">프리미엄</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-exam-rule">
-              {[
-                { feature: '일일 문제 수', free: '5문제', premium: '무제한' },
-                { feature: '레벨 1-7 도전', free: true, premium: true },
-                { feature: '힌트 시스템', free: '제한적', premium: '전체 이용' },
-                { feature: '성장 대시보드', free: false, premium: true },
-                { feature: '오답 분석', free: false, premium: true },
-                { feature: '초대 보너스', free: '1회', premium: '무제한' },
-              ].map((row) => (
-                <tr key={row.feature}>
-                  <td className="px-5 py-3 text-exam-ink">{row.feature}</td>
-                  <td className="px-4 py-3 text-center">
-                    {typeof row.free === 'boolean'
-                      ? row.free
-                        ? <span className="text-stone-500">O</span>
-                        : <span className="text-stone-300">&mdash;</span>
-                      : <span className="text-stone-500 text-xs">{row.free}</span>}
-                  </td>
-                  <td className="px-4 py-3 text-center">
-                    {typeof row.premium === 'boolean'
-                      ? row.premium
-                        ? <span className="text-exam-red">O</span>
-                        : <span className="text-stone-300">&mdash;</span>
-                      : <span className="text-exam-red text-xs font-semibold">{row.premium}</span>}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+        {/* Plan cards — Free vs Premium side by side */}
+        <motion.div variants={item} className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+          {/* Free plan card */}
+          <div
+            className={[
+              'border-2 p-6 flex flex-col transition-all',
+              !isAlreadySubscribed
+                ? 'border-exam-ink bg-white'
+                : 'border-exam-rule bg-white',
+            ].join(' ')}
+          >
+            {!isAlreadySubscribed && (
+              <span className="self-start text-[10px] font-bold text-exam-ink border border-exam-ink px-2 py-0.5 mb-3">
+                현재 플랜
+              </span>
+            )}
+            <h3 className="font-exam-serif text-xl font-bold text-exam-ink mb-1">무료</h3>
+            <div className="mb-4">
+              <span className="text-2xl font-black text-exam-ink">{'\u20A9'}0</span>
+              <span className="text-sm text-stone-500 ml-1">/ 월</span>
+            </div>
+            <ul className="space-y-2.5 text-sm text-stone-600 flex-1">
+              <li className="flex items-start gap-2">
+                <Check size={14} className="text-stone-400 shrink-0 mt-0.5" />
+                하루 5문제 풀기
+              </li>
+              <li className="flex items-start gap-2">
+                <Check size={14} className="text-stone-400 shrink-0 mt-0.5" />
+                레벨 1-7 도전
+              </li>
+              <li className="flex items-start gap-2">
+                <Check size={14} className="text-stone-400 shrink-0 mt-0.5" />
+                기본 힌트 제공
+              </li>
+            </ul>
+            <div className="mt-5">
+              <Link
+                href="/levels"
+                className="block w-full py-3 border border-exam-rule text-center text-sm font-semibold text-stone-600 hover:bg-bg-base transition-colors"
+              >
+                무료로 계속하기
+              </Link>
+            </div>
+          </div>
+
+          {/* Premium plan card */}
+          <div
+            className="border-2 border-exam-ink bg-exam-ink p-6 flex flex-col relative"
+          >
+            <span className="absolute -top-3 right-4 text-[10px] font-black text-white bg-exam-red px-2.5 py-1 leading-none">
+              인기
+            </span>
+            {isAlreadySubscribed && (
+              <span className="self-start text-[10px] font-bold text-white border border-white/40 px-2 py-0.5 mb-3">
+                현재 플랜
+              </span>
+            )}
+            <h3 className="font-exam-serif text-xl font-bold text-white mb-1">프리미엄</h3>
+            <div className="mb-4">
+              <span className="text-2xl font-black text-white">{'\u20A9'}9,900</span>
+              <span className="text-sm text-stone-300 ml-1">/ 월</span>
+            </div>
+            <ul className="space-y-2.5 text-sm text-stone-200 flex-1">
+              <li className="flex items-start gap-2">
+                <Check size={14} className="text-exam-red shrink-0 mt-0.5" />
+                <span><span className="text-white font-semibold">무제한</span> 문제 풀기</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <Check size={14} className="text-exam-red shrink-0 mt-0.5" />
+                전체 힌트 + 성장 대시보드
+              </li>
+              <li className="flex items-start gap-2">
+                <Check size={14} className="text-exam-red shrink-0 mt-0.5" />
+                오답 분석 &amp; 학습 리포트
+              </li>
+              <li className="flex items-start gap-2">
+                <Check size={14} className="text-exam-red shrink-0 mt-0.5" />
+                모의고사 점수 예측
+              </li>
+            </ul>
+          </div>
         </motion.div>
 
-        {/* Plan selector */}
-        <motion.div
-          variants={item}
-          className="border border-exam-rule bg-white p-6 mb-5"
-        >
-          <p className="text-xs font-bold text-stone-400 uppercase tracking-wider mb-5">플랜 선택</p>
-
-          <div className="space-y-3">
+        {/* Plan type toggle (monthly vs weekly) — only when not already subscribed */}
+        {!isAlreadySubscribed && (
+          <motion.div variants={item} className="flex gap-2 mb-5">
             {(Object.keys(PLAN_FEATURES) as PlanKey[]).map((key) => {
               const plan = PLAN_FEATURES[key]
               const isSelected = selectedPlan === key
@@ -334,95 +372,35 @@ export default function PricingPage() {
                   key={key}
                   onClick={() => setSelectedPlan(key)}
                   className={[
-                    'w-full flex items-center justify-between border px-4 py-3.5 transition-all duration-200 text-left relative',
+                    'flex-1 py-3 border text-sm font-semibold transition-all text-center',
                     isSelected
-                      ? 'border-exam-ink bg-exam-highlight'
-                      : 'border-exam-rule hover:border-stone-400 hover:bg-bg-base',
+                      ? 'border-exam-ink bg-exam-highlight text-exam-ink'
+                      : 'border-exam-rule text-stone-400 hover:border-stone-400 hover:text-stone-600',
                   ].join(' ')}
                 >
-                  <div className="flex items-center gap-3">
-                    <div
-                      className={[
-                        'w-4 h-4 rounded-full border-2 flex items-center justify-center transition-all shrink-0',
-                        isSelected ? 'border-exam-ink' : 'border-stone-300',
-                      ].join(' ')}
-                    >
-                      {isSelected && (
-                        <div className="w-2 h-2 rounded-full bg-exam-ink" />
-                      )}
-                    </div>
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <p className="text-sm font-bold text-exam-ink">{plan.label}</p>
-                        {plan.popular && (
-                          <span className="text-[10px] font-black text-white bg-exam-red px-1.5 py-0.5 leading-none">
-                            인기
-                          </span>
-                        )}
-                      </div>
-                      <div className="flex items-center gap-2 mt-0.5">
-                        {plan.badge && (
-                          <span className="text-[10px] font-bold text-exam-ink border border-exam-rule px-1.5 py-0.5">
-                            {plan.badge}
-                          </span>
-                        )}
-                        <span className="text-[11px] text-stone-500">{plan.description}</span>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <span className="text-base font-black text-exam-ink tabular-nums">{'\u20A9'}{plan.price}</span>
-                    <span className="text-xs text-stone-500 ml-1">{plan.period}</span>
-                  </div>
+                  {plan.label}
+                  <span className="block text-xs font-normal mt-0.5">
+                    {'\u20A9'}{plan.price} {plan.period}
+                  </span>
                 </button>
               )
             })}
-          </div>
-        </motion.div>
+          </motion.div>
+        )}
 
-        {/* 서비스 제공 기간 안내 (PG 심사 필수 항목) */}
-        <motion.div
-          variants={item}
-          className="border border-exam-rule bg-white p-5 mb-5"
-        >
-          <p className="text-xs font-bold text-stone-400 uppercase tracking-wider mb-4">서비스 제공 기간</p>
-          <div className="space-y-3 text-sm">
-            <div className="flex items-start gap-3">
-              <span className="shrink-0 mt-1.5 w-5 h-5 border border-exam-ink flex items-center justify-center text-[10px] font-bold text-exam-ink">1</span>
-              <div>
-                <p className="font-semibold text-exam-ink">월간 구독 ({'\u20A9'}9,900/월)</p>
-                <p className="text-stone-500 text-xs mt-0.5">
-                  결제일로부터 1개월(30일) 이용 후 자동 갱신
-                </p>
-              </div>
-            </div>
-            <div className="flex items-start gap-3">
-              <span className="shrink-0 mt-1.5 w-5 h-5 border border-exam-ink flex items-center justify-center text-[10px] font-bold text-exam-ink">2</span>
-              <div>
-                <p className="font-semibold text-exam-ink">일주일 이용권 ({'\u20A9'}3,900)</p>
-                <p className="text-stone-500 text-xs mt-0.5">
-                  결제일로부터 7일간 서비스 제공 / 자동 갱신 없음 (일회성 결제)
-                </p>
-              </div>
-            </div>
-          </div>
-        </motion.div>
-
-        {/* 결제 정보 입력 + 버튼 */}
+        {/* Phone input + CTA */}
         <motion.div variants={item}>
-          {/* 전화번호: 구독(빌링키)일 때만 표시 */}
-          {isSubscription && (
+          {isSubscription && !isAlreadySubscribed && (
             <div className="mb-4">
               <label htmlFor="phoneNumber" className="block text-xs text-stone-500 mb-1.5">
                 휴대폰 번호 <span className="text-exam-red">*</span>
               </label>
-              <input
+              <Input
                 id="phoneNumber"
                 type="tel"
                 placeholder="01012345678"
                 value={phoneNumber}
                 onChange={(e) => setPhoneNumber(e.target.value.replace(/[^0-9-]/g, ''))}
-                className="w-full px-3 py-2.5 border border-exam-rule bg-white text-sm text-exam-ink placeholder-stone-400 focus:border-exam-ink focus:outline-none transition-colors"
               />
             </div>
           )}
@@ -443,18 +421,14 @@ export default function PricingPage() {
               </button>
             </div>
           ) : (
-            <button
-              onClick={handlePayment}
-              disabled={loading}
-              className="w-full py-2.5 bg-exam-ink text-white font-bold text-sm hover:bg-stone-800 transition-colors disabled:opacity-50"
-            >
+            <Button variant="primary" size="lg" fullWidth loading={loading} onClick={handlePayment}>
               {loading
                 ? '결제 진행 중...'
                 : isSubscription
                   ? '카드 등록하고 구독 시작'
                   : '결제하기'
               }
-            </button>
+            </Button>
           )}
 
           <p className="text-center text-xs text-stone-500 mt-4">
@@ -463,7 +437,43 @@ export default function PricingPage() {
               : `${planInfo.days}일 이용권 · 자동 갱신 없음`
             }
           </p>
-          <p className="text-center text-[11px] text-stone-400 mt-2 space-x-3">
+        </motion.div>
+
+        {/* Collapsible service term disclosures (PG 심사 필수 항목) */}
+        <motion.div variants={item} className="mt-6">
+          <details className="border border-exam-rule bg-white group">
+            <summary className="px-5 py-3 text-xs font-bold text-stone-400 uppercase tracking-wider cursor-pointer select-none flex items-center justify-between hover:text-stone-600 transition-colors list-none">
+              이용 약관 상세
+              <span className="text-stone-300 group-open:rotate-180 transition-transform text-[10px]">&#9660;</span>
+            </summary>
+            <div className="px-5 pb-5 pt-2 border-t border-exam-rule">
+              <div className="space-y-3 text-sm">
+                <div className="flex items-start gap-3">
+                  <span className="shrink-0 mt-1.5 w-5 h-5 border border-exam-ink flex items-center justify-center text-[10px] font-bold text-exam-ink">1</span>
+                  <div>
+                    <p className="font-semibold text-exam-ink">월간 구독 ({'\u20A9'}9,900/월)</p>
+                    <p className="text-stone-500 text-xs mt-0.5">
+                      결제일로부터 1개월(30일) 이용 후 자동 갱신
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3">
+                  <span className="shrink-0 mt-1.5 w-5 h-5 border border-exam-ink flex items-center justify-center text-[10px] font-bold text-exam-ink">2</span>
+                  <div>
+                    <p className="font-semibold text-exam-ink">일주일 이용권 ({'\u20A9'}3,900)</p>
+                    <p className="text-stone-500 text-xs mt-0.5">
+                      결제일로부터 7일간 서비스 제공 / 자동 갱신 없음 (일회성 결제)
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </details>
+        </motion.div>
+
+        {/* Legal links */}
+        <motion.div variants={item} className="mt-4 mb-2">
+          <p className="text-center text-[11px] text-stone-400 space-x-3">
             <Link href="/terms" className="hover:text-exam-ink underline underline-offset-2 transition-colors">이용약관</Link>
             <Link href="/refund" className="hover:text-exam-ink underline underline-offset-2 transition-colors">환불규정</Link>
             <Link href="/privacy" className="hover:text-exam-ink underline underline-offset-2 transition-colors">개인정보처리방침</Link>
@@ -514,7 +524,11 @@ export default function PricingPage() {
                     </button>
                   ))}
                 </div>
-                <button
+                <Button
+                  variant="secondary"
+                  size="lg"
+                  fullWidth
+                  className="text-stone-700 font-semibold"
                   onClick={() => {
                     if (!cancelReason) {
                       toast.error('취소 이유를 선택해주세요.')
@@ -522,10 +536,9 @@ export default function PricingPage() {
                     }
                     setCancelStep('offer')
                   }}
-                  className="w-full py-3 border border-exam-rule text-stone-700 text-sm font-semibold hover:bg-bg-base transition-colors"
                 >
                   다음
-                </button>
+                </Button>
               </>
             )}
 
@@ -561,27 +574,32 @@ export default function PricingPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <button
+                  <Button
+                    variant="primary"
+                    size="lg"
+                    fullWidth
                     onClick={() => {
                       closeCancelModal()
                       toast.success('좋은 선택이에요! 계속 함께해요.')
                     }}
-                    className="w-full py-3 bg-exam-ink text-white text-sm font-bold hover:bg-stone-800 transition-colors"
                   >
                     구독 유지하기
-                  </button>
+                  </Button>
                   {cancelReason === 'no_time' && (
-                    <button
+                    <Button
+                      variant="secondary"
+                      size="lg"
+                      fullWidth
+                      className="font-medium"
                       onClick={() => {
                         closeCancelModal()
                         toast.info('구독 일시정지는 준비 중이에요.', {
                           description: '곧 1개월 일시정지 기능이 추가될 예정이에요. 그때까지 구독은 유지됩니다.',
                         })
                       }}
-                      className="w-full py-3 border border-exam-rule text-stone-700 text-sm font-medium hover:bg-bg-base transition-colors"
                     >
                       1개월 일시정지 (준비 중)
-                    </button>
+                    </Button>
                   )}
                   <button
                     onClick={() => setCancelStep('confirm')}
@@ -605,22 +623,27 @@ export default function PricingPage() {
                   )}
                 </p>
                 <div className="space-y-2">
-                  <button
+                  <Button
+                    variant="primary"
+                    size="lg"
+                    fullWidth
                     onClick={() => {
                       closeCancelModal()
                       toast.success('감사합니다! 계속 함께해요.')
                     }}
-                    className="w-full py-3 bg-exam-ink text-white text-sm font-bold hover:bg-stone-800 transition-colors"
                   >
                     역시 유지할게요
-                  </button>
-                  <button
+                  </Button>
+                  <Button
+                    variant="danger"
+                    size="lg"
+                    fullWidth
+                    loading={cancelLoading}
+                    className="font-semibold"
                     onClick={executeCancelSubscription}
-                    disabled={cancelLoading}
-                    className="w-full py-3 border border-exam-red text-exam-red text-sm font-semibold hover:bg-exam-highlight transition-colors disabled:opacity-50"
                   >
                     {cancelLoading ? '처리 중...' : '구독 취소하기'}
-                  </button>
+                  </Button>
                 </div>
               </>
             )}

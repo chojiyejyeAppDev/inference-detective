@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { ArrowLeft, Plus, Trash2, TrendingUp, TrendingDown, Minus } from 'lucide-react'
 import { toast } from 'sonner'
+import Button from '@/components/ui/Button'
+import Input from '@/components/ui/Input'
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, ReferenceLine,
@@ -145,13 +147,9 @@ export default function MockScorePage() {
               <h1 className="text-2xl font-exam-serif font-bold text-exam-ink">모의고사 기록</h1>
               <p className="text-stone-500 text-sm mt-0.5">비문학 점수를 기록하고 성장을 추적하세요</p>
             </div>
-            <button
-              onClick={() => setShowForm(!showForm)}
-              className="flex items-center gap-1.5 px-4 py-2 bg-exam-ink text-white text-sm font-bold hover:bg-stone-800 transition-colors"
-            >
-              <Plus size={14} />
+            <Button variant="primary" size="md" onClick={() => setShowForm(!showForm)} icon={<Plus size={14} />}>
               기록 추가
-            </button>
+            </Button>
           </div>
         </motion.div>
 
@@ -167,56 +165,26 @@ export default function MockScorePage() {
             <div className="grid grid-cols-2 gap-4 mb-4">
               <div>
                 <label htmlFor="examDate" className="block text-xs text-stone-500 mb-1.5">시험 날짜</label>
-                <input
-                  id="examDate"
-                  type="date"
-                  value={examDate}
-                  onChange={(e) => setExamDate(e.target.value)}
-                  className="w-full px-3 py-2.5 border border-exam-rule bg-white text-sm text-exam-ink focus:border-exam-ink focus:outline-none transition-colors"
-                />
+                <Input id="examDate" type="date" value={examDate} onChange={(e) => setExamDate(e.target.value)} />
               </div>
               <div>
                 <label htmlFor="score" className="block text-xs text-stone-500 mb-1.5">
                   비문학 정답률 (0~100)
                 </label>
-                <input
-                  id="score"
-                  type="number"
-                  min={0}
-                  max={100}
-                  value={score}
-                  onChange={(e) => setScore(e.target.value)}
-                  placeholder="85"
-                  className="w-full px-3 py-2.5 border border-exam-rule bg-white text-sm text-exam-ink placeholder-stone-400 focus:border-exam-ink focus:outline-none transition-colors"
-                />
+                <Input id="score" type="number" min={0} max={100} value={score} onChange={(e) => setScore(e.target.value)} placeholder="85" />
               </div>
             </div>
             <div className="mb-4">
               <label htmlFor="notes" className="block text-xs text-stone-500 mb-1.5">메모 (선택)</label>
-              <input
-                id="notes"
-                type="text"
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-                placeholder="6월 모의고사, 시간 부족했음"
-                className="w-full px-3 py-2.5 border border-exam-rule bg-white text-sm text-exam-ink placeholder-stone-400 focus:border-exam-ink focus:outline-none transition-colors"
-              />
+              <Input id="notes" type="text" value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="6월 모의고사, 시간 부족했음" />
             </div>
             <div className="flex gap-2">
-              <button
-                type="submit"
-                disabled={saving || !score}
-                className="px-5 py-2 bg-exam-ink text-white text-sm font-bold hover:bg-stone-800 transition-colors disabled:opacity-50"
-              >
+              <Button variant="primary" size="md" type="submit" disabled={saving || !score} loading={saving} className="px-5">
                 {saving ? '저장 중...' : '저장'}
-              </button>
-              <button
-                type="button"
-                onClick={() => setShowForm(false)}
-                className="px-4 py-2 border border-exam-rule text-stone-500 text-sm hover:border-stone-400 transition-colors"
-              >
+              </Button>
+              <Button variant="secondary" size="md" type="button" onClick={() => setShowForm(false)}>
                 취소
-              </button>
+              </Button>
             </div>
           </motion.form>
         )}
@@ -292,12 +260,9 @@ export default function MockScorePage() {
           <div className="border border-exam-rule bg-white p-10 text-center">
             <p className="text-exam-ink font-medium text-sm mb-1">아직 기록이 없어요</p>
             <p className="text-stone-500 text-xs mb-4">모의고사 비문학 점수를 기록하면 성장 추이를 확인할 수 있어요.</p>
-            <button
-              onClick={() => setShowForm(true)}
-              className="px-5 py-2 bg-exam-ink text-white text-xs font-bold hover:bg-stone-800 transition-colors"
-            >
+            <Button variant="primary" size="sm" onClick={() => setShowForm(true)}>
               첫 기록 추가하기
-            </button>
+            </Button>
           </div>
         ) : (
           <div className="border border-exam-rule bg-white overflow-hidden">

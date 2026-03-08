@@ -4,9 +4,11 @@ import { Suspense, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
-import { Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { createClient } from '@/lib/supabase/client'
+import Button from '@/components/ui/Button'
+import Input from '@/components/ui/Input'
+import Card from '@/components/ui/Card'
 
 function LoginForm() {
   const router = useRouter()
@@ -101,19 +103,19 @@ function LoginForm() {
           <p className="text-stone-500 text-sm mt-1">수능 비문학 추론 훈련</p>
         </div>
 
-        <div className="border border-exam-rule bg-white p-6">
+        <Card className="p-6">
           <h2 className="text-lg font-semibold text-exam-ink mb-5">로그인</h2>
 
           <form onSubmit={handleLogin} className="space-y-4">
             <div>
               <label className="block text-xs font-medium text-stone-500 mb-1.5">이메일</label>
-              <input
+              <Input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="w-full border border-exam-rule bg-white px-3 py-3 text-sm text-exam-ink placeholder-stone-400 focus:border-exam-ink focus:outline-none transition-colors"
                 placeholder="name@example.com"
+                className="py-3"
               />
             </div>
 
@@ -129,23 +131,19 @@ function LoginForm() {
                   {resetSent ? '메일 발송됨' : '비밀번호 찾기'}
                 </button>
               </div>
-              <input
+              <Input
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                className="w-full border border-exam-rule bg-white px-3 py-3 text-sm text-exam-ink placeholder-stone-400 focus:border-exam-ink focus:outline-none transition-colors"
                 placeholder="••••••••"
+                className="py-3"
               />
             </div>
 
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full py-3 bg-exam-ink text-white text-sm font-bold hover:opacity-90 transition-opacity disabled:opacity-50"
-            >
+            <Button variant="primary" size="lg" fullWidth loading={loading} type="submit">
               {loading ? '로그인 중...' : '로그인'}
-            </button>
+            </Button>
           </form>
 
           <div className="flex items-center gap-3 my-4">
@@ -154,14 +152,13 @@ function LoginForm() {
             <div className="flex-1 h-px bg-exam-rule" />
           </div>
 
-          <button
-            onClick={handleGoogleLogin}
+          <Button
+            variant="secondary"
+            size="lg"
+            fullWidth
             disabled={googleLoading || loading}
-            className="w-full py-3 border border-exam-rule bg-white text-exam-ink text-sm font-semibold hover:bg-bg-game transition-colors flex items-center justify-center gap-2.5 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {googleLoading ? (
-              <Loader2 size={16} className="animate-spin" />
-            ) : (
+            onClick={handleGoogleLogin}
+            icon={googleLoading ? undefined : (
               <svg width="16" height="16" viewBox="0 0 24 24">
                 <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
                 <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
@@ -169,8 +166,11 @@ function LoginForm() {
                 <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
               </svg>
             )}
+            loading={googleLoading}
+            className="font-semibold gap-2.5"
+          >
             {googleLoading ? '연결 중...' : 'Google로 로그인'}
-          </button>
+          </Button>
 
           <p className="text-center text-xs text-stone-500 mt-4">
             계정이 없으신가요?{' '}
@@ -178,7 +178,7 @@ function LoginForm() {
               회원가입
             </Link>
           </p>
-        </div>
+        </Card>
       </motion.div>
     </div>
   )

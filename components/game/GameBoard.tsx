@@ -4,9 +4,11 @@ import { useState, useCallback, useEffect, useRef } from 'react'
 import { DragDropContext, Droppable, DropResult } from '@hello-pangea/dnd'
 import { motion, AnimatePresence } from 'framer-motion'
 import Link from 'next/link'
-import { Lightbulb, Send, RefreshCw, ChevronRight, Undo2, Flame, HelpCircle, XCircle, Loader2 } from 'lucide-react'
+import { Lightbulb, Send, RefreshCw, ChevronRight, Undo2, Flame, HelpCircle, XCircle } from 'lucide-react'
 import { Question, Sentence, EvaluationResult, LevelConfig } from '@/types'
 import { buildConnectionMap } from '@/lib/game/connectionStrength'
+import Button from '@/components/ui/Button'
+import Card from '@/components/ui/Card'
 import PassageViewer from './PassageViewer'
 import SentenceCard from './SentenceCard'
 import InferenceSlot from './InferenceSlot'
@@ -431,19 +433,19 @@ export default function GameBoard({
                   </p>
                   <p className="text-xs text-stone-500">{evaluationResult.explanation}</p>
 
-                  {/* Streak + hint bonus inline */}
-                  <div className="flex items-center justify-center gap-4 mt-3 text-xs">
+                  {/* Streak + hint bonus inline — subtle */}
+                  <div className="flex items-center justify-center gap-3 mt-2 text-[10px] text-stone-400">
                     {(evaluationResult.streak ?? 0) >= 2 && (
-                      <span className="flex items-center gap-1 font-semibold text-exam-red">
-                        <Flame size={13} /> {evaluationResult.streak}연속 정답!
+                      <span className="flex items-center gap-0.5 font-medium text-exam-red/70">
+                        <Flame size={10} /> {evaluationResult.streak}연속
                       </span>
                     )}
                     {(evaluationResult.daily_streak ?? 0) >= 2 && (
-                      <span className="flex items-center gap-1 font-semibold text-orange-600">
-                        <Flame size={13} /> {evaluationResult.daily_streak}일 연속 훈련
+                      <span className="flex items-center gap-0.5 font-medium text-orange-500/70">
+                        <Flame size={10} /> {evaluationResult.daily_streak}일 연속
                       </span>
                     )}
-                    <span className="text-green-600 font-medium">+1 힌트 포인트</span>
+                    <span className="text-green-500 font-medium">+1 힌트</span>
                   </div>
 
                   {/* Share button */}
@@ -487,40 +489,6 @@ export default function GameBoard({
                     </div>
                   )}
 
-                  {/* 레벨업 진행 상황 */}
-                  {evaluationResult.level_progress && !evaluationResult.level_up && levelConfig.level < 7 && (
-                    <div className="mt-3 pt-3 border-t border-exam-rule">
-                      <div className="flex items-center justify-between mb-1.5">
-                        <span className="text-[10px] font-semibold text-stone-500 uppercase tracking-wider">
-                          레벨업 진행
-                        </span>
-                        <span className="text-[10px] text-stone-500">
-                          {evaluationResult.level_progress.qualified}/{evaluationResult.level_progress.required} 세션 달성
-                        </span>
-                      </div>
-                      <div className="flex gap-1.5">
-                        {Array.from({ length: evaluationResult.level_progress.required }).map((_, i) => (
-                          <div
-                            key={i}
-                            className={[
-                              'flex-1 h-2 rounded-sm transition-all',
-                              i < evaluationResult.level_progress!.qualified
-                                ? 'bg-exam-ink'
-                                : 'bg-stone-200',
-                            ].join(' ')}
-                          />
-                        ))}
-                      </div>
-                      <p className="text-[10px] text-stone-500 mt-1">
-                        최근 {evaluationResult.level_progress.required}세션 중 80% 이상 정확도를 모두 달성하면 레벨업
-                      </p>
-                      {levelConfig.level === 6 && (
-                        <p className="text-[10px] text-exam-red mt-1.5">
-                          레벨 7에서는 힌트를 사용할 수 없어요. 지금 실력을 충분히 다져두세요!
-                        </p>
-                      )}
-                    </div>
-                  )}
                 </motion.div>
               )}
 
@@ -528,10 +496,8 @@ export default function GameBoard({
                 <motion.div
                   initial={{ opacity: 0, y: 12 }}
                   animate={{ opacity: 1, y: 0 }}
-                  role="status"
-                  aria-live="polite"
-                  className="border border-exam-rule bg-white p-5"
                 >
+                  <Card role="status" aria-live="polite">
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-3">
                       <XCircle size={18} className="text-exam-red shrink-0" />
@@ -552,48 +518,13 @@ export default function GameBoard({
                     />
                   </div>
 
-                  {/* 일일 스트릭 (오답에서도 표시) */}
+                  {/* 일일 스트릭 (오답에서도 — subtle) */}
                   {(evaluationResult.daily_streak ?? 0) >= 2 && (
-                    <div className="mt-2 flex items-center gap-1.5">
-                      <Flame size={13} className="text-orange-500" />
-                      <span className="text-xs font-semibold text-orange-600">
-                        {evaluationResult.daily_streak}일 연속 훈련
+                    <div className="mt-2 flex items-center gap-1">
+                      <Flame size={10} className="text-orange-400" />
+                      <span className="text-[10px] font-medium text-orange-500/70">
+                        {evaluationResult.daily_streak}일 연속
                       </span>
-                    </div>
-                  )}
-
-                  {/* 레벨업 진행 상황 */}
-                  {evaluationResult.level_progress && !evaluationResult.level_up && levelConfig.level < 7 && (
-                    <div className="mt-3 pt-3 border-t border-exam-rule">
-                      <div className="flex items-center justify-between mb-1.5">
-                        <span className="text-[10px] font-semibold text-stone-500 uppercase tracking-wider">
-                          레벨업 진행
-                        </span>
-                        <span className="text-[10px] text-stone-500">
-                          {evaluationResult.level_progress.qualified}/{evaluationResult.level_progress.required} 세션 달성
-                        </span>
-                      </div>
-                      <div className="flex gap-1.5">
-                        {Array.from({ length: evaluationResult.level_progress.required }).map((_, i) => (
-                          <div
-                            key={i}
-                            className={[
-                              'flex-1 h-2 rounded-sm transition-all',
-                              i < evaluationResult.level_progress!.qualified
-                                ? 'bg-exam-ink'
-                                : 'bg-stone-200',
-                            ].join(' ')}
-                          />
-                        ))}
-                      </div>
-                      <p className="text-[10px] text-stone-500 mt-1">
-                        최근 {evaluationResult.level_progress.required}세션 중 80% 이상 정확도를 모두 달성하면 레벨업
-                      </p>
-                      {levelConfig.level === 6 && (
-                        <p className="text-[10px] text-exam-red mt-1.5">
-                          레벨 7에서는 힌트를 사용할 수 없어요. 지금 실력을 충분히 다져두세요!
-                        </p>
-                      )}
                     </div>
                   )}
 
@@ -642,6 +573,7 @@ export default function GameBoard({
                       </AnimatePresence>
                     </div>
                   )}
+                  </Card>
                 </motion.div>
               )}
             </AnimatePresence>
@@ -669,7 +601,9 @@ export default function GameBoard({
               {!isEvaluated ? (
                 <>
                   <div className="flex gap-2 sm:gap-3">
-                    <button
+                    <Button
+                      variant="secondary"
+                      size="lg"
                       onClick={onHintRequest}
                       disabled={hintPoints <= 0 || levelConfig.level === 7 || isHintLoading}
                       aria-label={
@@ -686,11 +620,11 @@ export default function GameBoard({
                             ? '힌트 포인트 부족'
                             : undefined
                       }
-                      className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-3 border border-exam-rule bg-white text-stone-600 text-sm font-medium hover:bg-bg-base transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      icon={<Lightbulb size={14} />}
+                      className="flex-1 sm:flex-none bg-white text-stone-600"
                     >
-                      <Lightbulb size={14} />
                       {isHintLoading ? '로딩...' : '힌트'}
-                    </button>
+                    </Button>
                     <button
                       onClick={handleUndo}
                       disabled={history.length === 0}
@@ -719,26 +653,30 @@ export default function GameBoard({
                       힌트 포인트가 없어요. 매일 +3 자동 충전되고, 정답 시 +1 보너스를 받아요.
                     </p>
                   )}
-                  <button
+                  <Button
+                    variant="primary"
+                    size="lg"
+                    fullWidth
                     onClick={() => onSubmit(chain)}
                     disabled={!isChainComplete || isSubmitting}
+                    loading={isSubmitting}
+                    icon={isSubmitting ? undefined : <Send size={14} />}
                     aria-label="추론 경로 제출"
                     aria-busy={isSubmitting}
-                    className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-exam-ink text-white text-sm font-bold hover:bg-stone-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="flex-1"
                   >
-                    {isSubmitting ? (
-                      <Loader2 size={14} className="animate-spin" />
-                    ) : (
-                      <Send size={14} />
-                    )}
                     {isSubmitting ? '평가 중...' : '추론 경로 제출'}
-                  </button>
+                  </Button>
                 </>
               ) : (
                 <>
                   <div className="flex gap-2 sm:gap-3">
                     {!evaluationResult.is_correct && (
-                      <button
+                      <Button
+                        variant="secondary"
+                        size="lg"
+                        icon={<RefreshCw size={14} />}
+                        className="flex-1"
                         onClick={() => {
                           setChain(Array(levelConfig.slots).fill(null))
                           setPool(question.sentences)
@@ -746,19 +684,13 @@ export default function GameBoard({
                           setShowCorrectAnswer(false)
                           onReset()
                         }}
-                        className="flex-1 flex items-center justify-center gap-2 px-4 py-3 border border-exam-rule text-exam-ink text-sm font-medium hover:bg-bg-base transition-colors"
                       >
-                        <RefreshCw size={14} />
                         다시 풀기
-                      </button>
+                      </Button>
                     )}
-                    <button
-                      onClick={onNextQuestion}
-                      className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-exam-ink text-white text-sm font-bold hover:bg-stone-800 transition-colors"
-                    >
-                      다음 문제
-                      <ChevronRight size={14} />
-                    </button>
+                    <Button variant="primary" size="lg" className="flex-1" onClick={onNextQuestion}>
+                      다음 문제 <ChevronRight size={14} />
+                    </Button>
                   </div>
 
                   {/* Dashboard link for premium users */}
@@ -769,6 +701,41 @@ export default function GameBoard({
                     >
                       성장 분석 보기 →
                     </Link>
+                  )}
+
+                  {/* 레벨업 진행 상황 — below action buttons */}
+                  {evaluationResult.level_progress && !evaluationResult.level_up && levelConfig.level < 7 && (
+                    <div className="mt-3 pt-3 border-t border-exam-rule">
+                      <div className="flex items-center justify-between mb-1.5">
+                        <span className="text-[10px] font-semibold text-stone-500 uppercase tracking-wider">
+                          레벨업 진행
+                        </span>
+                        <span className="text-[10px] text-stone-500">
+                          {evaluationResult.level_progress.qualified}/{evaluationResult.level_progress.required} 세션 달성
+                        </span>
+                      </div>
+                      <div className="flex gap-1.5">
+                        {Array.from({ length: evaluationResult.level_progress.required }).map((_, i) => (
+                          <div
+                            key={i}
+                            className={[
+                              'flex-1 h-2 rounded-sm transition-all',
+                              i < evaluationResult.level_progress!.qualified
+                                ? 'bg-exam-ink'
+                                : 'bg-stone-200',
+                            ].join(' ')}
+                          />
+                        ))}
+                      </div>
+                      <p className="text-[10px] text-stone-500 mt-1">
+                        최근 {evaluationResult.level_progress.required}세션 중 80% 이상 정확도를 모두 달성하면 레벨업
+                      </p>
+                      {levelConfig.level === 6 && (
+                        <p className="text-[10px] text-exam-red mt-1.5">
+                          레벨 7에서는 힌트를 사용할 수 없어요. 지금 실력을 충분히 다져두세요!
+                        </p>
+                      )}
+                    </div>
                   )}
                 </>
               )}

@@ -2,6 +2,7 @@
 
 import { Component, ReactNode } from 'react'
 import { AlertTriangle, RefreshCw } from 'lucide-react'
+import Button from '@/components/ui/Button'
 
 interface Props {
   children: ReactNode
@@ -48,13 +49,14 @@ export default class ErrorBoundary extends Component<Props, State> {
               {this.state.error?.message ?? '알 수 없는 오류'}
             </p>
           </div>
-          <button
+          <Button
+            variant="secondary"
+            size="sm"
             onClick={this.handleReset}
-            className="flex items-center gap-1 px-4 py-2 border border-exam-rule text-exam-ink text-xs font-medium hover:bg-bg-base transition-colors"
+            icon={<RefreshCw size={12} />}
           >
-            <RefreshCw size={12} />
             다시 시도
-          </button>
+          </Button>
         </div>
       )
     }

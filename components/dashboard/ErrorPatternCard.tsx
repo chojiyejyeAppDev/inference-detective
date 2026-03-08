@@ -1,6 +1,8 @@
 'use client'
 
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts'
+import Card from '@/components/ui/Card'
+import { CHART_COLORS } from '@/lib/design-tokens'
 
 interface ErrorPattern {
   position: string
@@ -33,7 +35,7 @@ export default function ErrorPatternCard({ patterns }: ErrorPatternCardProps) {
   const topErrors = [...patterns].sort((a, b) => b.count - a.count).slice(0, 5)
 
   return (
-    <div className="border border-exam-rule bg-white p-5">
+    <Card>
       <h3 className="text-sm font-exam-serif font-semibold text-exam-ink mb-1">오류 패턴 분석</h3>
       <p className="text-xs text-stone-500 mb-4">어느 단계에서 자주 실수하나요?</p>
 
@@ -47,17 +49,17 @@ export default function ErrorPatternCard({ patterns }: ErrorPatternCardProps) {
           <BarChart data={topErrors} margin={{ top: 0, right: 5, bottom: 0, left: -20 }}>
             <XAxis
               dataKey="position"
-              tick={{ fill: '#78716C', fontSize: 10 }}
+              tick={{ fill: CHART_COLORS.muted, fontSize: 10 }}
               axisLine={false}
               tickLine={false}
             />
             <YAxis
-              tick={{ fill: '#78716C', fontSize: 10 }}
+              tick={{ fill: CHART_COLORS.muted, fontSize: 10 }}
               axisLine={false}
               tickLine={false}
             />
             <Tooltip content={<CustomTooltip />} />
-            <Bar dataKey="count" fill="#C22D2D" opacity={0.7} radius={[0, 0, 0, 0]} />
+            <Bar dataKey="count" fill={CHART_COLORS.red} opacity={0.7} radius={[0, 0, 0, 0]} />
           </BarChart>
         </ResponsiveContainer>
       )}
@@ -68,6 +70,6 @@ export default function ErrorPatternCard({ patterns }: ErrorPatternCardProps) {
           <span className="text-exam-red font-medium">{topErrors[0].label}</span>
         </p>
       )}
-    </div>
+    </Card>
   )
 }

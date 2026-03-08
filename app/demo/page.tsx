@@ -5,6 +5,8 @@ import { DragDropContext, Droppable, DropResult } from '@hello-pangea/dnd'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Send, RefreshCw, ArrowRight } from 'lucide-react'
 import Link from 'next/link'
+import Button from '@/components/ui/Button'
+import Card from '@/components/ui/Card'
 import { Sentence, EvaluationResult, SlotFeedback } from '@/types'
 import { buildConnectionMap } from '@/lib/game/connectionStrength'
 import SentenceCard from '@/components/game/SentenceCard'
@@ -145,10 +147,10 @@ export default function DemoPage() {
             {/* Left: Passage + Pool */}
             <div className="space-y-4">
               {/* Passage */}
-              <div className="border border-exam-rule bg-white p-5">
+              <Card>
                 <p className="text-xs font-semibold text-stone-500 uppercase tracking-wider mb-3">지문</p>
                 <p className="text-sm text-exam-ink leading-[1.8]">{DEMO_QUESTION.passage}</p>
-              </div>
+              </Card>
 
               {/* Conclusion */}
               <div className="border border-exam-ink bg-exam-highlight p-4">
@@ -157,7 +159,7 @@ export default function DemoPage() {
               </div>
 
               {/* Card Pool */}
-              <div className="border border-exam-rule bg-white p-4">
+              <Card className="p-4">
                 <p className="text-xs font-semibold text-stone-500 uppercase tracking-wider mb-3">
                   문장 카드 <span className="text-stone-400 normal-case">— 오른쪽 슬롯으로 드래그하세요</span>
                 </p>
@@ -174,12 +176,12 @@ export default function DemoPage() {
                     </div>
                   )}
                 </Droppable>
-              </div>
+              </Card>
             </div>
 
             {/* Right: Slots */}
             <div className="space-y-4">
-              <div className="border border-exam-rule bg-white p-5">
+              <Card>
                 <p className="text-xs font-semibold text-stone-500 uppercase tracking-wider mb-4">
                   추론 체인 ({DEMO_LEVEL.slots}단계)
                 </p>
@@ -233,28 +235,14 @@ export default function DemoPage() {
                 {/* Actions */}
                 <div className="mt-4 flex gap-2">
                   {!result ? (
-                    <button
-                      onClick={handleSubmit}
-                      disabled={!allFilled}
-                      className={[
-                        'flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-bold transition-all',
-                        allFilled
-                          ? 'bg-exam-ink text-white hover:bg-stone-800'
-                          : 'bg-stone-200 text-stone-400 cursor-not-allowed',
-                      ].join(' ')}
-                    >
-                      <Send size={14} />
+                    <Button variant="primary" size="md" disabled={!allFilled} onClick={handleSubmit} icon={<Send size={14} />} className="flex-1">
                       제출하기
-                    </button>
+                    </Button>
                   ) : (
                     <>
-                      <button
-                        onClick={handleReset}
-                        className="flex-1 flex items-center justify-center gap-2 py-2.5 border border-exam-rule text-exam-ink text-sm font-medium hover:bg-bg-base transition-colors"
-                      >
-                        <RefreshCw size={14} />
+                      <Button variant="secondary" size="md" onClick={handleReset} icon={<RefreshCw size={14} />} className="flex-1">
                         다시 풀기
-                      </button>
+                      </Button>
                       <Link
                         href="/signup"
                         className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-exam-ink text-white text-sm font-bold hover:bg-stone-800 transition-colors"
@@ -265,7 +253,7 @@ export default function DemoPage() {
                     </>
                   )}
                 </div>
-              </div>
+              </Card>
 
               {/* CTA */}
               <div className="border border-exam-ink bg-exam-highlight p-4 text-center">

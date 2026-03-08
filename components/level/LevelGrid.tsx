@@ -4,6 +4,9 @@ import { useState, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Lock, ChevronRight, Lightbulb, Loader2, Zap, Flame, Shield } from 'lucide-react'
+import Button from '@/components/ui/Button'
+import Input from '@/components/ui/Input'
+import Card from '@/components/ui/Card'
 import { toast } from 'sonner'
 import { LEVEL_CONFIGS, FREE_DAILY_LIMIT } from '@/lib/game/levelConfig'
 import { SubscriptionStatus } from '@/types'
@@ -256,20 +259,21 @@ export default function LevelGrid({
               </div>
             )}
           </div>
-          <button
-            onClick={() => handleLevelClick(currentLevel)}
+          <Button
+            variant="primary"
+            size="lg"
+            fullWidth
             disabled={loadingLevel !== null || (isFree && remaining !== null && remaining <= 0)}
-            className="w-full flex items-center justify-center gap-2 py-3 bg-exam-ink text-white text-sm font-bold hover:bg-stone-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            loading={loadingLevel === currentLevel}
+            onClick={() => handleLevelClick(currentLevel)}
           >
-            {loadingLevel === currentLevel ? (
-              <Loader2 size={16} className="animate-spin" />
-            ) : (
+            {loadingLevel !== currentLevel && (
               <>
                 다음 문제
                 <ChevronRight size={16} />
               </>
             )}
-          </button>
+          </Button>
         </motion.div>
 
         {/* Daily streak banner */}
@@ -571,7 +575,7 @@ export default function LevelGrid({
               <h2 className="font-exam-serif text-lg font-bold text-exam-ink mb-1">환영해요!</h2>
               <p className="text-sm text-stone-500 mb-5">추론 훈련에서 사용할 닉네임을 설정해 주세요.</p>
               <label className="block text-xs font-medium text-stone-500 mb-1.5">닉네임</label>
-              <input
+              <Input
                 type="text"
                 value={nicknameInput}
                 onChange={(e) => setNicknameInput(e.target.value)}
@@ -580,22 +584,23 @@ export default function LevelGrid({
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') handleNicknameSave()
                 }}
-                className={[
-                  'w-full border bg-white px-3 py-3 text-sm text-exam-ink placeholder-stone-400 focus:outline-none transition-colors',
-                  nicknameInputError ? 'border-exam-red focus:border-exam-red' : 'border-exam-rule focus:border-exam-ink',
-                ].join(' ')}
+                error={!!nicknameInputError}
                 placeholder="탐정 이름 (한글/영문/숫자)"
+                className="py-3"
               />
               {nicknameInputError && (
                 <p className="text-[11px] text-exam-red mt-1">{nicknameInputError}</p>
               )}
-              <button
-                onClick={handleNicknameSave}
+              <Button
+                variant="primary"
+                size="lg"
+                fullWidth
                 disabled={!nicknameInput.trim() || !!nicknameInputError || nicknameSaving}
-                className="w-full mt-4 py-3 bg-exam-ink text-white text-sm font-bold hover:bg-stone-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                onClick={handleNicknameSave}
+                className="mt-4"
               >
                 {nicknameSaving ? '저장 중...' : '시작하기'}
-              </button>
+              </Button>
               <button
                 onClick={() => {
                   setShowNicknameModal(false)

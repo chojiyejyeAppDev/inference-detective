@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { GripVertical, ArrowDown, MousePointerClick, X, Lightbulb } from 'lucide-react'
+import Button from '@/components/ui/Button'
 import { useFocusTrap } from '@/lib/hooks/useFocusTrap'
 import { useReducedMotion } from '@/lib/hooks/useReducedMotion'
 
@@ -203,12 +204,9 @@ export default function GameTutorialOverlay({ forceOpen, onClose }: Props) {
             >
               건너뛰기
             </button>
-            <button
-              onClick={nextStep}
-              className="px-5 py-2 bg-exam-ink text-white text-sm font-bold hover:bg-stone-800 transition-colors"
-            >
+            <Button variant="primary" size="md" onClick={nextStep} className="px-5">
               {step < STEPS.length - 1 ? '다음' : '시작하기'}
-            </button>
+            </Button>
           </div>
         </motion.div>
       </motion.div>

@@ -1,6 +1,8 @@
 'use client'
 
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts'
+import Card from '@/components/ui/Card'
+import { CHART_COLORS, TOPIC_COLORS } from '@/lib/design-tokens'
 
 const TOPIC_LABELS: Record<string, string> = {
   humanities: '인문',
@@ -8,14 +10,6 @@ const TOPIC_LABELS: Record<string, string> = {
   science: '과학',
   tech: '기술',
   arts: '예술',
-}
-
-const TOPIC_COLORS: Record<string, string> = {
-  humanities: '#1C1917',
-  social: '#57534E',
-  science: '#16a34a',
-  tech: '#78716C',
-  arts: '#C22D2D',
 }
 
 interface TopicStat {
@@ -53,7 +47,7 @@ export default function TopicAnalysisCard({ data }: TopicAnalysisCardProps) {
   const weakest = sorted.length > 0 ? sorted[0] : null
 
   return (
-    <div className="border border-exam-rule bg-white p-5">
+    <Card>
       <h3 className="text-sm font-exam-serif font-semibold text-exam-ink mb-1">주제별 정답률</h3>
       <p className="text-xs text-stone-500 mb-4">어떤 주제가 약한지 파악하세요</p>
 
@@ -67,21 +61,21 @@ export default function TopicAnalysisCard({ data }: TopicAnalysisCardProps) {
             <XAxis
               dataKey="topic"
               tickFormatter={(v) => TOPIC_LABELS[v] ?? v}
-              tick={{ fill: '#78716C', fontSize: 10 }}
+              tick={{ fill: CHART_COLORS.muted, fontSize: 10 }}
               axisLine={false}
               tickLine={false}
             />
             <YAxis
               domain={[0, 1]}
               tickFormatter={(v) => `${Math.round(v * 100)}%`}
-              tick={{ fill: '#78716C', fontSize: 10 }}
+              tick={{ fill: CHART_COLORS.muted, fontSize: 10 }}
               axisLine={false}
               tickLine={false}
             />
             <Tooltip content={<CustomTooltip />} />
             <Bar dataKey="accuracy" radius={[0, 0, 0, 0]}>
               {data.map((entry) => (
-                <Cell key={entry.topic} fill={TOPIC_COLORS[entry.topic] ?? '#78716C'} opacity={0.8} />
+                <Cell key={entry.topic} fill={TOPIC_COLORS[entry.topic] ?? CHART_COLORS.muted} opacity={0.8} />
               ))}
             </Bar>
           </BarChart>
@@ -97,6 +91,6 @@ export default function TopicAnalysisCard({ data }: TopicAnalysisCardProps) {
           <span className="text-stone-500"> ({Math.round(weakest.accuracy * 100)}%)</span>
         </p>
       )}
-    </div>
+    </Card>
   )
 }

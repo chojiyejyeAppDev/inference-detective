@@ -7,6 +7,9 @@ import { toast } from 'sonner'
 import { User, CreditCard, Lightbulb, LogOut, Copy, Check, Bell } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { usePushNotification } from '@/lib/push/usePushNotification'
+import Button from '@/components/ui/Button'
+import Input from '@/components/ui/Input'
+import Card from '@/components/ui/Card'
 
 interface SettingsFormProps {
   email: string
@@ -88,16 +91,16 @@ export default function SettingsForm({
         <h1 className="text-xl font-exam-serif font-bold text-exam-ink">설정</h1>
 
         {setupNickname && (
-          <div className="border border-exam-red/30 bg-exam-highlight p-4">
+          <Card variant="highlight" className="p-4">
             <p className="text-sm font-semibold text-exam-red">환영해요! 닉네임을 설정해 주세요</p>
             <p className="text-xs text-exam-red/70 mt-1">
               다른 학습자에게 보여질 이름이에요. 언제든 변경할 수 있어요.
             </p>
-          </div>
+          </Card>
         )}
 
         {/* Profile */}
-        <div className="border border-exam-rule bg-white p-5 space-y-4">
+        <Card className="space-y-4">
           <div className="flex items-center gap-1.5 text-sm font-semibold text-exam-ink">
             <User size={14} />
             프로필
@@ -111,22 +114,23 @@ export default function SettingsForm({
           <div>
             <label className="block text-xs text-stone-500 mb-1">닉네임</label>
             <div className="flex gap-2">
-              <input
+              <Input
                 ref={nicknameInputRef}
                 type="text"
                 value={nickname}
                 onChange={(e) => setNickname(e.target.value)}
                 maxLength={20}
                 placeholder={setupNickname ? '닉네임을 입력하세요' : undefined}
-                className="flex-1 border border-exam-rule bg-bg-base px-3 py-2 text-sm text-exam-ink focus:border-exam-ink focus:outline-none transition-colors"
+                className="flex-1 bg-bg-base py-2"
               />
-              <button
-                onClick={handleSaveNickname}
+              <Button
+                variant="primary"
+                size="sm"
                 disabled={saving || nickname.trim() === initialNickname || !nickname.trim()}
-                className="px-3 py-2 bg-exam-ink text-white text-xs font-bold hover:bg-stone-800 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                onClick={handleSaveNickname}
               >
                 {saving ? '...' : '저장'}
-              </button>
+              </Button>
             </div>
           </div>
 
@@ -146,10 +150,10 @@ export default function SettingsForm({
               </div>
             </div>
           </div>
-        </div>
+        </Card>
 
         {/* Subscription */}
-        <div className="border border-exam-rule bg-white p-5 space-y-3">
+        <Card className="space-y-3">
           <div className="flex items-center gap-1.5 text-sm font-semibold text-exam-ink">
             <CreditCard size={14} />
             구독
@@ -173,11 +177,11 @@ export default function SettingsForm({
               {isActive ? '플랜 관리' : '구독하기'}
             </Link>
           </div>
-        </div>
+        </Card>
 
         {/* Invite code */}
         {inviteCode && (
-          <div className="border border-exam-rule bg-white p-5 space-y-3">
+          <Card className="space-y-3">
             <div className="flex items-center gap-1.5 text-sm font-semibold text-exam-ink">
               <Copy size={14} />
               친구 초대
@@ -191,7 +195,9 @@ export default function SettingsForm({
               <code className="flex-1 border border-exam-rule bg-bg-base px-3 py-2 text-xs text-exam-ink truncate font-mono">
                 {typeof window !== 'undefined' ? `${window.location.origin}/signup?ref=${inviteCode}` : inviteCode}
               </code>
-              <button
+              <Button
+                variant="secondary"
+                size="sm"
                 onClick={() => {
                   const link = `${window.location.origin}/signup?ref=${inviteCode}`
                   navigator.clipboard.writeText(link).then(() => {
@@ -199,18 +205,18 @@ export default function SettingsForm({
                     setTimeout(() => setCopied(false), 2000)
                   })
                 }}
-                className="px-3 py-2 border border-exam-rule text-exam-ink text-xs hover:bg-bg-base transition-colors shrink-0 flex items-center gap-1"
+                icon={copied ? <Check size={12} className="text-green-700" /> : <Copy size={12} />}
+                className="shrink-0"
               >
-                {copied ? <Check size={12} className="text-green-700" /> : <Copy size={12} />}
                 {copied ? '복사됨' : '복사'}
-              </button>
+              </Button>
             </div>
-          </div>
+          </Card>
         )}
 
         {/* Push Notifications */}
         {pushSupported && (
-          <div className="border border-exam-rule bg-white p-5 space-y-3">
+          <Card className="space-y-3">
             <div className="flex items-center gap-1.5 text-sm font-semibold text-exam-ink">
               <Bell size={14} />
               알림
@@ -247,17 +253,20 @@ export default function SettingsForm({
                 {pushLoading ? '...' : pushSubscribed ? '끄기' : '켜기'}
               </button>
             </div>
-          </div>
+          </Card>
         )}
 
         {/* Logout */}
-        <button
+        <Button
+          variant="ghost"
+          size="lg"
+          fullWidth
           onClick={handleLogout}
-          className="w-full flex items-center justify-center gap-2 py-3 border border-exam-rule text-stone-500 text-sm hover:text-exam-red hover:border-exam-red/30 hover:bg-exam-highlight transition-colors"
+          icon={<LogOut size={14} />}
+          className="border border-exam-rule text-stone-500 hover:text-exam-red hover:border-exam-red/30 hover:bg-exam-highlight"
         >
-          <LogOut size={14} />
           로그아웃
-        </button>
+        </Button>
       </div>
     </div>
   )
