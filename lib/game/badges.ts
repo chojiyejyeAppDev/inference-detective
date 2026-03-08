@@ -58,7 +58,9 @@ export async function checkAndAwardBadges(
         qualifies = context.currentLevel >= badge.condition_value
         break
       case 'perfect_score':
-        qualifies = context.isCorrect // perfect_score checked per-session elsewhere
+        // condition_value = number of perfect scores required (consecutive or total)
+        // For now, isCorrect means this session was perfect; condition_value=1 means single perfect
+        qualifies = context.isCorrect && badge.condition_value <= 1
         break
       default:
         break

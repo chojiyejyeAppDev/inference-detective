@@ -14,14 +14,30 @@ export default function ResetPasswordPage() {
   const [ready, setReady] = useState(false)
 
   useEffect(() => {
-    // Supabase는 recovery token을 URL hash로 전달하고 자동으로 세션 설정
     const supabase = createClient()
-    supabase.auth.onAuthStateChange((event) => {
+
+    // 이미 recovery 세션이 있으면 바로 표시
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) setReady(true)
+    })
+
+    // recovery 이벤트 감지
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
       if (event === 'PASSWORD_RECOVERY') {
         setReady(true)
       }
     })
-  }, [])
+
+    // 5초 내 ready 안 되면 만료로 판단
+    const timer = setTimeout(() => {
+      if (!ready) router.push('/login')
+    }, 5000)
+
+    return () => {
+      subscription.unsubscribe()
+      clearTimeout(timer)
+    }
+  }, [router, ready])
 
   async function handleReset(e: React.FormEvent) {
     e.preventDefault()

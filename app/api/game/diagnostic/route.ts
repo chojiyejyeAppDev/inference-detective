@@ -9,8 +9,17 @@ import { createClient, createServiceClient } from '@/lib/supabase/server'
 import { evaluateChain } from '@/lib/game/evaluator'
 import { rateLimit, rateLimitResponse } from '@/lib/api/rateLimit'
 import { checkCsrf } from '@/lib/api/csrf'
+import { z } from 'zod'
 
 const DIAGNOSTIC_QUESTIONS = 3
+
+const diagnosticSubmitSchema = z.object({
+  target_level: z.number().int().min(2).max(7),
+  results: z.array(z.object({
+    question_id: z.string().uuid(),
+    submitted_chain: z.array(z.string().min(1)),
+  })).length(DIAGNOSTIC_QUESTIONS),
+})
 const PASS_THRESHOLD = 2 // 3개 중 2개 이상 정답
 
 export async function GET(req: NextRequest) {
@@ -24,9 +33,9 @@ export async function GET(req: NextRequest) {
   if (limited) return rateLimitResponse()
 
   const { searchParams } = new URL(req.url)
-  const targetLevel = parseInt(searchParams.get('target_level') ?? '0')
+  const targetLevel = parseInt(searchParams.get('target_level') ?? '', 10)
 
-  if (targetLevel < 2 || targetLevel > 7) {
+  if (!Number.isInteger(targetLevel) || targetLevel < 2 || targetLevel > 7) {
     return NextResponse.json({ error: 'target_level must be 2-7' }, { status: 400 })
   }
 
@@ -89,21 +98,19 @@ export async function POST(req: NextRequest) {
   const { limited } = rateLimit(`diagnostic-submit:${user.id}`, { max: 3, windowMs: 300_000 })
   if (limited) return rateLimitResponse()
 
-  let body: { target_level: number; results: Array<{ question_id: string; submitted_chain: string[] }> }
+  let rawBody: unknown
   try {
-    body = await req.json()
+    rawBody = await req.json()
   } catch {
     return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 })
   }
 
-  const { target_level, results } = body
-  if (!target_level || !Array.isArray(results) || results.length !== DIAGNOSTIC_QUESTIONS) {
-    return NextResponse.json({ error: `Must submit exactly ${DIAGNOSTIC_QUESTIONS} results` }, { status: 400 })
+  const parsed = diagnosticSubmitSchema.safeParse(rawBody)
+  if (!parsed.success) {
+    return NextResponse.json({ error: parsed.error.issues[0]?.message ?? 'Invalid input' }, { status: 400 })
   }
 
-  if (target_level < 2 || target_level > 7) {
-    return NextResponse.json({ error: 'Invalid target_level' }, { status: 400 })
-  }
+  const { target_level, results } = parsed.data
 
   const service = await createServiceClient()
 
@@ -144,6 +151,11 @@ export async function POST(req: NextRequest) {
 
     if (!question) {
       return NextResponse.json({ error: `Question ${r.question_id} not found` }, { status: 404 })
+    }
+
+    // 제출된 문제가 target_level에 속하는지 검증
+    if (question.difficulty_level !== target_level) {
+      return NextResponse.json({ error: 'Question does not match target level' }, { status: 400 })
     }
 
     const evaluation = evaluateChain(question, r.submitted_chain)

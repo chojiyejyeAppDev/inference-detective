@@ -27,6 +27,7 @@ function SignupForm() {
 
   async function handleSignup(e: React.FormEvent) {
     e.preventDefault()
+    if (loading) return // m-1: prevent double-submit
     setLoading(true)
     setError(null)
 
@@ -188,7 +189,7 @@ function SignupForm() {
           <button
             onClick={handleGoogleSignup}
             disabled={googleLoading || loading}
-            className="w-full py-2.5 border border-exam-rule bg-white text-exam-ink text-sm font-semibold hover:bg-bg-game transition-colors flex items-center justify-center gap-2.5 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full py-3 border border-exam-rule bg-white text-exam-ink text-sm font-semibold hover:bg-bg-game transition-colors flex items-center justify-center gap-2.5 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {googleLoading ? (
               <Loader2 size={16} className="animate-spin" />
@@ -220,7 +221,7 @@ function SignupForm() {
                 required
                 maxLength={20}
                 className={[
-                  'w-full border bg-white px-3 py-2.5 text-sm text-exam-ink placeholder-stone-400 focus:outline-none transition-colors',
+                  'w-full border bg-white px-3 py-3 text-sm text-exam-ink placeholder-stone-400 focus:outline-none transition-colors',
                   nicknameError ? 'border-exam-red focus:border-exam-red' : 'border-exam-rule focus:border-exam-ink',
                 ].join(' ')}
                 placeholder="탐정 이름 (한글/영문/숫자)"
@@ -237,7 +238,7 @@ function SignupForm() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="w-full border border-exam-rule bg-white px-3 py-2.5 text-sm text-exam-ink placeholder-stone-400 focus:border-exam-ink focus:outline-none transition-colors"
+                className="w-full border border-exam-rule bg-white px-3 py-3 text-sm text-exam-ink placeholder-stone-400 focus:border-exam-ink focus:outline-none transition-colors"
                 placeholder="name@example.com"
               />
             </div>
@@ -251,7 +252,7 @@ function SignupForm() {
                 required
                 minLength={8}
                 className={[
-                  'w-full border bg-white px-3 py-2.5 text-sm text-exam-ink placeholder-stone-400 focus:outline-none transition-colors',
+                  'w-full border bg-white px-3 py-3 text-sm text-exam-ink placeholder-stone-400 focus:outline-none transition-colors',
                   passwordTooShort ? 'border-exam-red focus:border-exam-red' : 'border-exam-rule focus:border-exam-ink',
                 ].join(' ')}
                 placeholder="8자 이상"
@@ -266,7 +267,7 @@ function SignupForm() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-2.5 bg-exam-ink text-white text-sm font-bold hover:opacity-90 transition-opacity disabled:opacity-50"
+              className="w-full py-3 bg-exam-ink text-white text-sm font-bold hover:opacity-90 transition-opacity disabled:opacity-50"
             >
               {loading ? '가입 중...' : '이메일로 가입하기'}
             </button>

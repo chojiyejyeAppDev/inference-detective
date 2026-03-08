@@ -12,7 +12,9 @@ function LoginForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const refCode = searchParams.get('ref')
-  const redirectTo = searchParams.get('redirect') ?? '/levels'
+  const rawRedirect = searchParams.get('redirect') ?? '/levels'
+  // Prevent open redirect: only allow relative paths starting with /
+  const redirectTo = rawRedirect.startsWith('/') && !rawRedirect.startsWith('//') ? rawRedirect : '/levels'
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
@@ -22,6 +24,7 @@ function LoginForm() {
 
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault()
+    if (loading) return // m-1: prevent double-submit
     if (!email.trim()) {
       toast.error('이메일을 입력해주세요.')
       return
@@ -109,7 +112,7 @@ function LoginForm() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="w-full border border-exam-rule bg-white px-3 py-2.5 text-sm text-exam-ink placeholder-stone-400 focus:border-exam-ink focus:outline-none transition-colors"
+                className="w-full border border-exam-rule bg-white px-3 py-3 text-sm text-exam-ink placeholder-stone-400 focus:border-exam-ink focus:outline-none transition-colors"
                 placeholder="name@example.com"
               />
             </div>
@@ -121,7 +124,7 @@ function LoginForm() {
                   type="button"
                   onClick={handlePasswordReset}
                   disabled={resetSent}
-                  className="text-[11px] text-stone-400 hover:text-exam-ink transition-colors disabled:text-stone-300"
+                  className="text-xs text-stone-400 hover:text-exam-ink transition-colors disabled:text-stone-300 py-1"
                 >
                   {resetSent ? '메일 발송됨' : '비밀번호 찾기'}
                 </button>
@@ -131,7 +134,7 @@ function LoginForm() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                className="w-full border border-exam-rule bg-white px-3 py-2.5 text-sm text-exam-ink placeholder-stone-400 focus:border-exam-ink focus:outline-none transition-colors"
+                className="w-full border border-exam-rule bg-white px-3 py-3 text-sm text-exam-ink placeholder-stone-400 focus:border-exam-ink focus:outline-none transition-colors"
                 placeholder="••••••••"
               />
             </div>
@@ -139,7 +142,7 @@ function LoginForm() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-2.5 bg-exam-ink text-white text-sm font-bold hover:opacity-90 transition-opacity disabled:opacity-50"
+              className="w-full py-3 bg-exam-ink text-white text-sm font-bold hover:opacity-90 transition-opacity disabled:opacity-50"
             >
               {loading ? '로그인 중...' : '로그인'}
             </button>
@@ -154,7 +157,7 @@ function LoginForm() {
           <button
             onClick={handleGoogleLogin}
             disabled={googleLoading || loading}
-            className="w-full py-2.5 border border-exam-rule bg-white text-exam-ink text-sm font-semibold hover:bg-bg-game transition-colors flex items-center justify-center gap-2.5 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full py-3 border border-exam-rule bg-white text-exam-ink text-sm font-semibold hover:bg-bg-game transition-colors flex items-center justify-center gap-2.5 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {googleLoading ? (
               <Loader2 size={16} className="animate-spin" />

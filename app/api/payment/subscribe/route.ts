@@ -135,6 +135,17 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: '결제 정보가 일치하지 않습니다' }, { status: 403 })
       }
 
+      // paymentId 중복 사용 방지
+      const { data: existingPayment } = await service
+        .from('subscriptions')
+        .select('id')
+        .eq('payment_id', paymentId)
+        .maybeSingle()
+
+      if (existingPayment) {
+        return NextResponse.json({ error: 'Payment already redeemed' }, { status: 409 })
+      }
+
       // 이용권 정보 저장 (빌링키 없음)
       const expiresAt = new Date()
       expiresAt.setDate(expiresAt.getDate() + planInfo.days)

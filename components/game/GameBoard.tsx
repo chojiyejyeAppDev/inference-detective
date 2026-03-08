@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback, useEffect } from 'react'
+import { useState, useCallback, useEffect, useRef } from 'react'
 import { DragDropContext, Droppable, DropResult } from '@hello-pangea/dnd'
 import { motion, AnimatePresence } from 'framer-motion'
 import Link from 'next/link'
@@ -30,6 +30,7 @@ interface GameBoardProps {
   onHintRequest: () => void
   onNextQuestion: () => void
   onReset: () => void
+  activeHints?: string[]
 }
 
 export default function GameBoard({
@@ -47,6 +48,7 @@ export default function GameBoard({
   onHintRequest,
   onNextQuestion,
   onReset,
+  activeHints = [],
 }: GameBoardProps) {
   const STORAGE_KEY = `iruda_game_${question.id}`
 
@@ -96,34 +98,8 @@ export default function GameBoard({
     try { sessionStorage.removeItem(STORAGE_KEY) } catch { /* ignore */ }
   }, [question.id, levelConfig.slots, question.sentences, STORAGE_KEY])
 
-  // Keyboard shortcuts
-  useEffect(() => {
-    if (isReviewMode) return
-    function handleKeyDown(e: KeyboardEvent) {
-      // Ctrl+Z / Cmd+Z: undo
-      if ((e.ctrlKey || e.metaKey) && e.key === 'z' && !isEvaluated) {
-        e.preventDefault()
-        handleUndo()
-        return
-      }
-      // Enter: submit (when chain complete) or next question (when evaluated)
-      if (e.key === 'Enter' && !e.shiftKey) {
-        if (isEvaluated) {
-          onNextQuestion()
-        } else if (isChainComplete && !isSubmitting) {
-          onSubmit(chain)
-        }
-        return
-      }
-      // Escape: deselect card
-      if (e.key === 'Escape') {
-        setSelectedCardId(null)
-        return
-      }
-    }
-    document.addEventListener('keydown', handleKeyDown)
-    return () => document.removeEventListener('keydown', handleKeyDown)
-  })
+  // Keyboard shortcuts ref — declared here, assigned after derived state below
+  const kbRef = useRef<{ isEvaluated: boolean; isChainComplete: boolean; isSubmitting: boolean; chain: (string | null)[]; handleUndo: () => void; onNextQuestion: () => void; onSubmit: (c: (string | null)[]) => void } | null>(null)
 
   // Show level up animation when triggered + clear saved state on evaluation
   useEffect(() => {
@@ -152,6 +128,36 @@ export default function GameBoard({
     setPool(prev.pool)
     setHistory(history.slice(0, -1))
   }
+
+  // Keyboard shortcuts — use ref for latest values to keep stable listener
+  kbRef.current = { isEvaluated, isChainComplete, isSubmitting, chain, handleUndo, onNextQuestion, onSubmit }
+
+  useEffect(() => {
+    if (isReviewMode) return
+    function handleKeyDown(e: KeyboardEvent) {
+      const s = kbRef.current
+      if (!s) return
+      if ((e.ctrlKey || e.metaKey) && e.key === 'z' && !s.isEvaluated) {
+        e.preventDefault()
+        s.handleUndo()
+        return
+      }
+      if (e.key === 'Enter' && !e.shiftKey) {
+        if (s.isEvaluated) {
+          s.onNextQuestion()
+        } else if (s.isChainComplete && !s.isSubmitting) {
+          s.onSubmit(s.chain)
+        }
+        return
+      }
+      if (e.key === 'Escape') {
+        setSelectedCardId(null)
+        return
+      }
+    }
+    document.addEventListener('keydown', handleKeyDown)
+    return () => document.removeEventListener('keydown', handleKeyDown)
+  }, [isReviewMode])
 
   // Keyboard-accessible: click-to-select, click-to-place
   function handleCardSelect(sentenceId: string) {
@@ -214,15 +220,7 @@ export default function GameBoard({
     setSelectedCardId(null)
   }
 
-  // Clear selection on Escape
-  useEffect(() => {
-    if (!selectedCardId) return
-    function handleEsc(e: KeyboardEvent) {
-      if (e.key === 'Escape') setSelectedCardId(null)
-    }
-    document.addEventListener('keydown', handleEsc)
-    return () => document.removeEventListener('keydown', handleEsc)
-  }, [selectedCardId])
+  // Escape handling is consolidated in the keyboard shortcuts useEffect above
 
   const onDragEnd = (result: DropResult) => {
     if (isEvaluated) return
@@ -334,7 +332,8 @@ export default function GameBoard({
             {/* Sentence pool */}
             <div>
               <p className="text-[10px] font-semibold text-stone-500 tracking-widest uppercase mb-2 px-1">
-                문장 카드 — 끌어서 배치하거나 클릭하여 선택
+                <span className="hidden sm:inline">문장 카드 — 끌어서 배치하거나 클릭하여 선택</span>
+                <span className="sm:hidden">문장 카드 — 탭하여 선택 또는 길게 눌러 드래그</span>
               </p>
               <Droppable droppableId="pool" direction="vertical">
                 {(provided, snapshot) => (
@@ -547,6 +546,24 @@ export default function GameBoard({
               )}
             </AnimatePresence>
 
+            {/* Persistent hint panel */}
+            {activeHints.length > 0 && !isEvaluated && (
+              <div className="border border-amber-300 bg-amber-50 p-3">
+                <p className="text-[10px] font-semibold text-amber-700 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                  <Lightbulb size={12} />
+                  힌트 ({activeHints.length}개)
+                </p>
+                <div className="space-y-1.5">
+                  {activeHints.map((hint, i) => (
+                    <p key={i} className="text-xs text-amber-900 leading-relaxed">
+                      <span className="font-semibold text-amber-700">#{i + 1}</span>{' '}
+                      {hint}
+                    </p>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {/* Action buttons */}
             <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 mt-auto pt-2">
               {!isEvaluated ? (
@@ -569,7 +586,7 @@ export default function GameBoard({
                             ? '힌트 포인트 부족'
                             : undefined
                       }
-                      className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2.5 border border-exam-rule bg-white text-stone-600 text-sm font-medium hover:bg-bg-base transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-3 border border-exam-rule bg-white text-stone-600 text-sm font-medium hover:bg-bg-base transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       <Lightbulb size={14} />
                       {isHintLoading ? '로딩...' : '힌트'}
@@ -578,7 +595,7 @@ export default function GameBoard({
                       onClick={handleUndo}
                       disabled={history.length === 0}
                       aria-label="마지막 동작 되돌리기"
-                      className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-3 py-2.5 border border-exam-rule text-stone-500 text-sm hover:border-stone-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-3 py-3 border border-exam-rule text-stone-500 text-sm hover:border-stone-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       <Undo2 size={13} />
                       되돌리기
@@ -607,7 +624,7 @@ export default function GameBoard({
                     disabled={!isChainComplete || isSubmitting}
                     aria-label="추론 경로 제출"
                     aria-busy={isSubmitting}
-                    className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-exam-ink text-white text-sm font-bold hover:bg-stone-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-exam-ink text-white text-sm font-bold hover:bg-stone-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {isSubmitting ? (
                       <Loader2 size={14} className="animate-spin" />
@@ -629,7 +646,7 @@ export default function GameBoard({
                           setShowCorrectAnswer(false)
                           onReset()
                         }}
-                        className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 border border-exam-rule text-exam-ink text-sm font-medium hover:bg-bg-base transition-colors"
+                        className="flex-1 flex items-center justify-center gap-2 px-4 py-3 border border-exam-rule text-exam-ink text-sm font-medium hover:bg-bg-base transition-colors"
                       >
                         <RefreshCw size={14} />
                         다시 풀기
@@ -637,7 +654,7 @@ export default function GameBoard({
                     )}
                     <button
                       onClick={onNextQuestion}
-                      className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-exam-ink text-white text-sm font-bold hover:bg-stone-800 transition-colors"
+                      className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-exam-ink text-white text-sm font-bold hover:bg-stone-800 transition-colors"
                     >
                       다음 문제
                       <ChevronRight size={14} />
@@ -663,8 +680,8 @@ export default function GameBoard({
 
     {showLevelUp && (
       <LevelUpAnimation
-        fromLevel={levelConfig.level - 1}
-        toLevel={levelConfig.level}
+        fromLevel={levelConfig.level}
+        toLevel={levelConfig.level + 1}
         onDismiss={() => setShowLevelUp(false)}
       />
     )}

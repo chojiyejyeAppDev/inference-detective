@@ -8,7 +8,7 @@ const uuid = z.string().uuid()
 export const evaluateSchema = z.object({
   question_id: uuid,
   submitted_chain: z
-    .array(z.union([z.string(), z.null()]))
+    .array(z.string().min(1))
     .min(1)
     .max(10),
   hints_used: z.number().int().min(0).max(10).optional().default(0),

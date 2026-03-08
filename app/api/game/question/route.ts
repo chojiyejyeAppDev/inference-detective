@@ -118,6 +118,11 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: 'Question not found' }, { status: 404 })
     }
 
+    // 레벨 제한: 사용자가 접근할 수 없는 레벨의 문제 차단
+    if (!isAdmin && specificQuestion.difficulty_level > profile.current_level) {
+      return NextResponse.json({ error: 'Level not unlocked' }, { status: 403 })
+    }
+
     return NextResponse.json({
       question: specificQuestion,
       hint_points: currentHintPoints,
@@ -178,6 +183,10 @@ export async function GET(req: NextRequest) {
       .limit(10)
 
     if (!reviewQuestions?.length) {
+      // C-7: Rollback consumed daily question since no question was served
+      if (!isUnlimited) {
+        await service.rpc('rollback_daily_question', { uid: user.id })
+      }
       return NextResponse.json({ error: 'No questions available' }, { status: 404 })
     }
 
@@ -187,6 +196,10 @@ export async function GET(req: NextRequest) {
 
   // 선택: 첫 사용자는 첫 번째(가장 쉬운), 기존 사용자는 랜덤
   if (!pool || pool.length === 0) {
+    // C-7: Rollback consumed daily question since no question was served
+    if (!isUnlimited) {
+      await service.rpc('rollback_daily_question', { uid: user.id })
+    }
     return NextResponse.json({ error: '사용 가능한 문제가 없습니다.' }, { status: 404 })
   }
   const question = isFirstTime ? pool[0] : pool[Math.floor(Math.random() * pool.length)]

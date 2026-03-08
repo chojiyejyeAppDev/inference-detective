@@ -97,6 +97,7 @@ function buildExplanation(
 
 export function checkLevelUp(recentAccuracies: number[]): boolean {
   if (recentAccuracies.length < LEVEL_UP_SESSIONS) return false
-  const lastN = recentAccuracies.slice(-LEVEL_UP_SESSIONS)
+  // recentAccuracies는 newest-first (DESC) 순서로 전달됨
+  const lastN = recentAccuracies.slice(0, LEVEL_UP_SESSIONS)
   return lastN.every((a) => a >= LEVEL_UP_ACCURACY)
 }
