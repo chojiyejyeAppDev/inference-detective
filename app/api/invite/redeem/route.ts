@@ -23,6 +23,9 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
   }
   const { invite_code } = body
+  if (typeof invite_code !== 'string' || !invite_code.trim()) {
+    return NextResponse.json({ error: 'Invalid invite code' }, { status: 400 })
+  }
   const service = await createServiceClient()
 
   // 이미 초대 코드 사용 여부 체크
@@ -61,16 +64,13 @@ export async function POST(req: NextRequest) {
   // 초대자 보너스: 구독 상태에 따라 다른 보상
   const { data: inviterFull } = await service
     .from('profiles')
-    .select('subscription_status, hint_points')
+    .select('subscription_status')
     .eq('id', inviter.id)
     .single()
 
   if (inviterFull?.subscription_status === 'active') {
-    // 유료 사용자: 힌트 포인트 +5 보너스
-    await service
-      .from('profiles')
-      .update({ hint_points: (inviterFull.hint_points ?? 0) + 5 })
-      .eq('id', inviter.id)
+    // 유료 사용자: 힌트 포인트 +5 보너스 (원자적 업데이트)
+    await service.rpc('add_hint_points', { uid: inviter.id, amount: 5 })
   } else {
     // 무료 사용자: 일일 한도에서 차감 (추가 문제 효과)
     await service

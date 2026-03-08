@@ -30,20 +30,31 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   }
 
-  const body = await request.json()
-  const { text, level, topic, count = 3 } = body as {
-    text: string
-    level: number
-    topic: string
-    count?: number
+  let body: Record<string, unknown>
+  try {
+    body = await request.json()
+  } catch {
+    return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
   }
 
-  if (!text || !level || !topic) {
-    return NextResponse.json(
-      { error: '지문 텍스트, 레벨, 주제를 모두 입력해주세요.' },
-      { status: 400 },
-    )
+  const { text, level: rawLevel, topic, count: rawCount } = body as {
+    text?: unknown
+    level?: unknown
+    topic?: unknown
+    count?: unknown
   }
+
+  if (typeof text !== 'string' || !text.trim()) {
+    return NextResponse.json({ error: '지문 텍스트를 입력해주세요.' }, { status: 400 })
+  }
+  if (typeof topic !== 'string' || !topic.trim()) {
+    return NextResponse.json({ error: '주제를 입력해주세요.' }, { status: 400 })
+  }
+  const level = Math.max(1, Math.min(7, Math.floor(Number(rawLevel) || 0)))
+  if (!level) {
+    return NextResponse.json({ error: '유효한 레벨(1~7)을 입력해주세요.' }, { status: 400 })
+  }
+  const count = Math.max(1, Math.min(10, Math.floor(Number(rawCount) || 3)))
 
   const apiKey = process.env.OPENAI_API_KEY
   if (!apiKey) {

@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { LayoutGrid, BarChart3, CreditCard, LogOut, BookMarked } from 'lucide-react'
+import { LayoutGrid, BarChart3, CreditCard, LogOut, BookMarked, Settings } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 
 const NAV_ITEMS = [

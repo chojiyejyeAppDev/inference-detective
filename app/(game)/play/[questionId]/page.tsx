@@ -24,7 +24,7 @@ export default function PlayPage({ params }: { params: Promise<{ questionId: str
   const [hintStep, setHintStep] = useState(1)
   const [evaluationResult, setEvaluationResult] = useState<EvaluationResult | null>(null)
   const [currentQuestionId, setCurrentQuestionId] = useState<string | null>(questionId)
-  const [_dailyInfo, setDailyInfo] = useState<{ used: number; limit: number | null } | null>(null)
+  const [dailyInfo, setDailyInfo] = useState<{ used: number; limit: number | null } | null>(null)
   const [isReviewMode, setIsReviewMode] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
@@ -203,6 +203,7 @@ export default function PlayPage({ params }: { params: Promise<{ questionId: str
       question={question}
       levelConfig={levelConfig}
       hintPoints={hintPoints}
+      dailyRemaining={dailyInfo?.limit != null ? Math.max(0, dailyInfo.limit - dailyInfo.used) : null}
       isSubmitting={isSubmitting}
       isHintLoading={isHintLoading}
       isReviewMode={isReviewMode}

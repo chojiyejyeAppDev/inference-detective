@@ -16,17 +16,21 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  const { billingKey, paymentId, plan } = await req.json() as {
-    billingKey?: string
-    paymentId?: string
-    plan: PlanKey
+  let body: { billingKey?: string; paymentId?: string; plan?: string }
+  try {
+    body = await req.json()
+  } catch {
+    return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
   }
 
-  if (!PLANS[plan]) {
+  const { billingKey, paymentId, plan } = body
+
+  if (!plan || typeof plan !== 'string' || !PLANS[plan as PlanKey]) {
     return NextResponse.json({ error: 'Invalid plan' }, { status: 400 })
   }
 
-  const planInfo = PLANS[plan]
+  const validPlan = plan as PlanKey
+  const planInfo = PLANS[validPlan]
 
   // 구독(빌링키) 플랜은 billingKey 필수, 일회성 플랜은 paymentId 필수
   if (planInfo.type === 'subscription' && !billingKey) {
@@ -65,7 +69,7 @@ export async function POST(req: NextRequest) {
 
       // 구독 정보 저장 (빌링키 포함)
       const expiresAt = new Date()
-      if (plan === 'monthly') {
+      if (validPlan === 'monthly') {
         expiresAt.setMonth(expiresAt.getMonth() + 1)
       } else {
         expiresAt.setDate(expiresAt.getDate() + planInfo.days)
@@ -73,7 +77,7 @@ export async function POST(req: NextRequest) {
 
       await service.from('subscriptions').upsert({
         user_id: user.id,
-        plan,
+        plan: validPlan,
         billing_key: billingKey,
         customer_key: user.id,
         status: 'active',
@@ -102,7 +106,7 @@ export async function POST(req: NextRequest) {
         // 이메일 발송 실패해도 구독은 정상 처리
       }
 
-      return NextResponse.json({ success: true, plan, expires_at: expiresAt })
+      return NextResponse.json({ success: true, plan: validPlan, expires_at: expiresAt })
     } else if (planInfo.type === 'onetime' && paymentId) {
       // ── 일회성 결제 플로우: 결제 상태 검증 ──
       const payment = await getPayment(paymentId)
@@ -126,7 +130,7 @@ export async function POST(req: NextRequest) {
 
       await service.from('subscriptions').upsert({
         user_id: user.id,
-        plan,
+        plan: validPlan,
         billing_key: null,
         payment_id: paymentId,
         customer_key: user.id,
@@ -156,7 +160,7 @@ export async function POST(req: NextRequest) {
         // 이메일 발송 실패해도 정상 처리
       }
 
-      return NextResponse.json({ success: true, plan, expires_at: expiresAt })
+      return NextResponse.json({ success: true, plan: validPlan, expires_at: expiresAt })
     }
 
     return NextResponse.json({ error: 'Invalid request' }, { status: 400 })

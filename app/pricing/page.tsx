@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion, type Variants } from 'framer-motion'
-import { Check, Zap, BookOpen, BarChart3, ArrowLeft, Loader2, CreditCard, ShieldCheck } from 'lucide-react'
+import { Check, Zap, BookOpen, BarChart3, ArrowLeft, Loader2, CreditCard, ShieldCheck, X } from 'lucide-react'
 import Link from 'next/link'
 import { toast } from 'sonner'
 import { PLANS, type PlanKey } from '@/lib/payment/portone'
@@ -69,6 +69,9 @@ export default function PricingPage() {
   } | null>(null)
 
   const [cancelLoading, setCancelLoading] = useState(false)
+  const [showCancelModal, setShowCancelModal] = useState(false)
+  const [cancelReason, setCancelReason] = useState<string | null>(null)
+  const [cancelStep, setCancelStep] = useState<'reason' | 'offer' | 'confirm'>('reason')
   const planInfo = PLANS[selectedPlan]
   const isSubscription = planInfo.type === 'subscription'
   const isAlreadySubscribed = currentSubscription?.status === 'active'
@@ -97,11 +100,32 @@ export default function PricingPage() {
     })
   }, [])
 
-  async function handleCancel() {
-    if (!confirm('정말 구독을 취소하시겠어요? 만료일까지는 계속 이용할 수 있어요.')) return
+  const CANCEL_REASONS = [
+    { key: 'too_expensive', label: '가격이 부담돼요' },
+    { key: 'not_enough_content', label: '문제가 부족해요' },
+    { key: 'no_time', label: '시간이 없어요' },
+    { key: 'not_helpful', label: '학습에 도움이 안 돼요' },
+    { key: 'other', label: '기타' },
+  ]
+
+  function openCancelModal() {
+    setCancelReason(null)
+    setCancelStep('reason')
+    setShowCancelModal(true)
+  }
+
+  function closeCancelModal() {
+    setShowCancelModal(false)
+  }
+
+  async function executeCancelSubscription() {
     setCancelLoading(true)
     try {
-      const res = await fetch('/api/payment/cancel', { method: 'POST' })
+      const res = await fetch('/api/payment/cancel', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ reason: cancelReason }),
+      })
       if (!res.ok) {
         const data = await res.json().catch(() => null)
         throw new Error(data?.error ?? '취소 처리 실패')
@@ -111,6 +135,7 @@ export default function PricingPage() {
       setCurrentSubscription((prev) =>
         prev ? { ...prev, status: 'cancelled' } : prev,
       )
+      closeCancelModal()
     } catch (err) {
       toast.error(err instanceof Error ? err.message : '구독 취소 중 오류가 발생했어요.')
     } finally {
@@ -422,11 +447,10 @@ export default function PricingPage() {
                 </p>
               )}
               <button
-                onClick={handleCancel}
-                disabled={cancelLoading}
-                className="mt-3 text-xs text-slate-500 hover:text-red-400 transition-colors underline underline-offset-2 disabled:opacity-50"
+                onClick={openCancelModal}
+                className="mt-3 text-xs text-slate-500 hover:text-red-400 transition-colors underline underline-offset-2"
               >
-                {cancelLoading ? '처리 중...' : '구독 취소'}
+                구독 취소
               </button>
             </div>
           ) : (
@@ -457,6 +481,150 @@ export default function PricingPage() {
           </p>
         </motion.div>
       </motion.div>
+
+      {/* Cancel subscription modal */}
+      {showCancelModal && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="fixed inset-0 z-[100] bg-black/70 backdrop-blur-sm flex items-center justify-center px-4"
+          onClick={(e) => { if (e.target === e.currentTarget) closeCancelModal() }}
+        >
+          <motion.div
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            className="w-full max-w-sm rounded-2xl border border-slate-700 bg-slate-800 p-6 shadow-2xl relative"
+          >
+            {/* Close button */}
+            <button
+              onClick={closeCancelModal}
+              className="absolute top-4 right-4 text-slate-500 hover:text-slate-300 transition-colors"
+            >
+              <X size={18} />
+            </button>
+
+            {cancelStep === 'reason' && (
+              <>
+                <h3 className="text-lg font-bold text-white mb-1">구독을 취소하시겠어요?</h3>
+                <p className="text-xs text-slate-400 mb-5">
+                  더 나은 서비스를 위해 이유를 알려주세요.
+                </p>
+                <div className="space-y-2 mb-5">
+                  {CANCEL_REASONS.map((r) => (
+                    <button
+                      key={r.key}
+                      onClick={() => setCancelReason(r.key)}
+                      className={[
+                        'w-full text-left px-4 py-3 rounded-xl border text-sm transition-all',
+                        cancelReason === r.key
+                          ? 'border-amber-500/50 bg-amber-500/10 text-slate-200'
+                          : 'border-slate-700 hover:border-slate-600 text-slate-400',
+                      ].join(' ')}
+                    >
+                      {r.label}
+                    </button>
+                  ))}
+                </div>
+                <button
+                  onClick={() => {
+                    if (!cancelReason) {
+                      toast.error('취소 이유를 선택해주세요.')
+                      return
+                    }
+                    setCancelStep('offer')
+                  }}
+                  className="w-full py-3 rounded-xl bg-slate-700 text-slate-300 text-sm font-semibold hover:bg-slate-600 transition-colors"
+                >
+                  다음
+                </button>
+              </>
+            )}
+
+            {cancelStep === 'offer' && (
+              <>
+                <h3 className="text-lg font-bold text-white mb-1">잠깐만요!</h3>
+                <p className="text-xs text-slate-400 mb-5">
+                  {cancelReason === 'too_expensive'
+                    ? '일주일 이용권(₩3,900)으로 부담 없이 계속해보세요.'
+                    : cancelReason === 'no_time'
+                      ? '하루 5분이면 충분해요. 짧은 시간 꾸준히 풀어보세요.'
+                      : cancelReason === 'not_enough_content'
+                        ? '매주 새로운 문제가 추가되고 있어요!'
+                        : '취소 전에 이것만 확인해주세요.'}
+                </p>
+
+                <div className="rounded-xl border border-amber-500/30 bg-amber-500/5 p-4 mb-4">
+                  <p className="text-amber-300 font-semibold text-sm mb-2">지금 유지하면</p>
+                  <ul className="space-y-1.5 text-xs text-slate-400">
+                    <li className="flex items-center gap-2">
+                      <Check size={12} className="text-amber-400 shrink-0" />
+                      무제한 문제 + 전체 힌트
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <Check size={12} className="text-amber-400 shrink-0" />
+                      성장 대시보드 & 오답 분석
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <Check size={12} className="text-amber-400 shrink-0" />
+                      레벨업 진행 상황 유지
+                    </li>
+                  </ul>
+                </div>
+
+                <div className="space-y-2">
+                  <button
+                    onClick={() => {
+                      closeCancelModal()
+                      toast.success('좋은 선택이에요! 계속 함께해요.')
+                    }}
+                    className="w-full py-3 rounded-xl bg-amber-500 text-slate-900 text-sm font-bold hover:bg-amber-400 transition-colors"
+                  >
+                    구독 유지하기
+                  </button>
+                  <button
+                    onClick={() => setCancelStep('confirm')}
+                    className="w-full py-3 rounded-xl text-slate-500 text-sm hover:text-slate-400 transition-colors"
+                  >
+                    그래도 취소할게요
+                  </button>
+                </div>
+              </>
+            )}
+
+            {cancelStep === 'confirm' && (
+              <>
+                <h3 className="text-lg font-bold text-white mb-1">정말 취소하시겠어요?</h3>
+                <p className="text-xs text-slate-400 mb-5">
+                  만료일까지는 프리미엄 기능을 계속 이용할 수 있어요.
+                  {currentSubscription?.expiresAt && (
+                    <span className="block mt-1 text-slate-500">
+                      만료일: {new Date(currentSubscription.expiresAt).toLocaleDateString('ko-KR')}
+                    </span>
+                  )}
+                </p>
+                <div className="space-y-2">
+                  <button
+                    onClick={() => {
+                      closeCancelModal()
+                      toast.success('감사합니다! 계속 함께해요.')
+                    }}
+                    className="w-full py-3 rounded-xl bg-amber-500 text-slate-900 text-sm font-bold hover:bg-amber-400 transition-colors"
+                  >
+                    역시 유지할게요
+                  </button>
+                  <button
+                    onClick={executeCancelSubscription}
+                    disabled={cancelLoading}
+                    className="w-full py-3 rounded-xl border border-red-500/30 text-red-400 text-sm font-semibold hover:bg-red-500/10 transition-colors disabled:opacity-50"
+                  >
+                    {cancelLoading ? '처리 중...' : '구독 취소하기'}
+                  </button>
+                </div>
+              </>
+            )}
+          </motion.div>
+        </motion.div>
+      )}
 
       {/* Payment processing overlay */}
       {paymentStep !== 'idle' && (

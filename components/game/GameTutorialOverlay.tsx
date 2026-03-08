@@ -10,7 +10,7 @@ const TUTORIAL_KEY = 'iruda_tutorial_seen'
 
 import { Brain } from 'lucide-react'
 
-const STEPS = [
+const STEPS: { icon: typeof Brain; title: string; desc: string; hasConnectionVisual?: boolean }[] = [
   {
     icon: Brain,
     title: '왜 추론 조립인가요?',
@@ -28,8 +28,14 @@ const STEPS = [
   },
   {
     icon: ArrowDown,
-    title: '논리적 순서로 배치하면 완성!',
-    desc: '연결 강도 표시(초록/노랑/빨강)가 배치 힌트를 줍니다. 모든 슬롯을 채우고 제출하세요.',
+    title: '연결 강도를 참고하세요',
+    desc: '슬롯 사이 표시가 논리 연결 강도를 알려줘요.\n🟢 강한 연결 — 앞뒤 논리가 자연스러워요\n🟡 보통 연결 — 순서를 다시 확인해 보세요\n🔴 약한 연결 — 이 배치는 논리가 맞지 않아요',
+    hasConnectionVisual: true,
+  },
+  {
+    icon: ArrowDown,
+    title: '모든 슬롯을 채우고 제출!',
+    desc: '문장 카드를 모두 배치한 뒤 "추론 경로 제출" 버튼을 눌러주세요. 정확도와 틀린 부분을 바로 알려드려요.',
   },
 ]
 
@@ -152,7 +158,7 @@ export default function GameTutorialOverlay({ forceOpen, onClose }: Props) {
               transition={{ duration: reduced ? 0 : 0.2 }}
             >
               <h3 className="text-lg font-bold text-white mb-1.5">{current.title}</h3>
-              <p className="text-sm text-slate-400 leading-relaxed">{current.desc}</p>
+              <p className="text-sm text-slate-400 leading-relaxed whitespace-pre-line">{current.desc}</p>
             </motion.div>
           </AnimatePresence>
 

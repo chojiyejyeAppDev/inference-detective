@@ -105,6 +105,30 @@ export function inviteSuccessToInvitee(
   }
 }
 
+// ── 데일리 리마인더 ──
+export function dailyReminderEmail(nickname: string): string {
+  return layout(`
+    <h2 style="color:#f1f5f9;font-size:20px;margin:0 0 16px;">오늘의 추론 문제가 준비됐어요!</h2>
+    <p style="color:#94a3b8;font-size:14px;line-height:1.7;margin:0 0 16px;">
+      ${nickname}님, 매일 5문제씩 꾸준히 풀면 추론력이 확실히 달라져요.
+      오늘도 짧은 시간 투자로 비문학 실력을 키워보세요.
+    </p>
+    <div style="background:#0f172a;border-radius:12px;padding:16px;text-align:center;">
+      <p style="color:#f59e0b;font-size:32px;font-weight:700;margin:0;">5</p>
+      <p style="color:#94a3b8;font-size:13px;margin:4px 0 0;">오늘의 무료 문제</p>
+    </div>
+    <div style="text-align:center;margin-top:24px;">
+      <a href="https://eruda.today/levels"
+         style="display:inline-block;background:linear-gradient(135deg,#f59e0b,#d97706);color:#0f172a;font-weight:700;font-size:14px;padding:12px 32px;border-radius:10px;text-decoration:none;">
+        지금 풀러 가기 →
+      </a>
+    </div>
+    <p style="color:#475569;font-size:11px;margin:16px 0 0;text-align:center;">
+      이 메일을 원하지 않으시면 eonlab.official@gmail.com으로 수신 거부를 요청해주세요.
+    </p>
+  `)
+}
+
 // ── 구독 결제 완료 ──
 export function subscriptionConfirmEmail(
   nickname: string,

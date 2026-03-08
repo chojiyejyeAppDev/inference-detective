@@ -9,11 +9,11 @@ interface ConnectionIndicatorProps {
   strength: Strength
 }
 
-const CONFIG: Record<Strength, { color: string; label: string; pulse: boolean; icon: 'check' | 'wave' | 'x' | 'dot' }> = {
-  strong: { color: '#10B981', label: '강한 연결', pulse: true, icon: 'check' },
-  medium: { color: '#F59E0B', label: '보통 연결', pulse: false, icon: 'wave' },
-  weak: { color: '#EF4444', label: '약한 연결', pulse: false, icon: 'x' },
-  empty: { color: '#334155', label: '비어있음', pulse: false, icon: 'dot' },
+const CONFIG: Record<Strength, { color: string; label: string; tooltip: string; pulse: boolean; icon: 'check' | 'wave' | 'x' | 'dot' }> = {
+  strong: { color: '#10B981', label: '강한 연결', tooltip: '앞뒤 논리가 자연스러워요', pulse: true, icon: 'check' },
+  medium: { color: '#F59E0B', label: '보통 연결', tooltip: '순서를 다시 확인해 보세요', pulse: false, icon: 'wave' },
+  weak: { color: '#EF4444', label: '약한 연결', tooltip: '이 배치는 논리가 맞지 않아요', pulse: false, icon: 'x' },
+  empty: { color: '#334155', label: '비어있음', tooltip: '', pulse: false, icon: 'dot' },
 }
 
 function StrengthIcon({ type, color }: { type: 'check' | 'wave' | 'x' | 'dot'; color: string }) {
@@ -51,11 +51,11 @@ function StrengthIcon({ type, color }: { type: 'check' | 'wave' | 'x' | 'dot'; c
 
 export default function ConnectionIndicator({ strength }: ConnectionIndicatorProps) {
   const reduced = useReducedMotion()
-  const { color, label, pulse: shouldPulse, icon } = CONFIG[strength]
+  const { color, label, tooltip, pulse: shouldPulse, icon } = CONFIG[strength]
   const pulse = shouldPulse && !reduced
 
   return (
-    <div className="flex items-center justify-center py-1 relative" aria-label={label} role="img">
+    <div className="flex items-center justify-center py-1 relative group" aria-label={label} title={tooltip || undefined} role="img">
       {/* Vertical line + shape icon */}
       <div className="flex flex-col items-center gap-0.5">
         <motion.div
