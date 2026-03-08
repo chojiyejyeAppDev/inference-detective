@@ -57,11 +57,11 @@ export default function SentenceCard({ sentence, index, isDimmed = false, isSele
           </p>
 
           {/* Drag grip */}
-          <div className="shrink-0 flex flex-col gap-0.5 opacity-30 group-hover:opacity-60 mt-1 transition-opacity">
+          <div className="shrink-0 flex flex-col gap-[3px] opacity-30 group-hover:opacity-60 mt-0.5 p-1 transition-opacity">
             {[0, 1, 2].map((i) => (
-              <div key={i} className="flex gap-0.5">
-                <div className="w-1 h-1 rounded-full bg-slate-400" />
-                <div className="w-1 h-1 rounded-full bg-slate-400" />
+              <div key={i} className="flex gap-[3px]">
+                <div className="w-1.5 h-1.5 rounded-full bg-slate-400" />
+                <div className="w-1.5 h-1.5 rounded-full bg-slate-400" />
               </div>
             ))}
           </div>

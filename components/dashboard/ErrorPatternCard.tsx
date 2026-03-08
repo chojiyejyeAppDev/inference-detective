@@ -38,20 +38,21 @@ export default function ErrorPatternCard({ patterns }: ErrorPatternCardProps) {
       <p className="text-xs text-slate-500 mb-4">어느 단계에서 자주 실수하나요?</p>
 
       {patterns.length === 0 ? (
-        <div className="h-32 flex items-center justify-center text-slate-500 text-sm">
-          아직 데이터가 없어요
+        <div className="h-32 flex flex-col items-center justify-center text-slate-500 text-sm gap-1">
+          <span>아직 데이터가 없어요</span>
+          <span className="text-xs text-slate-600">문제를 풀면 오류 패턴이 여기에 표시돼요</span>
         </div>
       ) : (
         <ResponsiveContainer width="100%" height={150} aria-label="오답 유형 분석 차트">
           <BarChart data={topErrors} margin={{ top: 0, right: 5, bottom: 0, left: -20 }}>
             <XAxis
               dataKey="position"
-              tick={{ fill: '#64748B', fontSize: 10 }}
+              tick={{ fill: '#94A3B8', fontSize: 10 }}
               axisLine={false}
               tickLine={false}
             />
             <YAxis
-              tick={{ fill: '#64748B', fontSize: 10 }}
+              tick={{ fill: '#94A3B8', fontSize: 10 }}
               axisLine={false}
               tickLine={false}
             />

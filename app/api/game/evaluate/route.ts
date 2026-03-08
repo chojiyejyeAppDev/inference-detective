@@ -17,8 +17,8 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  // Rate limit: 20 evaluations per minute per user
-  const { limited } = rateLimit(`evaluate:${user.id}`, { max: 20, windowMs: 60_000 })
+  // Rate limit: 10 evaluations per minute per user (brute-force prevention)
+  const { limited } = rateLimit(`evaluate:${user.id}`, { max: 10, windowMs: 60_000 })
   if (limited) return rateLimitResponse()
 
   let rawBody: unknown

@@ -1,7 +1,7 @@
 'use client'
 
 import * as Sentry from '@sentry/nextjs'
-import { useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 
 export default function GameError({
@@ -11,9 +11,19 @@ export default function GameError({
   error: Error & { digest?: string }
   reset: () => void
 }) {
+  const [reported, setReported] = useState(false)
+
   useEffect(() => {
     Sentry.captureException(error)
   }, [error])
+
+  function handleReport() {
+    Sentry.captureMessage('User-reported game error', {
+      level: 'warning',
+      extra: { errorMessage: error.message, digest: error.digest },
+    })
+    setReported(true)
+  }
 
   return (
     <div className="min-h-screen bg-bg-game flex items-center justify-center px-4">
@@ -36,6 +46,13 @@ export default function GameError({
             레벨 선택
           </Link>
         </div>
+        <button
+          onClick={handleReport}
+          disabled={reported}
+          className="mt-4 text-xs text-slate-500 hover:text-slate-400 transition-colors disabled:text-slate-600"
+        >
+          {reported ? '신고 완료 — 감사합니다!' : '이 오류 신고하기'}
+        </button>
       </div>
     </div>
   )

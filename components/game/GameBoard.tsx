@@ -20,6 +20,8 @@ interface GameBoardProps {
   levelConfig: LevelConfig
   hintPoints: number
   dailyRemaining?: number | null
+  inviteCode?: string | null
+  streak?: number
   isSubmitting: boolean
   isHintLoading: boolean
   isReviewMode?: boolean
@@ -35,6 +37,8 @@ export default function GameBoard({
   levelConfig,
   hintPoints,
   dailyRemaining,
+  inviteCode,
+  streak = 0,
   isSubmitting,
   isHintLoading,
   isReviewMode,
@@ -287,6 +291,12 @@ export default function GameBoard({
             )}
           </div>
           <div className="flex items-center gap-2 sm:gap-3 text-xs text-slate-400 shrink-0">
+            {streak >= 2 && (
+              <span className="flex items-center gap-1 font-semibold text-orange-400">
+                <Flame size={12} />
+                {streak}연속
+              </span>
+            )}
             {dailyRemaining != null && (
               <span className={`font-semibold ${dailyRemaining === 0 ? 'text-red-400' : 'text-slate-400'}`}>
                 {dailyRemaining}개 남음
@@ -299,10 +309,10 @@ export default function GameBoard({
             </div>
             <button
               onClick={() => setShowTutorial(true)}
-              className="p-2.5 -m-1.5 rounded-lg text-slate-500 hover:text-slate-300 transition-colors"
+              className="p-3 -m-1.5 rounded-lg text-slate-400 hover:text-slate-200 transition-colors"
               aria-label="도움말"
             >
-              <HelpCircle size={14} />
+              <HelpCircle size={16} />
             </button>
           </div>
         </header>
@@ -440,6 +450,7 @@ export default function GameBoard({
                       isCorrect={evaluationResult.is_correct}
                       levelUp={evaluationResult.level_up}
                       slots={levelConfig.slots}
+                      inviteCode={inviteCode ?? undefined}
                     />
                   </div>
                   <p className="text-xs text-slate-400 leading-relaxed">
@@ -481,7 +492,7 @@ export default function GameBoard({
                         ))}
                       </div>
                       <p className="text-[10px] text-slate-500 mt-1">
-                        80% 이상 정확도 {evaluationResult.level_progress.required}회 달성 시 레벨업
+                        최근 {evaluationResult.level_progress.required}세션 중 80% 이상 정확도를 모두 달성하면 레벨업
                       </p>
                       {levelConfig.level === 6 && (
                         <p className="text-[10px] text-amber-400/60 mt-1.5">

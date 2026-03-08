@@ -121,6 +121,7 @@ export async function GET(req: NextRequest) {
       daily_used: dailyUsed,
       daily_limit: isUnlimited ? null : FREE_DAILY_LIMIT,
       subscription_status: isUnlimited ? 'active' : profile.subscription_status,
+      invite_code: profile.invite_code ?? null,
     })
   }
 
@@ -190,5 +191,6 @@ export async function GET(req: NextRequest) {
     daily_used: dailyUsed,
     daily_limit: isUnlimited ? null : FREE_DAILY_LIMIT,
     subscription_status: isUnlimited ? 'active' : profile.subscription_status,
+    invite_code: profile.invite_code ?? null,
   })
 }

@@ -202,6 +202,44 @@ export function subscriptionConfirmEmail(
   }
 }
 
+// ── 구독 해지 안내 ──
+export function subscriptionCancelledEmail(
+  nickname: string,
+  expiresAt: string,
+): { subject: string; html: string } {
+  const formattedDate = new Date(expiresAt).toLocaleDateString('ko-KR', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  })
+
+  return {
+    subject: '구독 해지가 완료되었어요',
+    html: layout(`
+      <h2 style="color:#f1f5f9;font-size:20px;margin:0 0 16px;">구독 해지 안내</h2>
+      <p style="color:#94a3b8;font-size:14px;line-height:1.7;margin:0 0 16px;">
+        ${nickname}님, 구독 해지가 처리되었어요.
+        <strong style="color:#f59e0b;">${formattedDate}</strong>까지는 프리미엄 기능을 계속 이용하실 수 있어요.
+      </p>
+      <div style="background:#0f172a;border-radius:12px;padding:16px;">
+        <p style="color:#64748b;font-size:13px;margin:0 0 8px;">만료일 이후에도 가능한 것</p>
+        <p style="color:#cbd5e1;font-size:13px;margin:0;">• 매일 무료 5문제 풀기</p>
+        <p style="color:#cbd5e1;font-size:13px;margin:4px 0 0;">• 힌트 시스템 사용</p>
+        <p style="color:#cbd5e1;font-size:13px;margin:4px 0 0;">• 레벨 진행 유지</p>
+      </div>
+      <p style="color:#94a3b8;font-size:13px;line-height:1.7;margin:16px 0 0;">
+        언제든 다시 구독하시면 프리미엄 혜택이 바로 복원돼요.
+      </p>
+      <div style="text-align:center;margin-top:24px;">
+        <a href="https://eruda.today/pricing"
+           style="display:inline-block;background:linear-gradient(135deg,#f59e0b,#d97706);color:#0f172a;font-weight:700;font-size:14px;padding:12px 32px;border-radius:10px;text-decoration:none;">
+          다시 구독하기 →
+        </a>
+      </div>
+    `),
+  }
+}
+
 // ── 주간 성과 요약 ──
 export function weeklySummaryEmail(
   nickname: string,

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { GripVertical, ArrowDown, MousePointerClick, X } from 'lucide-react'
+import { GripVertical, ArrowDown, MousePointerClick, X, Lightbulb } from 'lucide-react'
 import { useFocusTrap } from '@/lib/hooks/useFocusTrap'
 import { useReducedMotion } from '@/lib/hooks/useReducedMotion'
 
@@ -32,6 +32,11 @@ const STEPS: { icon: typeof Brain; title: string; desc: string; hasConnectionVis
     title: '연결 강도를 참고하세요',
     desc: '슬롯 사이 표시가 논리 연결 강도를 알려줘요.\n🟢 강한 연결 — 앞뒤 논리가 자연스러워요\n🟡 보통 연결 — 순서를 다시 확인해 보세요\n🔴 약한 연결 — 이 배치는 논리가 맞지 않아요',
     hasConnectionVisual: true,
+  },
+  {
+    icon: Lightbulb,
+    title: '힌트 포인트 활용법',
+    desc: '막힐 때 💡 힌트 버튼을 눌러보세요.\n매일 +3 포인트 자동 충전, 정답 시 +1 보너스!\n레벨 7에서는 힌트 없이 도전해야 해요.',
   },
   {
     icon: ArrowDown,

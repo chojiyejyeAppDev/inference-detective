@@ -230,7 +230,7 @@ export default async function DashboardPage() {
                     </p>
                   </div>
                   <Link
-                    href="/levels"
+                    href={`/levels?focus_topic=${weakest.topic}`}
                     className="shrink-0 px-4 py-2 rounded-lg bg-amber-500 text-slate-900 text-xs font-bold hover:bg-amber-400 transition-colors"
                   >
                     연습하기

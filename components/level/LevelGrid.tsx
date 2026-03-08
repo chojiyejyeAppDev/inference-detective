@@ -1,7 +1,7 @@
 'use client'
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useState, useEffect } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { Lock, ChevronRight, Lightbulb, Star, Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
@@ -26,8 +26,25 @@ export default function LevelGrid({
   levelProgress,
 }: LevelGridProps) {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const isFree = subscriptionStatus !== 'active'
   const remaining = isFree ? Math.max(0, FREE_DAILY_LIMIT - dailyUsed) : null
+
+  const TOPIC_LABELS: Record<string, string> = {
+    humanities: '인문', social: '사회', science: '과학', tech: '기술', arts: '예술',
+  }
+
+  // 약점 주제 집중 훈련 안내 토스트
+  const focusTopic = searchParams.get('focus_topic')
+  useEffect(() => {
+    if (focusTopic && TOPIC_LABELS[focusTopic]) {
+      toast.info(`약점 주제: ${TOPIC_LABELS[focusTopic]}`, {
+        description: '현재 레벨에서 문제를 풀며 약점을 보완하세요.',
+        duration: 5000,
+      })
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [focusTopic])
 
   // 구독 만료 임박 감지 (3일 이내)
   const daysUntilExpiry = subscriptionExpiresAt
@@ -300,7 +317,7 @@ export default function LevelGrid({
                         style={{ width: `${(levelProgress.qualified / levelProgress.required) * 100}%` }}
                       />
                     </div>
-                    <p className="text-[9px] text-slate-500 mt-1">80% 이상 정확도 세션 {levelProgress.required}회 달성 시 레벨업</p>
+                    <p className="text-[9px] text-slate-500 mt-1">최근 {levelProgress.required}세션 연속 80% 이상 달성 시 레벨업</p>
                   </div>
                 )}
               </button>

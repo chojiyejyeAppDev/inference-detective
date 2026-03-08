@@ -17,7 +17,6 @@ const NEXT_STEPS = [
     title: '무제한 문제 풀기',
     desc: '일일 제한 없이 원하는 만큼 추론 훈련하세요',
     href: '/levels',
-    cta: '문제 풀기',
     primary: true,
   },
   {
@@ -25,7 +24,6 @@ const NEXT_STEPS = [
     title: '약점 분석 확인',
     desc: '대시보드에서 정확도 추이와 오류 패턴을 확인하세요',
     href: '/dashboard',
-    cta: '대시보드',
     primary: false,
   },
   {
@@ -33,7 +31,6 @@ const NEXT_STEPS = [
     title: '오답 복습',
     desc: '이전에 틀렸던 문제를 다시 풀어보세요',
     href: '/review',
-    cta: '오답 노트',
     primary: false,
   },
 ]
@@ -46,10 +43,19 @@ export default function SubscriptionCompletePage() {
   )
 }
 
+function getPersonalizedTip(level: number): string | null {
+  if (level <= 2) return '현재 기초 단계예요. 매일 꾸준히 풀면 빠르게 레벨업할 수 있어요!'
+  if (level <= 4) return '중급 단계에 도달했어요. 대시보드에서 약점 주제를 확인해보세요.'
+  if (level <= 6) return '고급 단계까지 올라왔어요! 힌트 없이 도전하는 연습을 시작해보세요.'
+  return '최고 레벨이에요! 모든 주제를 고르게 연습해서 실전에 대비하세요.'
+}
+
 function SubscriptionCompleteContent() {
   const searchParams = useSearchParams()
   const planKey = searchParams.get('plan') ?? 'monthly'
   const plan = PLAN_INFO[planKey] ?? PLAN_INFO.monthly
+  const level = parseInt(searchParams.get('level') ?? '0') || 0
+  const tip = level > 0 ? getPersonalizedTip(level) : null
 
   return (
     <div className="min-h-screen bg-bg-base flex items-center justify-center px-4 py-12">
@@ -106,6 +112,20 @@ function SubscriptionCompleteContent() {
             <span>이용 기간: <span className="text-white font-semibold">{plan.period}</span></span>
           </div>
         </motion.div>
+
+        {/* Personalized tip */}
+        {tip && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.48 }}
+            className="rounded-lg bg-slate-800/50 border border-slate-700/50 px-4 py-3 mb-6 text-left"
+          >
+            <p className="text-xs text-slate-400">
+              <span className="text-amber-400 font-semibold">Lv.{level}</span> — {tip}
+            </p>
+          </motion.div>
+        )}
 
         {/* Next steps */}
         <div className="space-y-3 mb-6">

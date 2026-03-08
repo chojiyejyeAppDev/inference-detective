@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion, type Variants } from 'framer-motion'
-import { Check, Zap, BookOpen, BarChart3, ArrowLeft, Loader2, CreditCard, ShieldCheck, X } from 'lucide-react'
+import { Check, ArrowLeft, Loader2, CreditCard, ShieldCheck, X } from 'lucide-react'
 import Link from 'next/link'
 import { toast } from 'sonner'
 import { PLANS, type PlanKey } from '@/lib/payment/portone'
@@ -35,15 +35,6 @@ const PLAN_FEATURES: Record<PlanKey, {
   },
 }
 
-const PREMIUM_FEATURES = [
-  { icon: Zap,       text: '하루 무제한 문제 풀기' },
-  { icon: BookOpen,  text: '모든 레벨 전체 힌트 이용' },
-  { icon: BarChart3, text: '오답 분석 + 성장 대시보드' },
-  { icon: Check,     text: '친구 초대 보너스 무제한' },
-]
-
-const FREE_FEATURES  = ['하루 5문제', '레벨 1-7 도전']
-const FREE_DISABLED  = ['성장 대시보드', '전체 힌트']
 
 const container: Variants = {
   hidden: { opacity: 0 },
@@ -151,6 +142,7 @@ export default function PricingPage() {
 
     setLoading(true)
     setPaymentStep('card')
+    let subscribeLevel: number | undefined
     try {
       const PortOne = await import('@portone/browser-sdk/v2')
 
@@ -195,10 +187,11 @@ export default function PricingPage() {
           }),
         })
 
+        const resData = await res.json()
         if (!res.ok) {
-          const data = await res.json()
-          throw new Error(data.error ?? '결제 처리 실패')
+          throw new Error(resData.error ?? '결제 처리 실패')
         }
+        subscribeLevel = resData.current_level
       } else {
         // ── 일회성 결제 플로우 (주간 이용권) ──
         const paymentId = `payment_${userId}_${Date.now()}`
@@ -235,16 +228,18 @@ export default function PricingPage() {
           }),
         })
 
+        const resData = await res.json()
         if (!res.ok) {
-          const data = await res.json()
-          throw new Error(data.error ?? '결제 처리 실패')
+          throw new Error(resData.error ?? '결제 처리 실패')
         }
+        subscribeLevel = resData.current_level
       }
 
       setPaymentStep('done')
       toast.success('구독이 완료되었어요!')
+      const levelParam = subscribeLevel ? `&level=${subscribeLevel}` : ''
       setTimeout(() => {
-        router.push(`/subscription-complete?plan=${selectedPlan}`)
+        router.push(`/subscription-complete?plan=${selectedPlan}${levelParam}`)
         router.refresh()
       }, 800)
     } catch (err) {
@@ -289,38 +284,45 @@ export default function PricingPage() {
           </p>
         </motion.div>
 
-        {/* Free vs Pro */}
-        <motion.div variants={item} className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
-          {/* Free */}
-          <div className="rounded-2xl border border-white/[0.07] bg-white/[0.025] p-5">
-            <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-4">무료</p>
-            <ul className="space-y-2.5 text-sm">
-              {FREE_FEATURES.map((f) => (
-                <li key={f} className="flex items-center gap-2 text-slate-400">
-                  <span className="text-slate-500 text-xs">✓</span> {f}
-                </li>
+        {/* Feature comparison table */}
+        <motion.div variants={item} className="rounded-2xl border border-white/[0.08] bg-bg-surface/60 overflow-hidden mb-8">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-white/[0.06]">
+                <th className="text-left px-5 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider">기능</th>
+                <th className="px-4 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider text-center">무료</th>
+                <th className="px-4 py-3 text-xs font-bold text-amber-400 uppercase tracking-wider text-center">프리미엄</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-white/[0.04]">
+              {[
+                { feature: '일일 문제 수', free: '5문제', premium: '무제한' },
+                { feature: '레벨 1-7 도전', free: true, premium: true },
+                { feature: '힌트 시스템', free: '제한적', premium: '전체 이용' },
+                { feature: '성장 대시보드', free: false, premium: true },
+                { feature: '오답 분석', free: false, premium: true },
+                { feature: '초대 보너스', free: '1회', premium: '무제한' },
+              ].map((row) => (
+                <tr key={row.feature}>
+                  <td className="px-5 py-3 text-slate-300">{row.feature}</td>
+                  <td className="px-4 py-3 text-center">
+                    {typeof row.free === 'boolean'
+                      ? row.free
+                        ? <span className="text-slate-400">✓</span>
+                        : <span className="text-slate-700">—</span>
+                      : <span className="text-slate-400 text-xs">{row.free}</span>}
+                  </td>
+                  <td className="px-4 py-3 text-center">
+                    {typeof row.premium === 'boolean'
+                      ? row.premium
+                        ? <span className="text-amber-400">✓</span>
+                        : <span className="text-slate-700">—</span>
+                      : <span className="text-amber-400 text-xs font-semibold">{row.premium}</span>}
+                  </td>
+                </tr>
               ))}
-              {FREE_DISABLED.map((f) => (
-                <li key={f} className="flex items-center gap-2 text-slate-700 line-through">
-                  <span className="text-xs">✗</span> {f}
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Premium */}
-          <div className="rounded-2xl border border-amber-500/40 bg-amber-500/[0.06] p-5 relative overflow-hidden">
-            <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-amber-500/50 to-transparent" />
-            <p className="text-xs font-bold text-amber-400 uppercase tracking-wider mb-4">프리미엄</p>
-            <ul className="space-y-2.5">
-              {PREMIUM_FEATURES.map((f) => (
-                <li key={f.text} className="flex items-center gap-2 text-sm text-slate-300">
-                  <f.icon size={12} className="text-amber-400 shrink-0" />
-                  {f.text}
-                </li>
-              ))}
-            </ul>
-          </div>
+            </tbody>
+          </table>
         </motion.div>
 
         {/* Plan selector */}

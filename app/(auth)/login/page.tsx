@@ -153,7 +153,7 @@ function LoginForm() {
           <button
             onClick={handleGoogleLogin}
             disabled={googleLoading || loading}
-            className="w-full py-2.5 rounded-lg border border-slate-700 text-slate-300 text-sm font-medium hover:bg-slate-700 transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full py-2.5 rounded-xl border border-slate-600 bg-slate-700/50 text-slate-200 text-sm font-semibold hover:bg-slate-700 transition-colors flex items-center justify-center gap-2.5 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
           >
             {googleLoading ? (
               <Loader2 size={16} className="animate-spin" />
