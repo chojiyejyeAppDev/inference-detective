@@ -118,14 +118,20 @@ export async function POST(req: NextRequest) {
     case 'Transaction.Paid': {
       if (paymentStatus !== 'PAID') break
 
-      // 구독 정보에서 플랜 조회 → days 기반 만료일 계산
-      const { data: sub } = await service
+      // 멱등성: 이미 처리된 paymentId인지 확인
+      const { data: existingSub } = await service
         .from('subscriptions')
-        .select('plan')
+        .select('payment_id, status, plan')
         .eq('user_id', userId)
         .single()
 
-      const plan = (sub?.plan as PlanKey) ?? 'monthly'
+      if (existingSub?.payment_id === paymentId && existingSub?.status === 'active') {
+        // 이미 처리됨 — 중복 webhook 무시
+        break
+      }
+
+      // 구독 정보에서 플랜 조회 → days 기반 만료일 계산
+      const plan = (existingSub?.plan as PlanKey) ?? 'monthly'
       const days = PLANS[plan]?.days ?? 30
 
       const expiresAt = new Date()
@@ -133,7 +139,11 @@ export async function POST(req: NextRequest) {
 
       await service
         .from('subscriptions')
-        .update({ status: 'active', expires_at: expiresAt.toISOString() })
+        .update({
+          status: 'active',
+          payment_id: paymentId,
+          expires_at: expiresAt.toISOString(),
+        })
         .eq('user_id', userId)
 
       await service

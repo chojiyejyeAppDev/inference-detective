@@ -30,22 +30,22 @@ export default async function DashboardPage() {
     profile.subscription_status === 'active' &&
     (!profile.subscription_expires_at || new Date(profile.subscription_expires_at) > new Date())
 
-  // 최근 30일 세션 데이터
+  // 최근 30일 세션 + 전체 진행 데이터 병렬 조회
   const thirtyDaysAgo = new Date()
   thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
 
-  const { data: sessions } = await service
-    .from('level_sessions')
-    .select('*')
-    .eq('user_id', user.id)
-    .gte('created_at', thirtyDaysAgo.toISOString())
-    .order('created_at', { ascending: true })
-
-  // 전체 진행 데이터 (correct_chain, topic 포함)
-  const { data: progress } = await service
-    .from('user_progress')
-    .select('*, questions(correct_chain, topic)')
-    .eq('user_id', user.id)
+  const [{ data: sessions }, { data: progress }] = await Promise.all([
+    service
+      .from('level_sessions')
+      .select('*')
+      .eq('user_id', user.id)
+      .gte('created_at', thirtyDaysAgo.toISOString())
+      .order('created_at', { ascending: true }),
+    service
+      .from('user_progress')
+      .select('*, questions(correct_chain, topic)')
+      .eq('user_id', user.id),
+  ])
 
   // 차트 데이터 변환
   const accuracyData = (sessions ?? []).map((s) => ({
