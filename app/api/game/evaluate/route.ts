@@ -48,21 +48,19 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Question not found' }, { status: 404 })
   }
 
-  // 중복 제출 방지: 같은 문제를 이미 제출한 경우
-  const { data: existingSubmission } = await service
-    .from('user_progress')
-    .select('id')
-    .eq('user_id', user.id)
-    .eq('question_id', question_id)
-    .limit(1)
-    .maybeSingle()
-
-  if (existingSubmission) {
-    return NextResponse.json({ error: 'Already submitted this question' }, { status: 409 })
-  }
-
   // 평가
   const evaluation = evaluateChain(question, submitted_chain)
+
+  // 제출된 sentence ID가 실제 문제의 보기에 포함되는지 검증
+  const validIds = new Set(question.sentences.map((s: { id: string }) => s.id))
+  if (!submitted_chain.every((id: string) => validIds.has(id))) {
+    return NextResponse.json({ error: 'Invalid sentence IDs in chain' }, { status: 400 })
+  }
+
+  // 체인 길이가 정답 체인과 일치하는지 검증
+  if (submitted_chain.length !== question.correct_chain.length) {
+    return NextResponse.json({ error: 'Chain length mismatch' }, { status: 400 })
+  }
 
   // 프로필 조회
   const { data: profile } = await service
@@ -75,14 +73,22 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Profile not found' }, { status: 404 })
   }
 
-  // 진행 기록 저장
-  await service.from('user_progress').insert({
+  // 진행 기록 저장 (UNIQUE(user_id, question_id) 제약으로 이중 제출 방지)
+  const { error: insertError } = await service.from('user_progress').insert({
     user_id: user.id,
     question_id,
     submitted_chain,
     is_correct: evaluation.is_correct,
     hints_used,
   })
+
+  if (insertError) {
+    // unique constraint violation (23505) = 이미 제출됨
+    if (insertError.code === '23505') {
+      return NextResponse.json({ error: 'Already submitted this question' }, { status: 409 })
+    }
+    return NextResponse.json({ error: 'Failed to save progress' }, { status: 500 })
+  }
 
   // 레벨 세션 기록
   await service.from('level_sessions').insert({

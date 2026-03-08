@@ -131,8 +131,12 @@ export async function POST(req: NextRequest) {
       }
 
       // 구독 정보에서 플랜 조회 → days 기반 만료일 계산
-      const plan = (existingSub?.plan as PlanKey) ?? 'monthly'
-      const days = PLANS[plan]?.days ?? 30
+      if (!existingSub?.plan || !PLANS[existingSub.plan as PlanKey]) {
+        Sentry.captureMessage('Webhook: no subscription row or unknown plan for user', { level: 'warning', extra: { userId } })
+        break
+      }
+      const plan = existingSub.plan as PlanKey
+      const days = PLANS[plan].days
 
       const expiresAt = new Date()
       expiresAt.setDate(expiresAt.getDate() + days)
