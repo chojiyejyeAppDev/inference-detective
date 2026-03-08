@@ -10,7 +10,7 @@ const TUTORIAL_KEY = 'iruda_tutorial_seen'
 
 import { Brain } from 'lucide-react'
 
-const STEPS: { icon: typeof Brain; title: string; desc: string; hasConnectionVisual?: boolean }[] = [
+const STEPS: { icon: typeof Brain; title: string; desc: string; hasConnectionVisual?: boolean; hasDragDemo?: boolean }[] = [
   {
     icon: Brain,
     title: '왜 추론 조립인가요?',
@@ -25,6 +25,7 @@ const STEPS: { icon: typeof Brain; title: string; desc: string; hasConnectionVis
     icon: GripVertical,
     title: '카드를 슬롯으로 드래그하세요',
     desc: '문장 카드를 길게 누른 채 아래 슬롯으로 끌어다 놓으세요. 모바일에서도 동일해요.',
+    hasDragDemo: true,
   },
   {
     icon: ArrowDown,
@@ -159,6 +160,33 @@ export default function GameTutorialOverlay({ forceOpen, onClose }: Props) {
             >
               <h3 className="text-lg font-bold text-white mb-1.5">{current.title}</h3>
               <p className="text-sm text-slate-400 leading-relaxed whitespace-pre-line">{current.desc}</p>
+
+              {/* Drag demo animation */}
+              {current.hasDragDemo && !reduced && (
+                <div className="mt-4 relative h-24 rounded-lg bg-slate-900/60 border border-slate-700/50 overflow-hidden">
+                  {/* Slot target */}
+                  <div className="absolute bottom-3 left-1/2 -translate-x-1/2 w-36 h-8 rounded-lg border-2 border-dashed border-slate-600 flex items-center justify-center">
+                    <span className="text-[10px] text-slate-600">슬롯</span>
+                  </div>
+                  {/* Animated card */}
+                  <motion.div
+                    animate={{ y: [0, 40, 40, 0], x: [0, 0, 0, 0], scale: [1, 1.05, 1, 1] }}
+                    transition={{ duration: 2.5, repeat: Infinity, repeatDelay: 1, ease: 'easeInOut' }}
+                    className="absolute top-2 left-1/2 -translate-x-1/2 w-36 h-8 rounded-lg bg-amber-500/20 border border-amber-500/40 flex items-center justify-center gap-1.5"
+                  >
+                    <GripVertical size={10} className="text-amber-400/60" />
+                    <span className="text-[10px] text-amber-300 font-medium">문장 카드</span>
+                  </motion.div>
+                  {/* Cursor hint */}
+                  <motion.div
+                    animate={{ y: [0, 40, 40, 0], opacity: [1, 1, 0.5, 1] }}
+                    transition={{ duration: 2.5, repeat: Infinity, repeatDelay: 1, ease: 'easeInOut' }}
+                    className="absolute top-5 left-[calc(50%+40px)]"
+                  >
+                    <MousePointerClick size={14} className="text-amber-400" />
+                  </motion.div>
+                </div>
+              )}
             </motion.div>
           </AnimatePresence>
 

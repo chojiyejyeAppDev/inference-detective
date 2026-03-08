@@ -3,6 +3,7 @@
 import { useState, useCallback, useEffect } from 'react'
 import { DragDropContext, Droppable, DropResult } from '@hello-pangea/dnd'
 import { motion, AnimatePresence } from 'framer-motion'
+import Link from 'next/link'
 import { Lightbulb, Send, RefreshCw, ChevronRight, Trophy, Undo2, Flame, HelpCircle, CheckCircle2, XCircle } from 'lucide-react'
 import { Question, Sentence, EvaluationResult, LevelConfig } from '@/types'
 import { buildConnectionMap } from '@/lib/game/connectionStrength'
@@ -43,15 +44,44 @@ export default function GameBoard({
   onNextQuestion,
   onReset,
 }: GameBoardProps) {
+  const STORAGE_KEY = `iruda_game_${question.id}`
+
+  // Restore saved state or initialize fresh
+  function loadSavedState(): { chain: (string | null)[]; pool: Sentence[] } | null {
+    try {
+      const raw = sessionStorage.getItem(STORAGE_KEY)
+      if (!raw) return null
+      const saved = JSON.parse(raw) as { chain: (string | null)[]; pool: string[] }
+      if (saved.chain.length !== levelConfig.slots) return null
+      const restoredPool = saved.pool
+        .map((id: string) => question.sentences.find((s) => s.id === id))
+        .filter((s): s is Sentence => !!s)
+      return { chain: saved.chain, pool: restoredPool }
+    } catch {
+      return null
+    }
+  }
+
+  const saved = typeof window !== 'undefined' ? loadSavedState() : null
   const [chain, setChain] = useState<(string | null)[]>(
-    Array(levelConfig.slots).fill(null),
+    saved?.chain ?? Array(levelConfig.slots).fill(null),
   )
-  const [pool, setPool] = useState<Sentence[]>(question.sentences)
+  const [pool, setPool] = useState<Sentence[]>(saved?.pool ?? question.sentences)
   const [showLevelUp, setShowLevelUp] = useState(false)
   const [showCorrectAnswer, setShowCorrectAnswer] = useState(false)
   const [history, setHistory] = useState<{ chain: (string | null)[]; pool: Sentence[] }[]>([])
   const [showTutorial, setShowTutorial] = useState(false)
   const [selectedCardId, setSelectedCardId] = useState<string | null>(null)
+
+  // Persist game state to sessionStorage
+  useEffect(() => {
+    try {
+      sessionStorage.setItem(STORAGE_KEY, JSON.stringify({
+        chain,
+        pool: pool.map((s) => s.id),
+      }))
+    } catch { /* quota exceeded — ignore */ }
+  }, [chain, pool, STORAGE_KEY])
 
   // Reset when question changes
   useEffect(() => {
@@ -59,7 +89,8 @@ export default function GameBoard({
     setPool(question.sentences)
     setShowCorrectAnswer(false)
     setHistory([])
-  }, [question.id, levelConfig.slots, question.sentences])
+    try { sessionStorage.removeItem(STORAGE_KEY) } catch { /* ignore */ }
+  }, [question.id, levelConfig.slots, question.sentences, STORAGE_KEY])
 
   // Show level up animation when triggered
   useEffect(() => {
@@ -417,6 +448,11 @@ export default function GameBoard({
                       <p className="text-[10px] text-slate-600 mt-1">
                         80% 이상 정확도 {evaluationResult.level_progress.required}회 달성 시 레벨업
                       </p>
+                      {levelConfig.level === 6 && (
+                        <p className="text-[10px] text-amber-400/60 mt-1.5">
+                          ⚠ 레벨 7에서는 힌트를 사용할 수 없어요. 지금 실력을 충분히 다져두세요!
+                        </p>
+                      )}
                     </div>
                   )}
 
@@ -512,6 +548,15 @@ export default function GameBoard({
                       초기화
                     </button>
                   </div>
+                  {hintPoints <= 0 && levelConfig.level !== 7 && (
+                    <p className="text-[11px] text-slate-500 mt-1">
+                      힌트 포인트가 없어요.{' '}
+                      <Link href="/settings" className="text-amber-400/70 hover:text-amber-400 underline underline-offset-2">
+                        친구 초대
+                      </Link>
+                      로 충전하세요!
+                    </p>
+                  )}
                   <button
                     onClick={() => onSubmit(chain)}
                     disabled={!isChainComplete || isSubmitting}

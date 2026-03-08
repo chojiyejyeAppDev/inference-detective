@@ -1,8 +1,15 @@
 'use client'
 
+import { Suspense } from 'react'
 import Link from 'next/link'
+import { useSearchParams } from 'next/navigation'
 import { motion } from 'framer-motion'
-import { PartyPopper, Zap, BarChart3, BookOpen, ArrowRight } from 'lucide-react'
+import { PartyPopper, Zap, BarChart3, BookOpen, ArrowRight, Crown } from 'lucide-react'
+
+const PLAN_INFO: Record<string, { name: string; price: string; period: string }> = {
+  monthly: { name: '월간 구독', price: '9,900원', period: '30일' },
+  weekly: { name: '일주일 이용권', price: '3,900원', period: '7일' },
+}
 
 const NEXT_STEPS = [
   {
@@ -32,6 +39,18 @@ const NEXT_STEPS = [
 ]
 
 export default function SubscriptionCompletePage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-bg-base" />}>
+      <SubscriptionCompleteContent />
+    </Suspense>
+  )
+}
+
+function SubscriptionCompleteContent() {
+  const searchParams = useSearchParams()
+  const planKey = searchParams.get('plan') ?? 'monthly'
+  const plan = PLAN_INFO[planKey] ?? PLAN_INFO.monthly
+
   return (
     <div className="min-h-screen bg-bg-base flex items-center justify-center px-4 py-12">
       <div className="fixed inset-0 bg-dot-grid opacity-40 pointer-events-none" />
@@ -63,12 +82,30 @@ export default function SubscriptionCompletePage() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.4 }}
-          className="text-slate-400 text-sm mb-8"
+          className="text-slate-400 text-sm mb-6"
         >
           이제 무제한으로 추론 실력을 키울 수 있어요.
           <br />
           어디서부터 시작할까요?
         </motion.p>
+
+        {/* Plan summary */}
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.45 }}
+          className="rounded-xl border border-amber-500/25 bg-amber-500/[0.06] p-4 mb-8"
+        >
+          <div className="flex items-center justify-center gap-2 mb-2">
+            <Crown size={14} className="text-amber-400" />
+            <span className="text-sm font-bold text-amber-300">{plan.name}</span>
+          </div>
+          <div className="flex items-center justify-center gap-4 text-xs text-slate-400">
+            <span>결제 금액: <span className="text-white font-semibold">{plan.price}</span></span>
+            <span className="text-slate-600">|</span>
+            <span>이용 기간: <span className="text-white font-semibold">{plan.period}</span></span>
+          </div>
+        </motion.div>
 
         {/* Next steps */}
         <div className="space-y-3 mb-6">
