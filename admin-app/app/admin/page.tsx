@@ -8,7 +8,6 @@ interface LevelStat {
 export default async function AdminDashboard() {
   const supabase = await createClient()
 
-  // Fetch stats in parallel
   const [usersRes, questionsRes, subsRes, progressRes] = await Promise.all([
     supabase.from('profiles').select('*', { count: 'exact', head: true }),
     supabase.from('questions').select('difficulty_level'),
@@ -20,7 +19,6 @@ export default async function AdminDashboard() {
   const activeSubscriptions = subsRes.count ?? 0
   const totalSessions = progressRes.count ?? 0
 
-  // Count questions per level
   const levelCounts: Record<number, number> = {}
   if (questionsRes.data) {
     for (const q of questionsRes.data) {
@@ -41,7 +39,6 @@ export default async function AdminDashboard() {
     <div className="space-y-8">
       <h1 className="text-2xl font-bold text-exam-ink">대시보드</h1>
 
-      {/* Stat cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {stats.map((s) => (
           <div key={s.label} className="border border-exam-rule bg-white p-5">
@@ -51,7 +48,6 @@ export default async function AdminDashboard() {
         ))}
       </div>
 
-      {/* Questions per level */}
       <div>
         <h2 className="text-lg font-semibold text-exam-ink mb-4">레벨별 문제 현황</h2>
         <div className="grid grid-cols-7 gap-3">
@@ -62,9 +58,7 @@ export default async function AdminDashboard() {
               <div
                 key={lvl}
                 className={`border p-4 text-center ${
-                  isLow
-                    ? 'border-red-500/40 bg-red-50'
-                    : 'border-exam-rule bg-white'
+                  isLow ? 'border-red-500/40 bg-red-50' : 'border-exam-rule bg-white'
                 }`}
               >
                 <p className="text-xs text-stone-500 mb-1">레벨 {lvl}</p>

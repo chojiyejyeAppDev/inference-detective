@@ -51,15 +51,15 @@ export default function QuestionForm({ initialData }: QuestionFormProps) {
   const [correctChain, setCorrectChain] = useState(initialData?.correct_chain?.join(', ') ?? '')
 
   const [sentences, setSentences] = useState<Sentence[]>(
-    initialData?.sentences ?? [{ id: 'a', text: '' }, { id: 'b', text: '' }, { id: 'c', text: '' }]
+    initialData?.sentences ?? [{ id: 'a', text: '' }, { id: 'b', text: '' }, { id: 'c', text: '' }],
   )
 
   const [hints, setHints] = useState<Hint[]>(
-    initialData?.hints ?? [{ level: 1, text: '' }, { level: 2, text: '' }, { level: 3, text: '' }]
+    initialData?.hints ?? [{ level: 1, text: '' }, { level: 2, text: '' }, { level: 3, text: '' }],
   )
 
   const addSentence = () => {
-    const nextId = String.fromCharCode(97 + sentences.length) // a, b, c, d...
+    const nextId = String.fromCharCode(97 + sentences.length)
     setSentences([...sentences, { id: nextId, text: '' }])
   }
 
@@ -131,7 +131,6 @@ export default function QuestionForm({ initialData }: QuestionFormProps) {
         </div>
       )}
 
-      {/* Level & Topic */}
       <div className="grid grid-cols-2 gap-4">
         <div>
           <label className="block text-xs text-stone-500 mb-1">레벨</label>
@@ -159,7 +158,6 @@ export default function QuestionForm({ initialData }: QuestionFormProps) {
         </div>
       </div>
 
-      {/* Passage */}
       <div>
         <label className="block text-xs text-stone-500 mb-1">지문</label>
         <textarea
@@ -171,7 +169,6 @@ export default function QuestionForm({ initialData }: QuestionFormProps) {
         />
       </div>
 
-      {/* Conclusion */}
       <div>
         <label className="block text-xs text-stone-500 mb-1">결론 (증명할 명제)</label>
         <textarea
@@ -183,7 +180,6 @@ export default function QuestionForm({ initialData }: QuestionFormProps) {
         />
       </div>
 
-      {/* Sentences */}
       <div>
         <div className="flex items-center justify-between mb-2">
           <label className="text-xs text-stone-500">보기 카드</label>
@@ -222,7 +218,6 @@ export default function QuestionForm({ initialData }: QuestionFormProps) {
         </div>
       </div>
 
-      {/* Correct chain */}
       <div>
         <label className="block text-xs text-stone-500 mb-1">정답 체인 (쉼표 구분: a, b, c)</label>
         <input
@@ -234,7 +229,6 @@ export default function QuestionForm({ initialData }: QuestionFormProps) {
         />
       </div>
 
-      {/* Hints */}
       <div>
         <label className="block text-xs text-stone-500 mb-2">힌트</label>
         <div className="space-y-2">
@@ -254,7 +248,6 @@ export default function QuestionForm({ initialData }: QuestionFormProps) {
         </div>
       </div>
 
-      {/* Submit */}
       <div className="flex gap-3">
         <button
           type="submit"
