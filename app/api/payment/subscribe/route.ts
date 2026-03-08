@@ -56,7 +56,7 @@ export async function POST(req: NextRequest) {
   // 사용자 정보 조회
   const { data: profile } = await service
     .from('profiles')
-    .select('nickname')
+    .select('nickname, current_level')
     .eq('id', user.id)
     .single()
 
@@ -118,7 +118,7 @@ export async function POST(req: NextRequest) {
         // 이메일 발송 실패해도 구독은 정상 처리
       }
 
-      return NextResponse.json({ success: true, plan: validPlan, expires_at: expiresAt })
+      return NextResponse.json({ success: true, plan: validPlan, expires_at: expiresAt, current_level: profile?.current_level ?? 1 })
     } else if (planInfo.type === 'onetime' && paymentId) {
       // ── 일회성 결제 플로우: 결제 상태 검증 ──
       const payment = await getPayment(paymentId)
@@ -173,7 +173,7 @@ export async function POST(req: NextRequest) {
         // 이메일 발송 실패해도 정상 처리
       }
 
-      return NextResponse.json({ success: true, plan: validPlan, expires_at: expiresAt })
+      return NextResponse.json({ success: true, plan: validPlan, expires_at: expiresAt, current_level: profile?.current_level ?? 1 })
     }
 
     return NextResponse.json({ error: 'Invalid request' }, { status: 400 })

@@ -22,6 +22,10 @@ function LoginForm() {
 
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault()
+    if (!email.trim()) {
+      toast.error('이메일을 입력해주세요.')
+      return
+    }
     setLoading(true)
 
     const supabase = createClient()
@@ -81,42 +85,43 @@ function LoginForm() {
   }
 
   return (
-    <div className="min-h-screen bg-bg-game flex items-center justify-center px-4">
+    <div className="min-h-screen bg-bg-base flex items-center justify-center px-4">
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.4 }}
         className="w-full max-w-sm"
       >
         {/* Logo */}
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-white mb-1">이:르다</h1>
-          <p className="text-slate-400 text-sm">수능 비문학 추론 훈련</p>
+          <span className="font-exam-serif text-2xl font-bold">이:르다</span>
+          <p className="text-stone-500 text-sm mt-1">수능 비문학 추론 훈련</p>
         </div>
 
-        <div className="rounded-2xl border border-slate-700 bg-slate-800/60 p-6">
-          <h2 className="text-lg font-semibold text-white mb-5">로그인</h2>
+        <div className="border border-exam-rule bg-white p-6">
+          <h2 className="text-lg font-semibold text-exam-ink mb-5">로그인</h2>
 
           <form onSubmit={handleLogin} className="space-y-4">
             <div>
-              <label className="block text-xs font-medium text-slate-400 mb-1.5">이메일</label>
+              <label className="block text-xs font-medium text-stone-500 mb-1.5">이메일</label>
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2.5 text-sm text-slate-100 placeholder-slate-600 focus:border-amber-500 focus:outline-none transition-colors"
+                className="w-full border border-exam-rule bg-white px-3 py-2.5 text-sm text-exam-ink placeholder-stone-400 focus:border-exam-ink focus:outline-none transition-colors"
                 placeholder="name@example.com"
               />
             </div>
 
             <div>
               <div className="flex items-center justify-between mb-1.5">
-                <label className="text-xs font-medium text-slate-400">비밀번호</label>
+                <label className="text-xs font-medium text-stone-500">비밀번호</label>
                 <button
                   type="button"
                   onClick={handlePasswordReset}
                   disabled={resetSent}
-                  className="text-[11px] text-amber-400/70 hover:text-amber-400 transition-colors disabled:text-slate-500"
+                  className="text-[11px] text-stone-400 hover:text-exam-ink transition-colors disabled:text-stone-300"
                 >
                   {resetSent ? '메일 발송됨' : '비밀번호 찾기'}
                 </button>
@@ -126,7 +131,7 @@ function LoginForm() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                className="w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2.5 text-sm text-slate-100 placeholder-slate-600 focus:border-amber-500 focus:outline-none transition-colors"
+                className="w-full border border-exam-rule bg-white px-3 py-2.5 text-sm text-exam-ink placeholder-stone-400 focus:border-exam-ink focus:outline-none transition-colors"
                 placeholder="••••••••"
               />
             </div>
@@ -134,22 +139,22 @@ function LoginForm() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-2.5 rounded-xl bg-amber-500 text-slate-900 text-sm font-bold hover:bg-amber-400 transition-colors disabled:opacity-50"
+              className="w-full py-2.5 bg-exam-ink text-white text-sm font-bold hover:opacity-90 transition-opacity disabled:opacity-50"
             >
               {loading ? '로그인 중...' : '로그인'}
             </button>
           </form>
 
           <div className="flex items-center gap-3 my-4">
-            <div className="flex-1 h-px bg-slate-700" />
-            <span className="text-xs text-slate-500">또는</span>
-            <div className="flex-1 h-px bg-slate-700" />
+            <div className="flex-1 h-px bg-exam-rule" />
+            <span className="text-xs text-stone-400">또는</span>
+            <div className="flex-1 h-px bg-exam-rule" />
           </div>
 
           <button
             onClick={handleGoogleLogin}
             disabled={googleLoading || loading}
-            className="w-full py-2.5 rounded-lg border border-slate-700 text-slate-300 text-sm font-medium hover:bg-slate-700 transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full py-2.5 border border-exam-rule bg-white text-exam-ink text-sm font-semibold hover:bg-bg-game transition-colors flex items-center justify-center gap-2.5 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {googleLoading ? (
               <Loader2 size={16} className="animate-spin" />
@@ -164,9 +169,9 @@ function LoginForm() {
             {googleLoading ? '연결 중...' : 'Google로 로그인'}
           </button>
 
-          <p className="text-center text-xs text-slate-500 mt-4">
+          <p className="text-center text-xs text-stone-500 mt-4">
             계정이 없으신가요?{' '}
-            <Link href="/signup" className="text-amber-400 hover:text-amber-300">
+            <Link href="/signup" className="text-exam-ink font-semibold hover:underline underline-offset-2">
               회원가입
             </Link>
           </p>
@@ -179,8 +184,8 @@ function LoginForm() {
 export default function LoginPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen bg-bg-game flex items-center justify-center">
-        <div className="w-6 h-6 rounded-full border-2 border-amber-500 border-t-transparent animate-spin" />
+      <div className="min-h-screen bg-bg-base flex items-center justify-center">
+        <div className="w-6 h-6 border-2 border-exam-ink border-t-transparent animate-spin" />
       </div>
     }>
       <LoginForm />

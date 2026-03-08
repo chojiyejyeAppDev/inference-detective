@@ -60,10 +60,6 @@ export default function DemoPage() {
   const [pool, setPool] = useState<Sentence[]>(DEMO_QUESTION.sentences)
   const [result, setResult] = useState<EvaluationResult | null>(null)
 
-  const filledSentences = chain
-    .filter(Boolean)
-    .map((id) => DEMO_QUESTION.sentences.find((s) => s.id === id)!)
-    .filter(Boolean)
   const connectionMap = buildConnectionMap(
     chain.map((id) => (id ? DEMO_QUESTION.sentences.find((s) => s.id === id) ?? null : null)),
   )
@@ -126,19 +122,19 @@ export default function DemoPage() {
         <div className="flex items-center justify-between mb-6">
           <div>
             <div className="flex items-center gap-2 mb-1">
-              <div className="w-7 h-7 rounded-lg bg-amber-500 flex items-center justify-center">
-                <span className="text-slate-900 font-black text-xs">르</span>
+              <div className="w-7 h-7 border border-exam-ink flex items-center justify-center">
+                <span className="text-exam-ink font-black text-xs">르</span>
               </div>
-              <h1 className="text-lg font-bold text-white">체험 모드</h1>
-              <span className="text-[10px] font-bold text-amber-400 bg-amber-500/20 px-2 py-0.5 rounded-full border border-amber-500/30">
+              <h1 className="font-exam-serif text-lg font-bold text-exam-ink">체험 모드</h1>
+              <span className="text-[10px] font-bold text-exam-red border border-exam-red px-2 py-0.5">
                 무료 체험
               </span>
             </div>
-            <p className="text-slate-500 text-xs">회원가입 없이 추론 훈련을 체험해보세요</p>
+            <p className="text-stone-500 text-xs">회원가입 없이 추론 훈련을 체험해보세요</p>
           </div>
           <Link
             href="/signup"
-            className="text-xs text-amber-400 hover:text-amber-300 transition-colors"
+            className="text-xs text-exam-ink underline underline-offset-2 hover:text-exam-red transition-colors"
           >
             회원가입 &rarr;
           </Link>
@@ -149,21 +145,21 @@ export default function DemoPage() {
             {/* Left: Passage + Pool */}
             <div className="space-y-4">
               {/* Passage */}
-              <div className="rounded-xl border border-white/[0.08] bg-bg-surface/80 p-5">
-                <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">지문</p>
-                <p className="text-sm text-slate-300 leading-[1.8]">{DEMO_QUESTION.passage}</p>
+              <div className="border border-exam-rule bg-white p-5">
+                <p className="text-xs font-semibold text-stone-500 uppercase tracking-wider mb-3">지문</p>
+                <p className="text-sm text-exam-ink leading-[1.8]">{DEMO_QUESTION.passage}</p>
               </div>
 
               {/* Conclusion */}
-              <div className="rounded-xl border border-amber-500/25 bg-amber-500/[0.06] p-4">
-                <span className="text-xs font-bold text-amber-400">결론 — </span>
-                <span className="text-xs text-amber-300/90">{DEMO_QUESTION.conclusion}</span>
+              <div className="border border-exam-ink bg-exam-highlight p-4">
+                <span className="text-xs font-bold text-exam-red">결론 — </span>
+                <span className="text-xs text-exam-ink">{DEMO_QUESTION.conclusion}</span>
               </div>
 
               {/* Card Pool */}
-              <div className="rounded-xl border border-white/[0.08] bg-bg-surface/80 p-4">
-                <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">
-                  문장 카드 <span className="text-slate-500 normal-case">— 오른쪽 슬롯으로 드래그하세요</span>
+              <div className="border border-exam-rule bg-white p-4">
+                <p className="text-xs font-semibold text-stone-500 uppercase tracking-wider mb-3">
+                  문장 카드 <span className="text-stone-400 normal-case">— 오른쪽 슬롯으로 드래그하세요</span>
                 </p>
                 <Droppable droppableId="pool">
                   {(provided) => (
@@ -173,7 +169,7 @@ export default function DemoPage() {
                       ))}
                       {provided.placeholder}
                       {pool.length === 0 && !result && (
-                        <p className="text-xs text-slate-500 text-center py-2">모든 카드를 배치했어요</p>
+                        <p className="text-xs text-stone-400 text-center py-2">모든 카드를 배치했어요</p>
                       )}
                     </div>
                   )}
@@ -183,8 +179,8 @@ export default function DemoPage() {
 
             {/* Right: Slots */}
             <div className="space-y-4">
-              <div className="rounded-xl border border-white/[0.08] bg-bg-surface/80 p-5">
-                <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-4">
+              <div className="border border-exam-rule bg-white p-5">
+                <p className="text-xs font-semibold text-stone-500 uppercase tracking-wider mb-4">
                   추론 체인 ({DEMO_LEVEL.slots}단계)
                 </p>
                 <div className="space-y-1">
@@ -217,19 +213,19 @@ export default function DemoPage() {
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
                       className={[
-                        'mt-4 rounded-xl border p-4',
+                        'mt-4 border p-4',
                         result.is_correct
-                          ? 'border-emerald-500/30 bg-emerald-500/[0.06]'
-                          : 'border-red-500/30 bg-red-500/[0.06]',
+                          ? 'border-exam-ink bg-bg-base'
+                          : 'border-exam-red bg-exam-highlight',
                       ].join(' ')}
                     >
                       <p className={[
                         'text-sm font-bold mb-1',
-                        result.is_correct ? 'text-emerald-400' : 'text-red-400',
+                        result.is_correct ? 'text-exam-ink' : 'text-exam-red',
                       ].join(' ')}>
                         {result.is_correct ? '정답!' : '아쉬워요!'} 정확도 {Math.round(result.accuracy * 100)}%
                       </p>
-                      <p className="text-xs text-slate-400">{result.explanation}</p>
+                      <p className="text-xs text-stone-500">{result.explanation}</p>
                     </motion.div>
                   )}
                 </AnimatePresence>
@@ -241,10 +237,10 @@ export default function DemoPage() {
                       onClick={handleSubmit}
                       disabled={!allFilled}
                       className={[
-                        'flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold transition-all',
+                        'flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-bold transition-all',
                         allFilled
-                          ? 'bg-amber-500 text-slate-900 hover:bg-amber-400 shadow-lg shadow-amber-500/25'
-                          : 'bg-slate-700 text-slate-500 cursor-not-allowed',
+                          ? 'bg-exam-ink text-white hover:bg-stone-800'
+                          : 'bg-stone-200 text-stone-400 cursor-not-allowed',
                       ].join(' ')}
                     >
                       <Send size={14} />
@@ -254,14 +250,14 @@ export default function DemoPage() {
                     <>
                       <button
                         onClick={handleReset}
-                        className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl border border-slate-600 text-slate-300 text-sm font-medium hover:bg-white/[0.04] transition-colors"
+                        className="flex-1 flex items-center justify-center gap-2 py-2.5 border border-exam-rule text-exam-ink text-sm font-medium hover:bg-bg-base transition-colors"
                       >
                         <RefreshCw size={14} />
                         다시 풀기
                       </button>
                       <Link
                         href="/signup"
-                        className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl bg-amber-500 text-slate-900 text-sm font-bold hover:bg-amber-400 transition-colors shadow-lg shadow-amber-500/25"
+                        className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-exam-ink text-white text-sm font-bold hover:bg-stone-800 transition-colors"
                       >
                         회원가입하고 계속
                         <ArrowRight size={14} />
@@ -272,12 +268,12 @@ export default function DemoPage() {
               </div>
 
               {/* CTA */}
-              <div className="rounded-xl border border-amber-500/20 bg-amber-500/[0.04] p-4 text-center">
-                <p className="text-sm text-slate-300 font-medium mb-1">매일 5문제 무료!</p>
-                <p className="text-xs text-slate-500 mb-3">회원가입하면 7레벨까지 도전하고 성장 기록을 확인할 수 있어요.</p>
+              <div className="border border-exam-ink bg-exam-highlight p-4 text-center">
+                <p className="text-sm text-exam-ink font-medium mb-1">매일 5문제 무료!</p>
+                <p className="text-xs text-stone-500 mb-3">회원가입하면 7레벨까지 도전하고 성장 기록을 확인할 수 있어요.</p>
                 <Link
                   href="/signup"
-                  className="inline-flex items-center gap-1.5 px-5 py-2 rounded-lg bg-amber-500 text-slate-900 text-xs font-bold hover:bg-amber-400 transition-colors"
+                  className="inline-flex items-center gap-1 px-5 py-2 bg-exam-ink text-white text-xs font-bold hover:bg-stone-800 transition-colors"
                 >
                   무료로 시작하기 <ArrowRight size={12} />
                 </Link>

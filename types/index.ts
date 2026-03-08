@@ -58,6 +58,8 @@ export interface EvaluationResult {
   feedback: SlotFeedback[]
   explanation: string
   streak?: number
+  hint_points_bonus?: number
+  hint_points_remaining?: number | null
   level_progress?: {
     qualified: number
     required: number

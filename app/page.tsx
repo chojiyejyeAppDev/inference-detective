@@ -4,42 +4,33 @@ import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence, type Variants } from 'framer-motion'
 import Link from 'next/link'
-import { ArrowRight, Brain, Target, TrendingUp, Zap, Users, ChevronRight, GripVertical, Menu, X } from 'lucide-react'
+import { ArrowRight, GripVertical, Menu, X } from 'lucide-react'
 import Footer from '@/components/common/Footer'
 import { createClient } from '@/lib/supabase/client'
 
 const FEATURES = [
   {
-    icon: Brain,
-    title: '추론 체인 조립',
-    desc: '흩어진 문장을 논리 순서로 드래그해 이어붙이세요. 수능 지문의 흐름이 눈에 들어옵니다.',
-    color: 'amber',
+    num: '01',
+    title: '수능 기출 패턴 기반',
+    desc: '실제 수능·모의고사 비문학 논리 구조를 재현한 문제로 훈련해요. 단순 독해가 아닌 추론 조립이에요.',
   },
   {
-    icon: Target,
-    title: '7단계 레벨업',
-    desc: '3단계 추론부터 7단계까지. 3회 연속 80% 이상이면 다음 레벨로 자동 승급됩니다.',
-    color: 'amber',
+    num: '02',
+    title: '약점 자동 분석',
+    desc: '어떤 주제, 어떤 추론 단계에서 자주 틀리는지 분석하고 집중 연습을 추천해줘요.',
   },
   {
-    icon: TrendingUp,
-    title: '성장 대시보드',
-    desc: '정확도 추이, 오류 패턴, 힌트 의존도를 분석해 약점을 정확히 파악하세요.',
-    color: 'amber',
+    num: '03',
+    title: '7단계 점진적 난이도',
+    desc: '3슬롯 입문부터 7슬롯 마스터까지. 80% 이상 3회 연속 달성하면 자동 레벨업돼요.',
   },
 ]
 
 const STEPS = [
-  { n: '01', title: '지문 읽기', desc: '왼쪽 패널에서 수능 비문학 지문을 꼼꼼히 읽습니다' },
-  { n: '02', title: '카드 배치', desc: '오른쪽 슬롯에 문장 카드를 논리 순서로 드래그합니다' },
-  { n: '03', title: '연결 확인', desc: '🟢🟡🔴 표시로 추론 연결 강도를 실시간 확인합니다' },
-  { n: '04', title: '즉시 피드백', desc: '정확도와 어느 단계가 틀렸는지 바로 알려드립니다' },
-]
-
-const STATS = [
-  { n: '7', label: '추론 레벨', sub: 'Level 1 → 7' },
-  { n: '5', label: '일일 무료 문제', sub: '매일 자정 리셋' },
-  { n: '100+', label: '문제 은행', sub: '매주 추가' },
+  { n: '1', title: '지문 읽기', desc: '왼쪽 패널에서 수능 비문학 지문을 꼼꼼히 읽어요' },
+  { n: '2', title: '카드 배치', desc: '오른쪽 슬롯에 문장 카드를 논리 순서로 드래그해요' },
+  { n: '3', title: '연결 확인', desc: '연결 강도 표시로 추론 연결을 실시간 확인해요' },
+  { n: '4', title: '즉시 피드백', desc: '정확도와 어느 단계가 틀렸는지 바로 알려줘요' },
 ]
 
 const DEMO_CARDS = [
@@ -47,14 +38,12 @@ const DEMO_CARDS = [
   { id: 'a', text: '정보 수용 방식이 인식에 영향을 준다' },
   { id: 'c', text: '따라서 리터러시 교육이 필요하다' },
 ]
-const DEMO_CORRECT_ORDER = ['a', 'b', 'c']
 const DEMO_LABELS: Record<string, string> = {
   a: '정보 수용 방식이 인식에 영향을 준다',
   b: '인식 체계가 판단력을 결정한다',
   c: '따라서 리터러시 교육이 필요하다',
 }
 
-// Animation phases: idle → drag1 → drag2 → drag3 → evaluate → result → reset
 type DemoPhase = 'idle' | 'drag1' | 'drag2' | 'drag3' | 'evaluate' | 'result' | 'reset'
 
 function useDemoAnimation() {
@@ -107,37 +96,35 @@ function useDemoAnimation() {
 
 const container: Variants = {
   hidden: { opacity: 0 },
-  show: { opacity: 1, transition: { staggerChildren: 0.09 } },
+  show: { opacity: 1, transition: { staggerChildren: 0.08 } },
 }
 const item: Variants = {
-  hidden: { opacity: 0, y: 22 },
-  show:   { opacity: 1, y: 0, transition: { duration: 0.45 } },
+  hidden: { opacity: 0, y: 16 },
+  show:   { opacity: 1, y: 0, transition: { duration: 0.4 } },
 }
 
 function LandingDemo() {
   const { slots, activeCard, showResult, connections, remainingCards } = useDemoAnimation()
 
   return (
-    <div className="rounded-2xl border border-white/10 bg-bg-surface/80 backdrop-blur-sm shadow-2xl shadow-black/40 p-5 max-w-3xl mx-auto text-left">
-      {/* Window chrome */}
-      <div className="flex items-center gap-2 mb-5 pb-4 border-b border-white/[0.07]">
-        <div className="w-3 h-3 rounded-full bg-red-500/60" />
-        <div className="w-3 h-3 rounded-full bg-amber-500/60" />
-        <div className="w-3 h-3 rounded-full bg-emerald-500/60" />
-        <span className="text-xs text-slate-500 ml-2 font-mono">eruda.today/play</span>
+    <div className="border border-exam-rule bg-white p-5 max-w-3xl mx-auto text-left shadow-sm">
+      {/* Header bar */}
+      <div className="flex items-center justify-between mb-5 pb-4 border-b border-exam-rule">
+        <div className="flex items-center gap-2">
+          <span className="problem-number-sm">3</span>
+          <span className="text-xs font-bold text-exam-ink">레벨 3 — 인문</span>
+        </div>
+        <span className="text-[10px] text-stone-400 font-mono">eruda.today/play</span>
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
         {/* Passage + remaining cards */}
         <div className="space-y-3">
-          <div className="flex items-center gap-2">
-            <div className="w-1.5 h-1.5 rounded-full bg-amber-400" />
-            <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">지문</p>
-          </div>
-          <div className="rounded-xl bg-slate-900/70 border border-white/[0.05] p-3.5 text-xs text-slate-400 leading-[1.7]">
+          <p className="text-[10px] font-bold text-stone-400 uppercase tracking-[0.15em]">지문</p>
+          <div className="border border-exam-rule p-3.5 text-xs text-stone-600 leading-[1.8]">
             현대 사회에서 정보는 단순한 사실의 집합이 아니라 의미를 구성하는 체계이다. 특히 디지털 환경에서 정보의 수용과 해석은 개인의 인식 체계와 밀접하게 연결되어 있다.
           </div>
-          <div className="rounded-xl bg-amber-500/8 border border-amber-500/25 p-3.5 text-xs text-amber-300/90 leading-[1.7]">
-            <span className="font-bold text-amber-400">결론 —</span>{' '}
+          <div className="border border-exam-red/30 bg-exam-highlight p-3.5 text-xs text-stone-700 leading-[1.8]">
+            <span className="font-bold text-exam-red">[결론]</span>{' '}
             디지털 리터러시는 현대인의 필수 역량이다.
           </div>
           {/* Remaining draggable cards */}
@@ -148,16 +135,16 @@ function LandingDemo() {
                   key={card.id}
                   layout
                   initial={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.8, x: 60 }}
-                  transition={{ duration: 0.35 }}
+                  exit={{ opacity: 0, scale: 0.9, x: 40 }}
+                  transition={{ duration: 0.3 }}
                   className={[
-                    'rounded-lg border px-3 py-2 text-xs text-slate-300 flex items-center gap-2 transition-all',
+                    'border px-3 py-2 text-xs text-stone-700 flex items-center gap-2 transition-all',
                     activeCard === card.id
-                      ? 'border-amber-500/50 bg-amber-500/10 shadow-lg shadow-amber-500/10 scale-[1.02]'
-                      : 'border-white/[0.08] bg-white/[0.03]',
+                      ? 'border-exam-ink bg-stone-50 shadow-sm'
+                      : 'border-exam-rule bg-white',
                   ].join(' ')}
                 >
-                  <GripVertical size={10} className="text-slate-500 shrink-0" />
+                  <GripVertical size={10} className="text-stone-300 shrink-0" />
                   <span className="leading-[1.5]">{card.text}</span>
                 </motion.div>
               ))}
@@ -167,28 +154,25 @@ function LandingDemo() {
 
         {/* Inference chain slots */}
         <div className="space-y-3">
-          <div className="flex items-center gap-2">
-            <div className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-            <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">추론 체인 (3단계)</p>
-          </div>
+          <p className="text-[10px] font-bold text-stone-400 uppercase tracking-[0.15em]">추론 체인 (3단계)</p>
           <div className="space-y-1.5">
             {slots.map((slotId, i) => (
               <div key={i}>
                 <motion.div
                   className={[
-                    'rounded-lg border px-3.5 py-2.5 text-xs min-h-[36px] flex items-start gap-2.5 transition-all',
+                    'border px-3.5 py-2.5 text-xs min-h-[36px] flex items-start gap-2.5 transition-all',
                     slotId
-                      ? 'border-emerald-500/25 bg-emerald-500/[0.06] text-slate-300'
-                      : 'border-dashed border-white/10 bg-white/[0.02] text-slate-500',
+                      ? 'border-exam-ink/20 bg-stone-50 text-stone-700'
+                      : 'border-dashed border-stone-300 text-stone-400',
                   ].join(' ')}
-                  animate={slotId ? { scale: [1, 1.02, 1] } : {}}
-                  transition={{ duration: 0.3 }}
+                  animate={slotId ? { scale: [1, 1.01, 1] } : {}}
+                  transition={{ duration: 0.25 }}
                 >
                   <span className={[
-                    'w-4 h-4 rounded-full font-black text-[10px] flex items-center justify-center shrink-0 mt-0.5',
-                    slotId ? 'bg-emerald-500/20 text-emerald-400' : 'bg-white/[0.05] text-slate-500',
+                    'problem-number-sm mt-0.5',
+                    slotId ? '' : 'opacity-30',
                   ].join(' ')}>
-                    {slotId ? i + 1 : '?'}
+                    {i + 1}
                   </span>
                   <span className="leading-[1.5]">
                     {slotId ? DEMO_LABELS[slotId] : `${i + 1}번째 단계를 넣어주세요`}
@@ -199,10 +183,10 @@ function LandingDemo() {
                   <div className="flex justify-center py-0.5">
                     <motion.div
                       className={[
-                        'w-1.5 h-1.5 rounded-full transition-colors',
-                        connections[i] === 'green' ? 'bg-emerald-400 shadow-sm shadow-emerald-400/50'
-                          : connections[i] === 'yellow' ? 'bg-amber-400'
-                          : 'bg-slate-700',
+                        'w-1 h-1 rounded-full transition-colors',
+                        connections[i] === 'green' ? 'bg-green-600'
+                          : connections[i] === 'yellow' ? 'bg-amber-500'
+                          : 'bg-stone-200',
                       ].join(' ')}
                       animate={connections[i] !== 'none' ? { scale: [0, 1.3, 1] } : {}}
                       transition={{ duration: 0.3 }}
@@ -217,13 +201,13 @@ function LandingDemo() {
           <AnimatePresence>
             {showResult && (
               <motion.div
-                initial={{ opacity: 0, y: 8 }}
+                initial={{ opacity: 0, y: 6 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0 }}
-                className="flex items-center gap-1.5 text-xs text-emerald-400 font-bold pt-2 border-t border-white/[0.05]"
+                className="flex items-center gap-2 text-xs font-bold pt-3 border-t border-exam-rule"
               >
-                <span className="w-4 h-4 rounded-full bg-emerald-500/15 flex items-center justify-center">✓</span>
-                정확도 100% — 레벨업!
+                <span className="text-exam-red text-lg">&#9711;</span>
+                <span className="text-exam-ink">정확도 100% — 레벨업!</span>
               </motion.div>
             )}
           </AnimatePresence>
@@ -244,37 +228,36 @@ export default function LandingPage() {
     })
   }, [router])
 
-  // Close mobile menu on outside click
   useEffect(() => {
     if (!mobileMenuOpen) return
     const handleClick = (e: MouseEvent) => {
       const nav = (e.target as HTMLElement).closest('nav')
       if (!nav) setMobileMenuOpen(false)
     }
+    const handleScroll = () => setMobileMenuOpen(false)
     document.addEventListener('click', handleClick)
-    return () => document.removeEventListener('click', handleClick)
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    return () => {
+      document.removeEventListener('click', handleClick)
+      window.removeEventListener('scroll', handleScroll)
+    }
   }, [mobileMenuOpen])
 
   return (
-    <div className="min-h-screen bg-bg-base text-white overflow-x-hidden">
+    <div className="min-h-screen bg-bg-base text-exam-ink overflow-x-hidden">
 
       {/* ── Nav ── */}
-      <nav className="sticky top-0 z-50 border-b border-white/[0.06] bg-bg-base/90 backdrop-blur-md">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
-            <div className="w-7 h-7 rounded-lg bg-amber-500 flex items-center justify-center shadow-lg shadow-amber-500/30">
-              <span className="text-slate-900 font-black text-xs">르</span>
-            </div>
-            <span className="font-bold text-base tracking-tight">이:르다</span>
-          </div>
+      <nav className="sticky top-0 z-50 border-b border-exam-rule bg-bg-base/95 backdrop-blur-sm">
+        <div className="max-w-2xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
+          <span className="font-exam-serif font-bold text-base tracking-tight">이:르다</span>
           {/* Desktop nav */}
-          <div className="hidden sm:flex items-center gap-3">
-            <Link href="/login" className="text-sm text-slate-400 hover:text-slate-200 transition-colors px-3 py-1.5">
+          <div className="hidden sm:flex items-center gap-4">
+            <Link href="/login" className="text-sm text-stone-500 hover:text-exam-ink transition-colors">
               로그인
             </Link>
             <Link
               href="/signup"
-              className="text-sm px-4 py-1.5 rounded-full bg-amber-500 text-slate-900 font-bold hover:bg-amber-400 transition-colors shadow-md shadow-amber-500/25"
+              className="text-sm px-5 py-1.5 bg-exam-ink text-white font-bold hover:bg-stone-800 transition-colors"
             >
               무료 시작
             </Link>
@@ -284,7 +267,7 @@ export default function LandingPage() {
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             aria-label={mobileMenuOpen ? '메뉴 닫기' : '메뉴 열기'}
             aria-expanded={mobileMenuOpen}
-            className="sm:hidden p-1.5 text-slate-400 hover:text-slate-200 transition-colors"
+            className="sm:hidden p-2.5 -m-1 text-stone-500 hover:text-exam-ink transition-colors"
           >
             {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
           </button>
@@ -297,20 +280,20 @@ export default function LandingPage() {
               animate={{ height: 'auto', opacity: 1 }}
               exit={{ height: 0, opacity: 0 }}
               transition={{ duration: 0.2 }}
-              className="sm:hidden overflow-hidden border-t border-white/[0.06]"
+              className="sm:hidden overflow-hidden border-t border-exam-rule"
             >
               <div className="px-4 py-3 flex flex-col gap-2">
                 <Link
                   href="/login"
                   onClick={() => setMobileMenuOpen(false)}
-                  className="text-sm text-slate-300 hover:text-white transition-colors py-2 px-3 rounded-lg hover:bg-white/[0.05]"
+                  className="text-sm text-stone-600 hover:text-exam-ink py-2 px-3 transition-colors"
                 >
                   로그인
                 </Link>
                 <Link
                   href="/signup"
                   onClick={() => setMobileMenuOpen(false)}
-                  className="text-sm text-center py-2 px-4 rounded-lg bg-amber-500 text-slate-900 font-bold hover:bg-amber-400 transition-colors"
+                  className="text-sm text-center py-2 px-4 bg-exam-ink text-white font-bold hover:bg-stone-800 transition-colors"
                 >
                   무료 시작
                 </Link>
@@ -321,127 +304,100 @@ export default function LandingPage() {
       </nav>
 
       {/* ── Hero ── */}
-      <section className="relative max-w-5xl mx-auto px-4 sm:px-6 pt-16 sm:pt-24 pb-20 sm:pb-28 text-center overflow-hidden">
-        {/* Background dot grid */}
-        <div className="absolute inset-0 bg-dot-grid opacity-60 pointer-events-none" />
-        {/* Amber radial glow */}
-        <div className="absolute inset-0 pointer-events-none">
-          <div
-            className="absolute left-1/2 top-0 -translate-x-1/2 w-[900px] h-[520px] animate-hero-glow"
-            style={{
-              background: 'radial-gradient(ellipse 70% 55% at 50% 20%, rgba(251,191,36,0.10) 0%, transparent 72%)',
-            }}
-          />
-        </div>
-
+      <section className="max-w-2xl mx-auto px-4 sm:px-6 pt-20 sm:pt-28 pb-20 sm:pb-24">
         <motion.div
-          initial={{ opacity: 0, y: 28 }}
+          initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.65, ease: [0.25, 0.46, 0.45, 0.94] }}
-          className="relative z-10"
+          transition={{ duration: 0.5 }}
         >
-          {/* Badge */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.85 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.4, delay: 0.15 }}
-            className="inline-flex items-center gap-2 rounded-full border border-amber-500/35 bg-amber-500/10 px-4 py-1.5 text-xs text-amber-400 font-semibold mb-7 shadow-inner shadow-amber-500/10"
-          >
-            <Zap size={11} className="fill-amber-400" />
-            수능 비문학 추론 훈련 앱
-          </motion.div>
+          {/* Problem number style badge */}
+          <div className="flex items-center gap-3 mb-8">
+            <div className="w-px h-8 bg-exam-ink" />
+            <span className="text-xs font-bold text-stone-500 uppercase tracking-[0.2em]">수능 비문학 추론 훈련</span>
+          </div>
 
-          {/* Headline */}
-          <h1 className="text-[2.6rem] sm:text-[3.4rem] font-black leading-[1.12] tracking-tight mb-6">
-            수능 비문학,
+          {/* Headline — exam-style serif */}
+          <h1 className="font-exam-serif text-[2.2rem] sm:text-[3rem] font-black leading-[1.2] tracking-tight mb-6">
+            추론을 직접 조립하며
             <br />
-            <span className="text-shimmer">추론을 직접 조립하며</span>
-            <br />
-            정복하세요.
+            <span className="mark-red">정복</span>하세요.
           </h1>
 
-          <p className="text-slate-400 text-lg max-w-lg mx-auto mb-10 leading-relaxed">
+          <p className="text-stone-500 text-base sm:text-lg max-w-md mb-10 leading-relaxed">
             흩어진 문장을 드래그해 논리 순서로 잇는 훈련.
-            <br className="hidden sm:block" />
+            <br />
             매일 5문제 무료, 레벨업할수록 추론이 깊어집니다.
           </p>
 
-          <div className="flex flex-col sm:flex-row gap-3.5 justify-center items-center">
+          <div className="flex flex-col sm:flex-row gap-3">
             <Link
               href="/signup"
-              className="animate-cta-glow flex items-center gap-2 px-9 py-3.5 rounded-xl bg-amber-500 text-slate-900 font-black text-base hover:bg-amber-400 transition-all hover:scale-105 shadow-xl shadow-amber-500/25"
+              className="inline-flex items-center justify-center gap-2 px-8 py-3.5 bg-exam-ink text-white font-bold text-sm hover:bg-stone-800 transition-colors"
             >
               무료로 시작하기
-              <ArrowRight size={16} />
+              <ArrowRight size={15} />
             </Link>
             <Link
               href="/demo"
-              className="flex items-center gap-2 px-9 py-3.5 rounded-xl border border-white/10 text-slate-300 font-medium text-base hover:border-white/20 hover:bg-white/[0.04] transition-all"
+              className="inline-flex items-center justify-center gap-1.5 px-8 py-3.5 border border-exam-rule text-stone-600 font-medium text-sm hover:border-exam-ink hover:text-exam-ink transition-colors"
             >
               바로 체험하기
-              <ChevronRight size={14} className="text-slate-500" />
             </Link>
           </div>
 
-          <p className="text-xs text-slate-500 mt-4">
+          <p className="text-xs text-stone-400 mt-4">
             신용카드 불필요 · 매일 5문제 무료 · 언제든지 업그레이드
           </p>
         </motion.div>
+      </section>
 
-        {/* Animated Demo Preview */}
+      {/* ── Demo Preview ── */}
+      <section className="pb-20 sm:pb-28 px-4 sm:px-6">
         <motion.div
-          initial={{ opacity: 0, y: 44 }}
+          initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.85, delay: 0.28, ease: [0.25, 0.46, 0.45, 0.94] }}
-          className="animate-float-y mt-16 relative z-10"
+          transition={{ duration: 0.6, delay: 0.2 }}
         >
+          <p className="text-[10px] text-stone-400 mb-3 text-center uppercase tracking-[0.15em] font-bold">
+            실제 플레이 미리보기
+          </p>
           <LandingDemo />
-          {/* Bottom glow reflection */}
-          <div
-            className="absolute bottom-0 left-1/2 -translate-x-1/2 w-2/3 h-px"
-            style={{ background: 'linear-gradient(90deg, transparent, rgba(251,191,36,0.18), transparent)' }}
-          />
         </motion.div>
       </section>
 
       {/* ── Stats ── */}
-      <section className="border-y border-white/[0.06] bg-white/[0.015] py-14">
-        <motion.div
-          className="max-w-5xl mx-auto px-6"
-          variants={container}
-          initial="hidden"
-          whileInView="show"
-          viewport={{ once: true }}
-        >
-          <div className="flex items-center justify-center gap-2 mb-8 text-slate-500 text-xs">
-            <Users size={14} />
-            <span>친구를 초대하면 둘 다 보너스 문제 지급</span>
-          </div>
-          <div className="grid grid-cols-3 gap-4 sm:gap-6 max-w-lg mx-auto text-center">
-            {STATS.map((s, i) => (
-              <motion.div key={s.label} variants={item} style={{ animationDelay: `${i * 0.12}s` }}>
-                <p className="text-4xl font-black text-amber-400 text-glow-amber leading-none mb-1">{s.n}</p>
-                <p className="text-sm font-semibold text-slate-300 mb-0.5">{s.label}</p>
-                <p className="text-[11px] text-slate-500">{s.sub}</p>
-              </motion.div>
+      <section className="border-y border-exam-rule py-14">
+        <div className="max-w-2xl mx-auto px-6">
+          <div className="grid grid-cols-3 gap-6 text-center">
+            {[
+              { n: '7', label: '추론 레벨', sub: 'Level 1 → 7' },
+              { n: '5', label: '일일 무료 문제', sub: '매일 자정 리셋' },
+              { n: '100+', label: '문제 은행', sub: '매주 추가' },
+            ].map((s) => (
+              <div key={s.label}>
+                <p className="font-exam-serif text-3xl sm:text-4xl font-black text-exam-ink leading-none mb-1">{s.n}</p>
+                <p className="text-sm font-semibold text-stone-700 mb-0.5">{s.label}</p>
+                <p className="text-[11px] text-stone-400">{s.sub}</p>
+              </div>
             ))}
           </div>
-        </motion.div>
+        </div>
       </section>
 
       {/* ── Features ── */}
-      <section className="relative py-24 overflow-hidden">
-        <div className="absolute inset-0 bg-dot-grid opacity-40 pointer-events-none" />
-        <div className="relative max-w-5xl mx-auto px-6">
+      <section className="py-20 sm:py-24">
+        <div className="max-w-2xl mx-auto px-6">
           <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            whileInView={{ opacity: 1, y: 0 }}
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.5 }}
-            className="text-center mb-14"
+            className="mb-12"
           >
-            <p className="text-xs font-bold text-amber-500 uppercase tracking-[0.15em] mb-3">Features</p>
-            <h2 className="text-3xl font-black tracking-tight">이런 훈련이에요</h2>
+            <div className="flex items-center gap-3 mb-3">
+              <div className="w-px h-6 bg-exam-ink" />
+              <p className="text-[10px] font-bold text-stone-400 uppercase tracking-[0.2em]">Features</p>
+            </div>
+            <h2 className="font-exam-serif text-2xl sm:text-3xl font-black tracking-tight">이런 훈련이에요</h2>
           </motion.div>
 
           <motion.div
@@ -449,19 +405,21 @@ export default function LandingPage() {
             initial="hidden"
             whileInView="show"
             viewport={{ once: true }}
-            className="grid grid-cols-1 sm:grid-cols-3 gap-5"
+            className="space-y-0"
           >
             {FEATURES.map((f) => (
               <motion.div
                 key={f.title}
                 variants={item}
-                className="group rounded-2xl border border-white/[0.08] bg-bg-surface/60 p-6 hover:border-amber-500/30 hover:bg-amber-500/[0.04] transition-all duration-300"
+                className="flex gap-5 py-6 border-b border-exam-rule group"
               >
-                <div className="w-11 h-11 rounded-xl bg-amber-500/12 border border-amber-500/20 flex items-center justify-center mb-5 group-hover:bg-amber-500/20 group-hover:border-amber-500/40 transition-all">
-                  <f.icon size={19} className="text-amber-400" />
+                <span className="font-exam-serif text-2xl font-black text-stone-200 group-hover:text-exam-red transition-colors shrink-0 w-10">
+                  {f.num}
+                </span>
+                <div>
+                  <h3 className="font-bold text-exam-ink mb-1.5">{f.title}</h3>
+                  <p className="text-sm text-stone-500 leading-relaxed">{f.desc}</p>
                 </div>
-                <h3 className="font-bold text-slate-100 mb-2.5 text-base">{f.title}</h3>
-                <p className="text-sm text-slate-500 leading-relaxed">{f.desc}</p>
               </motion.div>
             ))}
           </motion.div>
@@ -469,36 +427,26 @@ export default function LandingPage() {
       </section>
 
       {/* ── How it works ── */}
-      <section className="border-y border-white/[0.06] bg-white/[0.015] py-24">
-        <div className="max-w-5xl mx-auto px-6">
-          <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5 }}
-            className="text-center mb-14"
-          >
-            <p className="text-xs font-bold text-amber-500 uppercase tracking-[0.15em] mb-3">How it works</p>
-            <h2 className="text-3xl font-black tracking-tight">어떻게 하나요?</h2>
-          </motion.div>
+      <section className="border-y border-exam-rule py-20 sm:py-24 bg-white">
+        <div className="max-w-2xl mx-auto px-6">
+          <div className="flex items-center gap-3 mb-3">
+            <div className="w-px h-6 bg-exam-ink" />
+            <p className="text-[10px] font-bold text-stone-400 uppercase tracking-[0.2em]">How it works</p>
+          </div>
+          <h2 className="font-exam-serif text-2xl sm:text-3xl font-black tracking-tight mb-12">어떻게 하나요?</h2>
 
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-6 relative">
-            {/* Connector line (desktop) */}
-            <div className="absolute top-5 left-[calc(12.5%+20px)] right-[calc(12.5%+20px)] h-px bg-gradient-to-r from-transparent via-amber-500/20 to-transparent hidden sm:block" />
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-6">
             {STEPS.map((s, i) => (
               <motion.div
                 key={s.n}
-                initial={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 0, y: 16 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ delay: i * 0.1 }}
-                className="text-center relative"
+                transition={{ delay: i * 0.08 }}
               >
-                <div className="w-10 h-10 rounded-full bg-bg-base border-2 border-amber-500/40 flex items-center justify-center text-xs font-black text-amber-400 mx-auto mb-4 relative z-10">
-                  {s.n}
-                </div>
-                <p className="font-bold text-sm text-slate-200 mb-1.5">{s.title}</p>
-                <p className="text-xs text-slate-500 leading-relaxed">{s.desc}</p>
+                <div className="problem-number mb-4">{s.n}</div>
+                <p className="font-bold text-sm text-exam-ink mb-1.5">{s.title}</p>
+                <p className="text-xs text-stone-500 leading-relaxed">{s.desc}</p>
               </motion.div>
             ))}
           </div>
@@ -506,127 +454,99 @@ export default function LandingPage() {
       </section>
 
       {/* ── Pricing Preview ── */}
-      <section className="relative py-24 overflow-hidden">
-        <div className="absolute inset-0 bg-dot-grid opacity-40 pointer-events-none" />
-        <div className="relative max-w-5xl mx-auto px-6 text-center">
-          <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5 }}
-          >
-            <p className="text-xs font-bold text-amber-500 uppercase tracking-[0.15em] mb-3">Pricing</p>
-            <h2 className="text-3xl font-black tracking-tight mb-3">부담 없이 시작하세요</h2>
-            <p className="text-slate-400 text-sm mb-12">매일 5문제 무료. 더 원하시면 구독하세요.</p>
-          </motion.div>
+      <section className="py-20 sm:py-24">
+        <div className="max-w-2xl mx-auto px-6">
+          <div className="flex items-center gap-3 mb-3">
+            <div className="w-px h-6 bg-exam-ink" />
+            <p className="text-[10px] font-bold text-stone-400 uppercase tracking-[0.2em]">Pricing</p>
+          </div>
+          <h2 className="font-exam-serif text-2xl sm:text-3xl font-black tracking-tight mb-3">부담 없이 시작하세요</h2>
+          <p className="text-stone-500 text-sm mb-10">매일 5문제 무료. 더 원하시면 구독하세요.</p>
 
-          <motion.div
-            variants={container}
-            initial="hidden"
-            whileInView="show"
-            viewport={{ once: true }}
-            className="grid grid-cols-1 sm:grid-cols-2 gap-5 max-w-lg mx-auto"
-          >
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-lg">
             {/* Free */}
-            <motion.div
-              variants={item}
-              className="rounded-2xl border border-white/[0.08] bg-bg-surface/60 p-7 text-left"
-            >
-              <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-4">무료</p>
-              <p className="text-4xl font-black text-white mb-6 tabular-nums">₩0</p>
-              <ul className="text-sm text-slate-500 space-y-2.5 mb-8">
-                <li className="flex items-center gap-2"><span className="text-slate-500">✓</span> 하루 5문제</li>
-                <li className="flex items-center gap-2"><span className="text-slate-500">✓</span> 레벨 1-7 도전</li>
-                <li className="flex items-center gap-2 line-through opacity-40"><span>✗</span> 성장 대시보드</li>
-                <li className="flex items-center gap-2 line-through opacity-40"><span>✗</span> 전체 힌트</li>
+            <div className="border border-exam-rule p-6 text-left">
+              <p className="text-[10px] font-bold text-stone-400 uppercase tracking-wider mb-4">무료</p>
+              <p className="font-exam-serif text-3xl font-black text-exam-ink mb-5">&#8361;0</p>
+              <ul className="text-sm text-stone-500 space-y-2 mb-6">
+                <li className="flex items-center gap-2"><span className="text-stone-400">&#10003;</span> 하루 5문제</li>
+                <li className="flex items-center gap-2"><span className="text-stone-400">&#10003;</span> 레벨 1-7 도전</li>
+                <li className="flex items-center gap-2 line-through opacity-40"><span>&#10007;</span> 성장 대시보드</li>
+                <li className="flex items-center gap-2 line-through opacity-40"><span>&#10007;</span> 전체 힌트</li>
               </ul>
-              <Link href="/signup" className="block w-full py-2.5 rounded-xl border border-white/10 text-slate-400 text-sm font-semibold hover:bg-white/[0.04] transition-colors text-center">
+              <Link href="/signup" className="block w-full py-2.5 border border-exam-rule text-stone-600 text-sm font-semibold hover:border-exam-ink hover:text-exam-ink transition-colors text-center">
                 무료 시작
               </Link>
-            </motion.div>
+            </div>
 
             {/* Premium */}
-            <motion.div
-              variants={item}
-              className="animate-level-pulse rounded-2xl border border-amber-500/45 bg-gradient-to-b from-amber-500/8 to-amber-500/3 p-7 text-left relative overflow-hidden"
-            >
-              <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-amber-500/50 to-transparent" />
-              <div className="flex items-center justify-between mb-4">
-                <p className="text-xs font-bold text-amber-400 uppercase tracking-wider">프리미엄</p>
-                <span className="text-[10px] font-black text-slate-900 bg-amber-400 px-2 py-0.5 rounded-full">인기</span>
+            <div className="border-2 border-exam-ink p-6 text-left relative">
+              <div className="absolute -top-3 right-4 bg-exam-ink text-white text-[10px] font-black px-3 py-1 tracking-wider">
+                인기
               </div>
-              <p className="text-4xl font-black text-white mb-1 tabular-nums">
-                ₩9,900
-                <span className="text-base font-normal text-slate-400">/월</span>
+              <p className="text-[10px] font-bold text-exam-ink uppercase tracking-wider mb-4">프리미엄</p>
+              <p className="font-exam-serif text-3xl font-black text-exam-ink mb-1">
+                &#8361;9,900
+                <span className="text-base font-normal text-stone-400">/월</span>
               </p>
-              <p className="text-xs text-slate-500 mb-6 tabular-nums">일주일 체험 ₩3,900부터</p>
-              <ul className="text-sm text-slate-300 space-y-2.5 mb-8">
-                <li className="flex items-center gap-2"><span className="text-amber-400">✓</span> 하루 무제한 문제</li>
-                <li className="flex items-center gap-2"><span className="text-amber-400">✓</span> 레벨 1-7 전체</li>
-                <li className="flex items-center gap-2"><span className="text-amber-400">✓</span> 성장 대시보드</li>
-                <li className="flex items-center gap-2"><span className="text-amber-400">✓</span> 전체 힌트 이용</li>
+              <p className="text-xs text-stone-400 mb-5">일주일 체험 &#8361;3,900부터</p>
+              <ul className="text-sm text-stone-700 space-y-2 mb-6">
+                <li className="flex items-center gap-2"><span className="text-exam-red font-bold">&#10003;</span> 하루 무제한 문제</li>
+                <li className="flex items-center gap-2"><span className="text-exam-red font-bold">&#10003;</span> 레벨 1-7 전체</li>
+                <li className="flex items-center gap-2"><span className="text-exam-red font-bold">&#10003;</span> 성장 대시보드</li>
+                <li className="flex items-center gap-2"><span className="text-exam-red font-bold">&#10003;</span> 전체 힌트 이용</li>
               </ul>
-              <Link href="/signup" className="block w-full py-2.5 rounded-xl bg-amber-500 text-slate-900 text-sm font-black hover:bg-amber-400 transition-colors text-center shadow-lg shadow-amber-500/25">
+              <Link href="/signup" className="block w-full py-2.5 bg-exam-ink text-white text-sm font-black hover:bg-stone-800 transition-colors text-center">
                 구독 시작
               </Link>
-            </motion.div>
-          </motion.div>
+            </div>
+          </div>
         </div>
       </section>
 
       {/* ── Testimonials ── */}
-      <section className="border-y border-white/[0.06] bg-white/[0.015] py-24">
-        <div className="max-w-5xl mx-auto px-6">
-          <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5 }}
-            className="text-center mb-14"
-          >
-            <p className="text-xs font-bold text-amber-500 uppercase tracking-[0.15em] mb-3">Reviews</p>
-            <h2 className="text-3xl font-black tracking-tight">학생들의 후기</h2>
-          </motion.div>
+      <section className="border-y border-exam-rule py-20 sm:py-24 bg-white">
+        <div className="max-w-2xl mx-auto px-6">
+          <div className="flex items-center gap-3 mb-3">
+            <div className="w-px h-6 bg-exam-ink" />
+            <p className="text-[10px] font-bold text-stone-400 uppercase tracking-[0.2em]">Reviews</p>
+          </div>
+          <h2 className="font-exam-serif text-2xl sm:text-3xl font-black tracking-tight mb-12">학생들의 후기</h2>
 
           <motion.div
             variants={container}
             initial="hidden"
             whileInView="show"
             viewport={{ once: true }}
-            className="grid grid-cols-1 sm:grid-cols-3 gap-5"
+            className="grid grid-cols-1 sm:grid-cols-3 gap-4"
           >
             {[
               {
                 name: '고3 수험생 D',
                 tag: 'Lv.5 도달 · 3주 사용',
-                text: '비문학 지문이 항상 어려웠는데, 문장 순서를 직접 맞추다 보니 논리 흐름이 자연스럽게 보이기 시작했어요. 6월 모의고사 국어 2등급 나왔습니다.',
+                text: '비문학 지문이 항상 어려웠는데, 문장 순서를 직접 맞추다 보니 논리 흐름이 자연스럽게 보이기 시작했어요.',
               },
               {
                 name: '재수생 K',
                 tag: 'Lv.7 클리어 · 2개월 사용',
-                text: '하루 5문제씩 꾸준히 풀었더니 모의고사 비문학 정답률이 60% → 85%로 올랐어요. 추론 연습이 이렇게 재밌을 줄 몰랐습니다.',
+                text: '하루 5문제씩 꾸준히 풀었더니 모의고사 비문학 정답률이 60% → 85%로 올랐어요.',
               },
               {
                 name: '고2 학생 S',
                 tag: 'Lv.3 진행 중 · 1주 사용',
-                text: '드래그로 카드 배치하는 게 게임 같아서 공부 같지 않아요. 매일 아침 등교 전에 5문제 푸는 게 습관이 됐어요.',
+                text: '드래그로 카드 배치하는 게 게임 같아서 공부 같지 않아요. 매일 아침 5문제 푸는 게 습관이 됐어요.',
               },
             ].map((t) => (
               <motion.div
                 key={t.name}
                 variants={item}
-                className="rounded-2xl border border-white/[0.08] bg-bg-surface/60 p-6"
+                className="border border-exam-rule p-5"
               >
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="w-9 h-9 rounded-full bg-amber-500/15 border border-amber-500/25 flex items-center justify-center text-amber-400 font-black text-xs">
-                    {t.name[0]}
-                  </div>
-                  <div>
-                    <p className="text-sm font-semibold text-slate-200">{t.name}</p>
-                    <p className="text-[11px] text-amber-400/70">{t.tag}</p>
-                  </div>
+                <div className="mb-3 pb-3 border-b border-exam-rule">
+                  <p className="text-sm font-bold text-exam-ink">{t.name}</p>
+                  <p className="text-[11px] text-stone-400 mt-0.5">{t.tag}</p>
                 </div>
-                <p className="text-sm text-slate-400 leading-relaxed">&ldquo;{t.text}&rdquo;</p>
+                <p className="text-sm text-stone-500 leading-relaxed">&ldquo;{t.text}&rdquo;</p>
               </motion.div>
             ))}
           </motion.div>
@@ -634,35 +554,30 @@ export default function LandingPage() {
       </section>
 
       {/* ── CTA ── */}
-      <section className="max-w-5xl mx-auto px-6 pb-28">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.55 }}
-          className="relative rounded-3xl border border-amber-500/30 bg-gradient-to-b from-amber-500/[0.07] to-amber-500/[0.02] p-8 sm:p-14 text-center overflow-hidden"
-        >
-          {/* Top glow line */}
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-1/2 h-px bg-gradient-to-r from-transparent via-amber-500/60 to-transparent" />
-          <div className="absolute inset-0 bg-dot-grid opacity-30 pointer-events-none" />
-
-          <div className="relative z-10">
-            <h2 className="text-3xl font-black tracking-tight mb-3">지금 바로 추론을 훈련하세요</h2>
-            <p className="text-slate-400 mb-9 max-w-sm mx-auto">
+      <section className="py-20 sm:py-28">
+        <div className="max-w-2xl mx-auto px-6">
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.4 }}
+            className="border-2 border-exam-ink p-8 sm:p-12 text-center"
+          >
+            <h2 className="font-exam-serif text-2xl sm:text-3xl font-black tracking-tight mb-3">지금 바로 추론을 훈련하세요</h2>
+            <p className="text-stone-500 mb-8 max-w-sm mx-auto text-sm">
               매일 5문제로 시작해서 수능 비문학 추론 실력을 키우세요.
             </p>
             <Link
               href="/signup"
-              className="animate-cta-glow inline-flex items-center gap-2.5 px-11 py-4 rounded-2xl bg-amber-500 text-slate-900 font-black text-base hover:bg-amber-400 transition-all hover:scale-105 shadow-2xl shadow-amber-500/30"
+              className="inline-flex items-center gap-2 px-10 py-3.5 bg-exam-ink text-white font-bold text-sm hover:bg-stone-800 transition-colors"
             >
               무료로 시작하기
-              <ArrowRight size={17} />
+              <ArrowRight size={15} />
             </Link>
-          </div>
-        </motion.div>
+          </motion.div>
+        </div>
       </section>
 
-      {/* ── Footer ── */}
       <Footer />
     </div>
   )

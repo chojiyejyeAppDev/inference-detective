@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient, createServiceClient } from '@/lib/supabase/server'
-import { FREE_DAILY_LIMIT } from '@/lib/game/levelConfig'
+import { FREE_DAILY_LIMIT, DAILY_HINT_RECHARGE, MAX_HINT_POINTS } from '@/lib/game/levelConfig'
 import { rateLimit, rateLimitResponse } from '@/lib/api/rateLimit'
 
 export async function GET(req: NextRequest) {
@@ -45,6 +45,18 @@ export async function GET(req: NextRequest) {
     profile.subscription_status = 'free'
   }
 
+  // 일일 힌트 포인트 자동 충전 (날짜 변경 시 1회)
+  let currentHintPoints = profile.hint_points
+  const { data: rechargedPoints } = await service.rpc('recharge_hint_points_if_needed', {
+    uid: user.id,
+    recharge_amount: DAILY_HINT_RECHARGE,
+    max_points: MAX_HINT_POINTS,
+    today_date: today,
+  })
+  if (rechargedPoints != null && rechargedPoints >= 0) {
+    currentHintPoints = rechargedPoints
+  }
+
   // 관리자는 모든 제한 면제
   const isAdmin = profile.role === 'admin'
   const isUnlimited = isAdmin || profile.subscription_status === 'active'
@@ -82,7 +94,12 @@ export async function GET(req: NextRequest) {
 
   const { searchParams } = new URL(req.url)
   const questionId = searchParams.get('id')
-  const level = Math.max(1, Math.min(7, parseInt(searchParams.get('level') ?? '0') || profile.current_level))
+  const maxLevel = isAdmin ? 7 : profile.current_level
+  const requestedLevel = parseInt(searchParams.get('level') ?? '0') || profile.current_level
+  const level = Math.max(1, Math.min(maxLevel, requestedLevel))
+  const VALID_TOPICS = ['humanities', 'social', 'science', 'tech', 'arts']
+  const topicParam = searchParams.get('topic')
+  const topic = topicParam && VALID_TOPICS.includes(topicParam) ? topicParam : null
 
   // 특정 문제 ID로 조회
   if (questionId) {
@@ -103,38 +120,38 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json({
       question: specificQuestion,
+      hint_points: currentHintPoints,
       daily_used: dailyUsed,
       daily_limit: isUnlimited ? null : FREE_DAILY_LIMIT,
       subscription_status: isUnlimited ? 'active' : profile.subscription_status,
+      invite_code: profile.invite_code ?? null,
     })
   }
 
-  // 이미 푼 문제 제외
+  // 이미 푼 문제 제외 (1회 쿼리로 통합)
   const { data: solved } = await service
     .from('user_progress')
-    .select('question_id')
+    .select('question_id, is_correct')
     .eq('user_id', user.id)
 
   const allSolvedIds = solved?.map((s) => s.question_id) ?? []
   const isFirstTime = allSolvedIds.length === 0
 
-  const correctSolvedIds = isFirstTime ? [] : (
-    await service
-      .from('user_progress')
-      .select('question_id')
-      .eq('user_id', user.id)
-      .eq('is_correct', true)
-  ).data?.map((s) => s.question_id) ?? []
-
   // UUID 형식 검증 (SQL 인젝션 방지)
   const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
-  const safeIds = correctSolvedIds.filter((id) => typeof id === 'string' && UUID_RE.test(id))
+  const safeIds = solved
+    ?.filter((s) => s.is_correct && typeof s.question_id === 'string' && UUID_RE.test(s.question_id))
+    .map((s) => s.question_id) ?? []
 
   // 문제 조회
   let query = service
     .from('questions')
     .select('id, difficulty_level, topic, passage, sentences, conclusion, hints')
     .eq('difficulty_level', level)
+
+  if (topic) {
+    query = query.eq('topic', topic)
+  }
 
   if (safeIds.length > 0) {
     query = query.not('id', 'in', `(${safeIds.join(',')})`)
@@ -177,8 +194,10 @@ export async function GET(req: NextRequest) {
   return NextResponse.json({
     question,
     is_review: isReview,
+    hint_points: currentHintPoints,
     daily_used: dailyUsed,
     daily_limit: isUnlimited ? null : FREE_DAILY_LIMIT,
     subscription_status: isUnlimited ? 'active' : profile.subscription_status,
+    invite_code: profile.invite_code ?? null,
   })
 }

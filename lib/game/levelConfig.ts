@@ -56,8 +56,11 @@ export const LEVEL_UP_ACCURACY = 0.8
 export const LEVEL_UP_SESSIONS = 3
 export const FREE_DAILY_LIMIT = 5
 export const INVITE_BONUS_QUESTIONS = 2
-export const CORRECT_ANSWER_HINT_BONUS = 1
-export const MAX_HINT_POINTS = 5
+
+// 힌트 포인트 경제
+export const DAILY_HINT_RECHARGE = 3      // 매일 자동 충전량
+export const MAX_HINT_POINTS = 30          // 최대 보유 한도
+export const CORRECT_ANSWER_HINT_BONUS = 1 // 정답 시 보너스
 
 export function getLevelConfig(level: number): LevelConfig {
   return LEVEL_CONFIGS[Math.min(level, 7) - 1]
