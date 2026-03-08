@@ -148,7 +148,7 @@ export default async function DashboardPage() {
 
         {/* Paywall for free users */}
         {!isPremium && (
-          <div className="mb-8 border border-exam-rule bg-white p-6 text-center">
+          <div className="passage-box mb-8 text-center">
             <p className="text-exam-ink font-semibold mb-2">프리미엄 전용 기능이에요</p>
             <p className="text-stone-500 text-sm mb-4">
               구독하면 정확도 추이, 오류 패턴, 힌트 의존도를 분석할 수 있어요.
@@ -171,13 +171,13 @@ export default async function DashboardPage() {
           ].map((stat) => (
             <div
               key={stat.label}
-              className="border border-exam-rule bg-white p-4 text-center"
+              className="answer-cell bg-white text-center"
+              data-number={stat.label}
             >
-              <p className="text-xl sm:text-2xl font-bold text-exam-ink">
+              <p className="text-xl font-bold text-exam-ink">
                 {stat.value}
                 <span className="text-base font-normal text-stone-400">{stat.unit}</span>
               </p>
-              <p className="text-xs text-stone-500 mt-0.5">{stat.label}</p>
             </div>
           ))}
         </div>
@@ -239,10 +239,7 @@ export default async function DashboardPage() {
 
             {/* 다음 추천 행동 */}
             <div className="border border-exam-rule bg-white p-5">
-              <h3 className="text-sm font-exam-serif font-bold text-exam-ink mb-3 flex items-center gap-1.5">
-                <Target size={14} className="text-exam-ink" />
-                다음 추천
-              </h3>
+              <span className="section-label mb-3">다음 추천</span>
               <div className="space-y-3">
                 {/* 정확도 추세 */}
                 {accuracyTrend === 'improving' && (

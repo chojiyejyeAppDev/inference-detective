@@ -126,6 +126,7 @@ export default function LevelGrid({
             )}
           </div>
         </div>
+        <span className="section-label">훈련 레벨</span>
         <p className="text-stone-500 text-sm mt-1">레벨을 선택하고 추론 훈련을 시작하세요.</p>
       </motion.div>
 
@@ -179,7 +180,7 @@ export default function LevelGrid({
           <motion.div
             initial={{ opacity: 0, scale: 0.98 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="relative mb-6 border-2 border-exam-ink bg-white p-5"
+            className="relative mb-6 border-2 border-exam-ink bg-white bg-ruled p-5"
           >
             <div className="flex items-center justify-between mb-2">
               <p className="text-exam-ink font-exam-serif font-bold text-base">마스터 모드</p>
@@ -347,8 +348,9 @@ export default function LevelGrid({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.5 }}
-            className="relative mt-8 border border-exam-rule bg-white p-6 text-center"
+            className="relative mt-8 border-2 border-exam-ink bg-white p-6 text-center"
           >
+            <span className="font-annotation text-xs block mb-2">※ 안내</span>
             <p className="text-exam-ink font-bold mb-1.5">더 빠르게 성장하고 싶으신가요?</p>
             <p className="text-stone-500 text-sm mb-5">구독하면 무제한 문제 + 전체 힌트 + 오답 분석을 이용할 수 있어요.</p>
             <button

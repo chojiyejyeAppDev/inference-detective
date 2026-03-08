@@ -56,15 +56,13 @@ export default function PassageViewer({ passage, conclusion, topic }: PassageVie
             transition={{ duration: 0.25 }}
             className="overflow-hidden md:!h-auto md:!opacity-100 flex flex-col gap-3"
           >
-            <div className="flex-1 max-h-[40vh] sm:max-h-[45vh] md:max-h-none overflow-y-auto border border-exam-rule bg-white">
-              <div className="p-4 sm:p-5">
-                <p
-                  className="text-sm leading-[2] text-exam-ink break-words font-exam-serif"
-                  style={{ wordBreak: 'keep-all' }}
-                >
-                  {passage}
-                </p>
-              </div>
+            <div className="flex-1 max-h-[40vh] sm:max-h-[45vh] md:max-h-none overflow-y-auto passage-box bg-ruled">
+              <p
+                className="text-sm leading-[2] text-exam-ink break-words font-exam-serif"
+                style={{ wordBreak: 'keep-all' }}
+              >
+                {passage}
+              </p>
             </div>
 
             {/* Conclusion to prove */}
@@ -76,7 +74,7 @@ export default function PassageViewer({ passage, conclusion, topic }: PassageVie
                   </div>
                 </div>
                 <div>
-                  <p className="text-[10px] font-semibold text-exam-red tracking-widest uppercase mb-1 font-exam-serif">
+                  <p className="text-[10px] font-annotation tracking-widest uppercase mb-1">
                     증명할 결론
                   </p>
                   <p className="text-sm leading-relaxed text-exam-ink font-exam-serif" style={{ wordBreak: 'keep-all' }}>
