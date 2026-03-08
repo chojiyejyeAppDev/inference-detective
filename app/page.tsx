@@ -109,7 +109,7 @@ function LandingDemo() {
   return (
     <div className="border border-exam-rule bg-white p-5 max-w-3xl mx-auto text-left shadow-sm">
       {/* Header bar */}
-      <div className="flex items-center justify-between mb-5 pb-4 border-b border-exam-rule">
+      <div className="exam-header mb-5">
         <div className="flex items-center gap-2">
           <span className="problem-number-sm">3</span>
           <span className="text-xs font-bold text-exam-ink">레벨 3 — 인문</span>
@@ -119,8 +119,7 @@ function LandingDemo() {
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
         {/* Passage + remaining cards */}
         <div className="space-y-3">
-          <p className="text-[10px] font-bold text-stone-400 uppercase tracking-[0.15em]">지문</p>
-          <div className="border border-exam-rule p-3.5 text-xs text-stone-600 leading-[1.8]">
+          <div className="passage-box text-xs text-stone-600 leading-[1.8]">
             현대 사회에서 정보는 단순한 사실의 집합이 아니라 의미를 구성하는 체계이다. 특히 디지털 환경에서 정보의 수용과 해석은 개인의 인식 체계와 밀접하게 연결되어 있다.
           </div>
           <div className="border border-exam-red/30 bg-exam-highlight p-3.5 text-xs text-stone-700 leading-[1.8]">
@@ -154,7 +153,7 @@ function LandingDemo() {
 
         {/* Inference chain slots */}
         <div className="space-y-3">
-          <p className="text-[10px] font-bold text-stone-400 uppercase tracking-[0.15em]">추론 체인 (3단계)</p>
+          <p className="section-label">추론 체인 (3단계)</p>
           <div className="space-y-1.5">
             {slots.map((slotId, i) => (
               <div key={i}>
@@ -201,13 +200,16 @@ function LandingDemo() {
           <AnimatePresence>
             {showResult && (
               <motion.div
-                initial={{ opacity: 0, y: 6 }}
-                animate={{ opacity: 1, y: 0 }}
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0 }}
-                className="flex items-center gap-2 text-xs font-bold pt-3 border-t border-exam-rule"
+                className="flex items-center gap-3 pt-3 border-t border-exam-rule"
               >
-                <span className="text-exam-red text-lg">&#9711;</span>
-                <span className="text-exam-ink">정확도 100% — 레벨업!</span>
+                <div className="score-stamp !w-12 !h-12 !border-[1.5px] !text-[10px]">
+                  <span className="score-stamp-value !text-base">100</span>
+                  <span className="score-stamp-label !text-[7px]">PERFECT</span>
+                </div>
+                <span className="text-xs font-bold text-exam-ink">레벨업!</span>
               </motion.div>
             )}
           </AnimatePresence>
@@ -248,7 +250,7 @@ export default function LandingPage() {
 
       {/* ── Nav ── */}
       <nav className="sticky top-0 z-50 border-b border-exam-rule bg-bg-base/95 backdrop-blur-sm">
-        <div className="max-w-2xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
+        <div className="max-w-3xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
           <span className="font-exam-serif font-bold text-base tracking-tight">이:르다</span>
           {/* Desktop nav */}
           <div className="hidden sm:flex items-center gap-4">
@@ -304,24 +306,22 @@ export default function LandingPage() {
       </nav>
 
       {/* ── Hero ── */}
-      <section className="max-w-2xl mx-auto px-4 sm:px-6 pt-20 sm:pt-28 pb-20 sm:pb-24">
+      <section className="max-w-3xl mx-auto px-4 sm:px-6 pt-20 sm:pt-28 pb-20 sm:pb-24">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
         >
           {/* Problem number style badge */}
-          <div className="flex items-center gap-3 mb-8">
-            <div className="w-px h-8 bg-exam-ink" />
-            <span className="text-xs font-bold text-stone-500 uppercase tracking-[0.2em]">수능 비문학 추론 훈련</span>
-          </div>
+          <p className="section-label mb-8">수능 비문학 추론 훈련</p>
 
           {/* Headline — exam-style serif */}
-          <h1 className="font-exam-serif text-[2.2rem] sm:text-[3rem] font-black leading-[1.2] tracking-tight mb-6">
+          <h1 className="font-exam-serif text-[2.2rem] sm:text-[3rem] font-black leading-[1.2] tracking-tight mb-4">
             추론을 직접 조립하며
             <br />
             <span className="mark-red">정복</span>하세요.
           </h1>
+          <p className="font-annotation text-sm mb-6">※ 읽기가 아닌, 조립하는 독해</p>
 
           <p className="text-stone-500 text-base sm:text-lg max-w-md mb-10 leading-relaxed">
             흩어진 문장을 드래그해 논리 순서로 잇는 훈련.
@@ -358,7 +358,7 @@ export default function LandingPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.2 }}
         >
-          <p className="text-[10px] text-stone-400 mb-3 text-center uppercase tracking-[0.15em] font-bold">
+          <p className="section-label mb-3 justify-center">
             실제 플레이 미리보기
           </p>
           <LandingDemo />
@@ -367,15 +367,15 @@ export default function LandingPage() {
 
       {/* ── Stats ── */}
       <section className="border-y border-exam-rule py-14">
-        <div className="max-w-2xl mx-auto px-6">
+        <div className="max-w-3xl mx-auto px-6">
           <div className="grid grid-cols-3 gap-6 text-center">
             {[
               { n: '7', label: '추론 레벨', sub: 'Level 1 → 7' },
               { n: '5', label: '일일 무료 문제', sub: '매일 자정 리셋' },
               { n: '100+', label: '문제 은행', sub: '매주 추가' },
             ].map((s) => (
-              <div key={s.label}>
-                <p className="font-exam-serif text-3xl sm:text-4xl font-black text-exam-ink leading-none mb-1">{s.n}</p>
+              <div key={s.label} className="flex flex-col items-center">
+                <span className="grade-circle mb-2 text-lg">{s.n}</span>
                 <p className="text-sm font-semibold text-stone-700 mb-0.5">{s.label}</p>
                 <p className="text-[11px] text-stone-400">{s.sub}</p>
               </div>
@@ -386,17 +386,14 @@ export default function LandingPage() {
 
       {/* ── Features ── */}
       <section className="py-20 sm:py-24">
-        <div className="max-w-2xl mx-auto px-6">
+        <div className="max-w-3xl mx-auto px-6">
           <motion.div
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
             viewport={{ once: true }}
             className="mb-12"
           >
-            <div className="flex items-center gap-3 mb-3">
-              <div className="w-px h-6 bg-exam-ink" />
-              <p className="text-[10px] font-bold text-stone-400 uppercase tracking-[0.2em]">Features</p>
-            </div>
+            <p className="section-label mb-3">Features</p>
             <h2 className="font-exam-serif text-2xl sm:text-3xl font-black tracking-tight">이런 훈련이에요</h2>
           </motion.div>
 
@@ -427,12 +424,9 @@ export default function LandingPage() {
       </section>
 
       {/* ── How it works ── */}
-      <section className="border-y border-exam-rule py-20 sm:py-24 bg-white">
-        <div className="max-w-2xl mx-auto px-6">
-          <div className="flex items-center gap-3 mb-3">
-            <div className="w-px h-6 bg-exam-ink" />
-            <p className="text-[10px] font-bold text-stone-400 uppercase tracking-[0.2em]">How it works</p>
-          </div>
+      <section className="border-y border-exam-rule py-20 sm:py-24 bg-ruled bg-white">
+        <div className="max-w-3xl mx-auto px-6">
+          <p className="section-label mb-3">How it works</p>
           <h2 className="font-exam-serif text-2xl sm:text-3xl font-black tracking-tight mb-12">어떻게 하나요?</h2>
 
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-6">
@@ -455,11 +449,8 @@ export default function LandingPage() {
 
       {/* ── Pricing Preview ── */}
       <section className="py-20 sm:py-24">
-        <div className="max-w-2xl mx-auto px-6">
-          <div className="flex items-center gap-3 mb-3">
-            <div className="w-px h-6 bg-exam-ink" />
-            <p className="text-[10px] font-bold text-stone-400 uppercase tracking-[0.2em]">Pricing</p>
-          </div>
+        <div className="max-w-3xl mx-auto px-6">
+          <p className="section-label mb-3">Pricing</p>
           <h2 className="font-exam-serif text-2xl sm:text-3xl font-black tracking-tight mb-3">부담 없이 시작하세요</h2>
           <p className="text-stone-500 text-sm mb-10">매일 5문제 무료. 더 원하시면 구독하세요.</p>
 
@@ -506,11 +497,8 @@ export default function LandingPage() {
 
       {/* ── Testimonials ── */}
       <section className="border-y border-exam-rule py-20 sm:py-24 bg-white">
-        <div className="max-w-2xl mx-auto px-6">
-          <div className="flex items-center gap-3 mb-3">
-            <div className="w-px h-6 bg-exam-ink" />
-            <p className="text-[10px] font-bold text-stone-400 uppercase tracking-[0.2em]">Reviews</p>
-          </div>
+        <div className="max-w-3xl mx-auto px-6">
+          <p className="section-label mb-3">Reviews</p>
           <h2 className="font-exam-serif text-2xl sm:text-3xl font-black tracking-tight mb-12">학생들의 후기</h2>
 
           <motion.div
@@ -546,7 +534,7 @@ export default function LandingPage() {
                   <p className="text-sm font-bold text-exam-ink">{t.name}</p>
                   <p className="text-[11px] text-stone-400 mt-0.5">{t.tag}</p>
                 </div>
-                <p className="text-sm text-stone-500 leading-relaxed">&ldquo;{t.text}&rdquo;</p>
+                <p className="text-sm text-stone-500 leading-relaxed margin-line">&ldquo;{t.text}&rdquo;</p>
               </motion.div>
             ))}
           </motion.div>
@@ -554,22 +542,28 @@ export default function LandingPage() {
       </section>
 
       {/* ── CTA ── */}
-      <section className="py-20 sm:py-28">
-        <div className="max-w-2xl mx-auto px-6">
+      <section className="py-20 sm:py-28 bg-ruled">
+        <div className="max-w-3xl mx-auto px-6">
           <motion.div
             initial={{ opacity: 0, y: 16 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.4 }}
-            className="border-2 border-exam-ink p-8 sm:p-12 text-center"
+            className="border-2 border-exam-ink p-8 sm:p-12 text-center bg-white relative overflow-hidden"
           >
-            <h2 className="font-exam-serif text-2xl sm:text-3xl font-black tracking-tight mb-3">지금 바로 추론을 훈련하세요</h2>
-            <p className="text-stone-500 mb-8 max-w-sm mx-auto text-sm">
+            <div className="absolute top-4 right-4 sm:top-6 sm:right-6 opacity-20">
+              <div className="score-stamp">
+                <span className="score-stamp-value">A+</span>
+                <span className="score-stamp-label">GRADE</span>
+              </div>
+            </div>
+            <h2 className="font-exam-serif text-2xl sm:text-3xl font-black tracking-tight mb-3 relative">지금 바로 추론을 훈련하세요</h2>
+            <p className="text-stone-500 mb-8 max-w-sm mx-auto text-sm relative">
               매일 5문제로 시작해서 수능 비문학 추론 실력을 키우세요.
             </p>
             <Link
               href="/signup"
-              className="inline-flex items-center gap-2 px-10 py-3.5 bg-exam-ink text-white font-bold text-sm hover:bg-stone-800 transition-colors"
+              className="relative inline-flex items-center gap-2 px-10 py-3.5 bg-exam-ink text-white font-bold text-sm hover:bg-stone-800 transition-colors"
             >
               무료로 시작하기
               <ArrowRight size={15} />

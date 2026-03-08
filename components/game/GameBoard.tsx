@@ -368,13 +368,7 @@ export default function GameBoard({
             </div>
 
             {/* Divider */}
-            <div className="flex items-center gap-3">
-              <div className="flex-1 h-px bg-exam-rule" />
-              <span className="text-[10px] font-semibold text-stone-500 tracking-widest uppercase font-exam-serif">
-                추론 경로 조립
-              </span>
-              <div className="flex-1 h-px bg-exam-rule" />
-            </div>
+            <div className="section-label">추론 경로 조립</div>
 
             {/* Chain slots */}
             <div className="flex flex-col pl-4">
@@ -444,8 +438,14 @@ export default function GameBoard({
                           ? `레벨업! Lv.${levelConfig.level + 1}로 올라갔어요!`
                           : evaluationResult.is_correct
                             ? '정답! 완벽한 추론 경로예요.'
-                            : `정확도 ${Math.round(evaluationResult.accuracy * 100)}%`}
+                            : <><span className="mark-red">정확도 {Math.round(evaluationResult.accuracy * 100)}%</span></>}
                       </span>
+                      {evaluationResult.is_correct && (
+                        <div className="score-stamp animate-stamp">
+                          <span className="score-stamp-value">100</span>
+                          <span className="score-stamp-label">정답</span>
+                        </div>
+                      )}
                     </div>
                     <ShareResultButton
                       level={levelConfig.level}
