@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import LevelGrid from '@/components/level/LevelGrid'
+import { LEVEL_UP_SESSIONS, LEVEL_UP_ACCURACY } from '@/lib/game/levelConfig'
 
 export default async function LevelsPage() {
   const supabase = await createClient()
@@ -15,14 +16,32 @@ export default async function LevelsPage() {
     .single()
 
   const isAdmin = profile?.role === 'admin'
+  const currentLevel = isAdmin ? 7 : (profile?.current_level ?? 1)
+
+  // 현재 레벨의 레벨업 진행 상황 조회
+  let qualifiedSessions = 0
+  if (currentLevel < 7) {
+    const { data: recentSessions } = await supabase
+      .from('level_sessions')
+      .select('accuracy')
+      .eq('user_id', user.id)
+      .eq('level', currentLevel)
+      .order('created_at', { ascending: false })
+      .limit(LEVEL_UP_SESSIONS)
+
+    qualifiedSessions = (recentSessions ?? []).filter(
+      (s) => Number(s.accuracy) >= LEVEL_UP_ACCURACY,
+    ).length
+  }
 
   return (
     <LevelGrid
-      currentLevel={isAdmin ? 7 : (profile?.current_level ?? 1)}
+      currentLevel={currentLevel}
       subscriptionStatus={isAdmin ? 'active' : (profile?.subscription_status ?? 'free')}
       subscriptionExpiresAt={profile?.subscription_expires_at ?? null}
       dailyUsed={isAdmin ? 0 : (profile?.daily_questions_used ?? 0)}
       hintPoints={profile?.hint_points ?? 10}
+      levelProgress={{ qualified: qualifiedSessions, required: LEVEL_UP_SESSIONS }}
     />
   )
 }

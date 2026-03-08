@@ -53,8 +53,8 @@ export default function ResetPasswordPage() {
     return (
       <div className="min-h-screen bg-bg-game flex items-center justify-center px-4">
         <div className="text-center">
-          <p className="text-slate-400 text-sm mb-4">비밀번호 재설정 링크를 확인하고 있어요...</p>
-          <p className="text-slate-500 text-xs">잠시만 기다려주세요.</p>
+          <p className="text-stone-500 text-sm mb-4">비밀번호 재설정 링크를 확인하고 있어요...</p>
+          <p className="text-stone-400 text-xs">잠시만 기다려주세요.</p>
         </div>
       </div>
     )
@@ -68,16 +68,16 @@ export default function ResetPasswordPage() {
         className="w-full max-w-sm"
       >
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-white mb-1">이:르다</h1>
-          <p className="text-slate-400 text-sm">비밀번호 재설정</p>
+          <h1 className="text-3xl font-bold text-exam-ink mb-1">이:르다</h1>
+          <p className="text-stone-500 text-sm">비밀번호 재설정</p>
         </div>
 
-        <div className="rounded-2xl border border-slate-700 bg-slate-800/60 p-6">
-          <h2 className="text-lg font-semibold text-white mb-5">새 비밀번호 입력</h2>
+        <div className="border border-exam-rule bg-white p-6">
+          <h2 className="text-lg font-semibold text-exam-ink mb-5">새 비밀번호 입력</h2>
 
           <form onSubmit={handleReset} className="space-y-4">
             <div>
-              <label className="block text-xs font-medium text-slate-400 mb-1.5">
+              <label className="block text-xs font-medium text-stone-500 mb-1.5">
                 새 비밀번호
               </label>
               <input
@@ -86,13 +86,13 @@ export default function ResetPasswordPage() {
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 minLength={8}
-                className="w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2.5 text-sm text-slate-100 placeholder-slate-600 focus:border-amber-500 focus:outline-none transition-colors"
+                className="w-full rounded-lg border border-exam-rule bg-white px-3 py-2.5 text-sm text-exam-ink placeholder-stone-400 focus:border-exam-ink focus:outline-none transition-colors"
                 placeholder="8자 이상"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-medium text-slate-400 mb-1.5">
+              <label className="block text-xs font-medium text-stone-500 mb-1.5">
                 비밀번호 확인
               </label>
               <input
@@ -101,7 +101,7 @@ export default function ResetPasswordPage() {
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 required
                 minLength={8}
-                className="w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2.5 text-sm text-slate-100 placeholder-slate-600 focus:border-amber-500 focus:outline-none transition-colors"
+                className="w-full rounded-lg border border-exam-rule bg-white px-3 py-2.5 text-sm text-exam-ink placeholder-stone-400 focus:border-exam-ink focus:outline-none transition-colors"
                 placeholder="비밀번호 재입력"
               />
             </div>
@@ -109,7 +109,7 @@ export default function ResetPasswordPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-2.5 rounded-xl bg-amber-500 text-slate-900 text-sm font-bold hover:bg-amber-400 transition-colors disabled:opacity-50"
+              className="w-full py-2.5 bg-exam-ink text-white text-sm font-bold hover:bg-stone-800 transition-colors disabled:opacity-50"
             >
               {loading ? '변경 중...' : '비밀번호 변경'}
             </button>

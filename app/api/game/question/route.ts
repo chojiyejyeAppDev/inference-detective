@@ -97,6 +97,9 @@ export async function GET(req: NextRequest) {
   const maxLevel = isAdmin ? 7 : profile.current_level
   const requestedLevel = parseInt(searchParams.get('level') ?? '0') || profile.current_level
   const level = Math.max(1, Math.min(maxLevel, requestedLevel))
+  const VALID_TOPICS = ['humanities', 'social', 'science', 'tech', 'arts']
+  const topicParam = searchParams.get('topic')
+  const topic = topicParam && VALID_TOPICS.includes(topicParam) ? topicParam : null
 
   // 특정 문제 ID로 조회
   if (questionId) {
@@ -121,6 +124,7 @@ export async function GET(req: NextRequest) {
       daily_used: dailyUsed,
       daily_limit: isUnlimited ? null : FREE_DAILY_LIMIT,
       subscription_status: isUnlimited ? 'active' : profile.subscription_status,
+      invite_code: profile.invite_code ?? null,
     })
   }
 
@@ -144,6 +148,10 @@ export async function GET(req: NextRequest) {
     .from('questions')
     .select('id, difficulty_level, topic, passage, sentences, conclusion, hints')
     .eq('difficulty_level', level)
+
+  if (topic) {
+    query = query.eq('topic', topic)
+  }
 
   if (safeIds.length > 0) {
     query = query.not('id', 'in', `(${safeIds.join(',')})`)
@@ -190,5 +198,6 @@ export async function GET(req: NextRequest) {
     daily_used: dailyUsed,
     daily_limit: isUnlimited ? null : FREE_DAILY_LIMIT,
     subscription_status: isUnlimited ? 'active' : profile.subscription_status,
+    invite_code: profile.invite_code ?? null,
   })
 }

@@ -20,6 +20,8 @@ interface GameBoardProps {
   levelConfig: LevelConfig
   hintPoints: number
   dailyRemaining?: number | null
+  inviteCode?: string | null
+  streak?: number
   isSubmitting: boolean
   isHintLoading: boolean
   isReviewMode?: boolean
@@ -35,6 +37,8 @@ export default function GameBoard({
   levelConfig,
   hintPoints,
   dailyRemaining,
+  inviteCode,
+  streak = 0,
   isSubmitting,
   isHintLoading,
   isReviewMode,
@@ -271,38 +275,47 @@ export default function GameBoard({
     <DragDropContext onDragEnd={onDragEnd}>
       <div className="min-h-screen bg-bg-game flex flex-col">
         {/* Header */}
-        <header className="flex items-center justify-between px-3 sm:px-4 md:px-6 py-3 border-b border-slate-800 gap-2">
+        <header className="flex items-center justify-between px-3 sm:px-4 md:px-6 py-3 border-b border-exam-rule bg-white gap-2">
           <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-            <span className="text-xs font-bold text-amber-400 tracking-widest uppercase shrink-0">
+            <span className="problem-number-sm font-exam-serif shrink-0">
+              {levelConfig.level}
+            </span>
+            <span className="text-xs font-bold text-exam-ink tracking-widest uppercase shrink-0 font-exam-serif">
               Lv.{levelConfig.level}
             </span>
-            <span className="text-slate-500 hidden sm:inline">·</span>
-            <span className="text-sm text-slate-400 truncate hidden sm:inline">{levelConfig.name}</span>
-            <span className="text-slate-500 hidden sm:inline">·</span>
-            <span className="text-xs text-slate-500 shrink-0">{levelConfig.slots}단계</span>
+            <span className="text-stone-300 hidden sm:inline">|</span>
+            <span className="text-sm text-stone-600 truncate hidden sm:inline">{levelConfig.name}</span>
+            <span className="text-stone-300 hidden sm:inline">|</span>
+            <span className="text-xs text-stone-500 shrink-0">{levelConfig.slots}단계</span>
             {isReviewMode && (
-              <span className="text-[10px] font-bold text-blue-400 bg-blue-500/15 px-1.5 py-0.5 rounded-full border border-blue-500/30">
+              <span className="text-[10px] font-bold text-blue-700 bg-blue-50 px-1.5 py-0.5 border border-blue-200">
                 복습
               </span>
             )}
           </div>
-          <div className="flex items-center gap-2 sm:gap-3 text-xs text-slate-400 shrink-0">
+          <div className="flex items-center gap-2 sm:gap-3 text-xs text-stone-500 shrink-0">
+            {streak >= 2 && (
+              <span className="flex items-center gap-1 font-semibold text-exam-red">
+                <Flame size={12} />
+                {streak}연속
+              </span>
+            )}
             {dailyRemaining != null && (
-              <span className={`font-semibold ${dailyRemaining === 0 ? 'text-red-400' : 'text-slate-400'}`}>
+              <span className={`font-semibold ${dailyRemaining === 0 ? 'text-exam-red' : 'text-stone-500'}`}>
                 {dailyRemaining}개 남음
               </span>
             )}
-            <div className="flex items-center gap-1.5">
-              <Lightbulb size={12} className="text-amber-400" />
-              <span className="text-amber-400 font-semibold">{hintPoints}</span>
+            <div className="flex items-center gap-1">
+              <Lightbulb size={12} className="text-stone-600" />
+              <span className="text-exam-ink font-semibold">{hintPoints}</span>
               <span className="hidden sm:inline">힌트 포인트</span>
             </div>
             <button
               onClick={() => setShowTutorial(true)}
-              className="p-2.5 -m-1.5 rounded-lg text-slate-500 hover:text-slate-300 transition-colors"
+              className="p-3 -m-1.5 text-stone-400 hover:text-exam-ink transition-colors"
               aria-label="도움말"
             >
-              <HelpCircle size={14} />
+              <HelpCircle size={16} />
             </button>
           </div>
         </header>
@@ -320,7 +333,7 @@ export default function GameBoard({
           <div className="flex-1 flex flex-col gap-4 min-w-0 overflow-y-auto">
             {/* Sentence pool */}
             <div>
-              <p className="text-[10px] font-semibold text-slate-500 tracking-widest uppercase mb-2 px-1">
+              <p className="text-[10px] font-semibold text-stone-500 tracking-widest uppercase mb-2 px-1">
                 문장 카드 — 끌어서 배치하거나 클릭하여 선택
               </p>
               <Droppable droppableId="pool" direction="vertical">
@@ -329,12 +342,12 @@ export default function GameBoard({
                     ref={provided.innerRef}
                     {...provided.droppableProps}
                     className={[
-                      'flex flex-col gap-2 min-h-[48px] rounded-xl p-2 transition-colors duration-200',
-                      snapshot.isDraggingOver ? 'bg-slate-800/60' : 'bg-transparent',
+                      'flex flex-col gap-2 min-h-[48px] p-2 transition-colors duration-200',
+                      snapshot.isDraggingOver ? 'bg-bg-base' : 'bg-transparent',
                     ].join(' ')}
                   >
                     {pool.length === 0 ? (
-                      <div className="flex items-center justify-center h-12 text-xs text-slate-500 italic">
+                      <div className="flex items-center justify-center h-12 text-xs text-stone-400 italic">
                         모든 문장이 슬롯에 배치되었어요
                       </div>
                     ) : (
@@ -356,11 +369,11 @@ export default function GameBoard({
 
             {/* Divider */}
             <div className="flex items-center gap-3">
-              <div className="flex-1 h-px bg-slate-800" />
-              <span className="text-[10px] font-semibold text-slate-500 tracking-widest uppercase">
+              <div className="flex-1 h-px bg-exam-rule" />
+              <span className="text-[10px] font-semibold text-stone-500 tracking-widest uppercase font-exam-serif">
                 추론 경로 조립
               </span>
-              <div className="flex-1 h-px bg-slate-800" />
+              <div className="flex-1 h-px bg-exam-rule" />
             </div>
 
             {/* Chain slots */}
@@ -386,12 +399,12 @@ export default function GameBoard({
               {/* Arrow to conclusion */}
               <div className="flex items-center gap-3 mt-2 pl-3">
                 <div className="flex flex-col items-center">
-                  <div className="w-0.5 h-3 bg-slate-700" />
-                  <ChevronRight size={14} className="text-slate-500 rotate-90" />
+                  <div className="w-px h-3 bg-stone-400" />
+                  <ChevronRight size={14} className="text-stone-500 rotate-90" />
                 </div>
-                <div className="flex-1 rounded-lg border border-amber-500/30 bg-amber-500/5 px-4 py-2">
-                  <p className="text-[10px] text-amber-400 font-semibold mb-0.5">결론</p>
-                  <p className="text-xs text-amber-200/80 leading-relaxed" style={{ wordBreak: 'keep-all' }}>
+                <div className="flex-1 border-2 border-exam-ink bg-white px-4 py-2">
+                  <p className="text-[10px] text-exam-red font-semibold mb-0.5 font-exam-serif">결론</p>
+                  <p className="text-xs text-exam-ink leading-relaxed" style={{ wordBreak: 'keep-all' }}>
                     {question.conclusion}
                   </p>
                 </div>
@@ -408,24 +421,24 @@ export default function GameBoard({
                   aria-live="polite"
                   aria-atomic="true"
                   className={[
-                    'rounded-xl border p-4',
+                    'border p-4',
                     evaluationResult.is_correct
-                      ? 'border-emerald-500/50 bg-emerald-500/10'
-                      : 'border-slate-700 bg-slate-800/60',
+                      ? 'border-green-700 bg-green-50'
+                      : 'border-exam-rule bg-white',
                   ].join(' ')}
                 >
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-2">
                       {evaluationResult.level_up ? (
-                        <Trophy size={16} className="text-amber-400" />
+                        <Trophy size={16} className="text-exam-ink" />
                       ) : evaluationResult.is_correct ? (
-                        <CheckCircle2 size={16} className="text-emerald-400" />
+                        <CheckCircle2 size={16} className="text-green-700" />
                       ) : (
-                        <XCircle size={16} className="text-red-400" />
+                        <XCircle size={16} className="text-exam-red" />
                       )}
                       <span className={[
                         'text-sm font-semibold',
-                        evaluationResult.is_correct ? 'text-emerald-400' : 'text-slate-300',
+                        evaluationResult.is_correct ? 'text-green-700' : 'text-exam-ink',
                       ].join(' ')}>
                         {evaluationResult.level_up
                           ? `레벨업! Lv.${levelConfig.level + 1}로 올라갔어요!`
@@ -440,17 +453,18 @@ export default function GameBoard({
                       isCorrect={evaluationResult.is_correct}
                       levelUp={evaluationResult.level_up}
                       slots={levelConfig.slots}
+                      inviteCode={inviteCode ?? undefined}
                     />
                   </div>
-                  <p className="text-xs text-slate-400 leading-relaxed">
+                  <p className="text-xs text-stone-600 leading-relaxed">
                     {evaluationResult.explanation}
                   </p>
 
                   {/* 연속 정답 스트릭 */}
                   {evaluationResult.is_correct && (evaluationResult.streak ?? 0) >= 2 && (
                     <div className="mt-2 flex items-center gap-1.5">
-                      <Flame size={13} className="text-orange-400" />
-                      <span className="text-xs font-semibold text-orange-400">
+                      <Flame size={13} className="text-exam-red" />
+                      <span className="text-xs font-semibold text-exam-red">
                         {evaluationResult.streak}연속 정답!
                       </span>
                     </div>
@@ -458,12 +472,12 @@ export default function GameBoard({
 
                   {/* 레벨업 진행 상황 */}
                   {evaluationResult.level_progress && !evaluationResult.level_up && levelConfig.level < 7 && (
-                    <div className="mt-3 pt-3 border-t border-slate-700/50">
+                    <div className="mt-3 pt-3 border-t border-exam-rule">
                       <div className="flex items-center justify-between mb-1.5">
-                        <span className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider">
+                        <span className="text-[10px] font-semibold text-stone-500 uppercase tracking-wider">
                           레벨업 진행
                         </span>
-                        <span className="text-[10px] text-slate-400">
+                        <span className="text-[10px] text-stone-500">
                           {evaluationResult.level_progress.qualified}/{evaluationResult.level_progress.required} 세션 달성
                         </span>
                       </div>
@@ -472,20 +486,20 @@ export default function GameBoard({
                           <div
                             key={i}
                             className={[
-                              'flex-1 h-1.5 rounded-full transition-all',
+                              'flex-1 h-1.5 transition-all',
                               i < evaluationResult.level_progress!.qualified
-                                ? 'bg-amber-400'
-                                : 'bg-slate-700',
+                                ? 'bg-exam-ink'
+                                : 'bg-stone-200',
                             ].join(' ')}
                           />
                         ))}
                       </div>
-                      <p className="text-[10px] text-slate-500 mt-1">
-                        80% 이상 정확도 {evaluationResult.level_progress.required}회 달성 시 레벨업
+                      <p className="text-[10px] text-stone-500 mt-1">
+                        최근 {evaluationResult.level_progress.required}세션 중 80% 이상 정확도를 모두 달성하면 레벨업
                       </p>
                       {levelConfig.level === 6 && (
-                        <p className="text-[10px] text-amber-400/60 mt-1.5">
-                          ⚠ 레벨 7에서는 힌트를 사용할 수 없어요. 지금 실력을 충분히 다져두세요!
+                        <p className="text-[10px] text-exam-red mt-1.5">
+                          레벨 7에서는 힌트를 사용할 수 없어요. 지금 실력을 충분히 다져두세요!
                         </p>
                       )}
                     </div>
@@ -496,7 +510,7 @@ export default function GameBoard({
                     <div className="mt-3">
                       <button
                         onClick={() => setShowCorrectAnswer(!showCorrectAnswer)}
-                        className="text-xs text-amber-400/80 hover:text-amber-400 transition-colors font-medium"
+                        className="text-xs text-exam-red hover:text-red-800 transition-colors font-medium"
                       >
                         {showCorrectAnswer ? '정답 숨기기' : '정답 순서 보기'}
                       </button>
@@ -513,12 +527,12 @@ export default function GameBoard({
                               return (
                                 <div
                                   key={sentenceId}
-                                  className="flex items-start gap-2 rounded-lg border border-emerald-500/20 bg-emerald-500/5 px-3 py-2"
+                                  className="flex items-start gap-2 border border-green-700/30 bg-green-50 px-3 py-2"
                                 >
-                                  <span className="shrink-0 w-5 h-5 rounded bg-emerald-500/20 text-emerald-400 text-[10px] font-bold flex items-center justify-center border border-emerald-500/30">
+                                  <span className="problem-number-sm shrink-0 !bg-green-700 !border-green-700 !text-white font-exam-serif">
                                     {i + 1}
                                   </span>
-                                  <p className="text-xs text-slate-300 leading-relaxed">
+                                  <p className="text-xs text-exam-ink leading-relaxed">
                                     {sentence?.text ?? '(알 수 없는 문장)'}
                                   </p>
                                 </div>
@@ -555,7 +569,7 @@ export default function GameBoard({
                             ? '힌트 포인트 부족'
                             : undefined
                       }
-                      className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg border border-amber-500/30 bg-amber-500/10 text-amber-400 text-sm font-medium hover:bg-amber-500/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2.5 border border-exam-rule bg-white text-stone-600 text-sm font-medium hover:bg-bg-base transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       <Lightbulb size={14} />
                       {isHintLoading ? '로딩...' : '힌트'}
@@ -564,7 +578,7 @@ export default function GameBoard({
                       onClick={handleUndo}
                       disabled={history.length === 0}
                       aria-label="마지막 동작 되돌리기"
-                      className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-lg border border-slate-700 text-slate-400 text-sm hover:border-slate-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-3 py-2.5 border border-exam-rule text-stone-500 text-sm hover:border-stone-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       <Undo2 size={13} />
                       되돌리기
@@ -577,14 +591,14 @@ export default function GameBoard({
                         onReset()
                       }}
                       aria-label="모든 배치 초기화"
-                      className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-lg border border-slate-700 text-slate-400 text-sm hover:border-slate-600 transition-colors"
+                      className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-3 py-2.5 border border-exam-rule text-stone-500 text-sm hover:border-stone-400 transition-colors"
                     >
                       <RefreshCw size={13} />
                       초기화
                     </button>
                   </div>
                   {hintPoints <= 0 && levelConfig.level !== 7 && (
-                    <p className="text-[11px] text-slate-500 mt-1">
+                    <p className="text-[11px] text-stone-500 mt-1">
                       힌트 포인트가 없어요. 매일 +3 자동 충전되고, 정답 시 +1 보너스를 받아요.
                     </p>
                   )}
@@ -593,7 +607,7 @@ export default function GameBoard({
                     disabled={!isChainComplete || isSubmitting}
                     aria-label="추론 경로 제출"
                     aria-busy={isSubmitting}
-                    className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-amber-500 text-slate-900 text-sm font-bold hover:bg-amber-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-exam-ink text-white text-sm font-bold hover:bg-stone-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {isSubmitting ? (
                       <Loader2 size={14} className="animate-spin" />
@@ -604,30 +618,42 @@ export default function GameBoard({
                   </button>
                 </>
               ) : (
-                <div className="flex gap-2 sm:gap-3">
-                  {!evaluationResult.is_correct && (
+                <>
+                  <div className="flex gap-2 sm:gap-3">
+                    {!evaluationResult.is_correct && (
+                      <button
+                        onClick={() => {
+                          setChain(Array(levelConfig.slots).fill(null))
+                          setPool(question.sentences)
+                          setHistory([])
+                          setShowCorrectAnswer(false)
+                          onReset()
+                        }}
+                        className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 border border-exam-rule text-exam-ink text-sm font-medium hover:bg-bg-base transition-colors"
+                      >
+                        <RefreshCw size={14} />
+                        다시 풀기
+                      </button>
+                    )}
                     <button
-                      onClick={() => {
-                        setChain(Array(levelConfig.slots).fill(null))
-                        setPool(question.sentences)
-                        setHistory([])
-                        setShowCorrectAnswer(false)
-                        onReset()
-                      }}
-                      className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg border border-slate-600 text-slate-300 text-sm font-medium hover:bg-white/[0.04] transition-colors"
+                      onClick={onNextQuestion}
+                      className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-exam-ink text-white text-sm font-bold hover:bg-stone-800 transition-colors"
                     >
-                      <RefreshCw size={14} />
-                      다시 풀기
+                      다음 문제
+                      <ChevronRight size={14} />
                     </button>
+                  </div>
+
+                  {/* Dashboard link for premium users */}
+                  {dailyRemaining === null && (
+                    <Link
+                      href="/dashboard"
+                      className="block text-center text-xs text-stone-500 hover:text-exam-ink transition-colors mt-2"
+                    >
+                      성장 분석 보기 →
+                    </Link>
                   )}
-                  <button
-                    onClick={onNextQuestion}
-                    className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-amber-500 text-slate-900 text-sm font-bold hover:bg-amber-400 transition-colors"
-                  >
-                    다음 문제
-                    <ChevronRight size={14} />
-                  </button>
-                </div>
+                </>
               )}
             </div>
           </div>

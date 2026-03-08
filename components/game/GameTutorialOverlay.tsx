@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { GripVertical, ArrowDown, MousePointerClick, X } from 'lucide-react'
+import { GripVertical, ArrowDown, MousePointerClick, X, Lightbulb } from 'lucide-react'
 import { useFocusTrap } from '@/lib/hooks/useFocusTrap'
 import { useReducedMotion } from '@/lib/hooks/useReducedMotion'
 
@@ -30,8 +30,13 @@ const STEPS: { icon: typeof Brain; title: string; desc: string; hasConnectionVis
   {
     icon: ArrowDown,
     title: '연결 강도를 참고하세요',
-    desc: '슬롯 사이 표시가 논리 연결 강도를 알려줘요.\n🟢 강한 연결 — 앞뒤 논리가 자연스러워요\n🟡 보통 연결 — 순서를 다시 확인해 보세요\n🔴 약한 연결 — 이 배치는 논리가 맞지 않아요',
+    desc: '슬롯 사이 표시가 논리 연결 강도를 알려줘요.\n● 강한 연결 — 앞뒤 논리가 자연스러워요\n● 보통 연결 — 순서를 다시 확인해 보세요\n● 약한 연결 — 이 배치는 논리가 맞지 않아요',
     hasConnectionVisual: true,
+  },
+  {
+    icon: Lightbulb,
+    title: '힌트 포인트 활용법',
+    desc: '막힐 때 힌트 버튼을 눌러보세요.\n매일 +3 포인트 자동 충전, 정답 시 +1 보너스!\n레벨 7에서는 힌트 없이 도전해야 해요.',
   },
   {
     icon: ArrowDown,
@@ -106,7 +111,7 @@ export default function GameTutorialOverlay({ forceOpen, onClose }: Props) {
         initial={reduced ? false : { opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={reduced ? undefined : { opacity: 0 }}
-        className="fixed inset-0 z-[100] bg-black/70 backdrop-blur-sm flex items-center justify-center px-4"
+        className="fixed inset-0 z-[100] bg-black/50 backdrop-blur-sm flex items-center justify-center px-4"
         onClick={(e) => {
           if (e.target === e.currentTarget) dismiss()
         }}
@@ -116,17 +121,17 @@ export default function GameTutorialOverlay({ forceOpen, onClose }: Props) {
           role="dialog"
           aria-modal="true"
           aria-label="게임 튜토리얼"
-          initial={reduced ? false : { opacity: 0, scale: 0.92, y: 20 }}
+          initial={reduced ? false : { opacity: 0, scale: 0.95, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={reduced ? undefined : { opacity: 0, scale: 0.92, y: 20 }}
+          exit={reduced ? undefined : { opacity: 0, scale: 0.95, y: 20 }}
           transition={reduced ? { duration: 0 } : { type: 'spring', duration: 0.5 }}
-          className="relative w-full max-w-sm rounded-2xl border border-slate-700 bg-slate-800 p-6 shadow-2xl shadow-black/60"
+          className="relative w-full max-w-sm border-2 border-exam-ink bg-white p-6 shadow-lg"
         >
           {/* Close button */}
           <button
             onClick={dismiss}
             aria-label="튜토리얼 닫기"
-            className="absolute top-2 right-2 p-2.5 rounded-lg text-slate-500 hover:text-slate-300 hover:bg-slate-700/60 transition-colors"
+            className="absolute top-2 right-2 p-2.5 text-stone-400 hover:text-exam-ink transition-colors"
           >
             <X size={16} />
           </button>
@@ -137,16 +142,16 @@ export default function GameTutorialOverlay({ forceOpen, onClose }: Props) {
               <div
                 key={i}
                 className={[
-                  'h-1 rounded-full transition-all duration-300',
-                  i === step ? 'w-6 bg-amber-400' : i < step ? 'w-3 bg-amber-400/50' : 'w-3 bg-slate-600',
+                  'h-0.5 transition-all duration-300',
+                  i === step ? 'w-6 bg-exam-ink' : i < step ? 'w-3 bg-stone-400' : 'w-3 bg-stone-200',
                 ].join(' ')}
               />
             ))}
           </div>
 
           {/* Icon */}
-          <div className="w-14 h-14 rounded-2xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center mb-4">
-            <Icon size={24} className="text-amber-400" />
+          <div className="problem-number mb-4 font-exam-serif">
+            <Icon size={20} className="text-exam-ink" />
           </div>
 
           {/* Content */}
@@ -158,24 +163,24 @@ export default function GameTutorialOverlay({ forceOpen, onClose }: Props) {
               exit={reduced ? undefined : { opacity: 0, x: -20 }}
               transition={{ duration: reduced ? 0 : 0.2 }}
             >
-              <h3 className="text-lg font-bold text-white mb-1.5">{current.title}</h3>
-              <p className="text-sm text-slate-400 leading-relaxed whitespace-pre-line">{current.desc}</p>
+              <h3 className="text-lg font-bold text-exam-ink mb-1.5 font-exam-serif">{current.title}</h3>
+              <p className="text-sm text-stone-600 leading-relaxed whitespace-pre-line">{current.desc}</p>
 
               {/* Drag demo animation */}
               {current.hasDragDemo && !reduced && (
-                <div className="mt-4 relative h-24 rounded-lg bg-slate-900/60 border border-slate-700/50 overflow-hidden">
+                <div className="mt-4 relative h-24 bg-bg-base border border-exam-rule overflow-hidden">
                   {/* Slot target */}
-                  <div className="absolute bottom-3 left-1/2 -translate-x-1/2 w-36 h-8 rounded-lg border-2 border-dashed border-slate-600 flex items-center justify-center">
-                    <span className="text-[10px] text-slate-500">슬롯</span>
+                  <div className="absolute bottom-3 left-1/2 -translate-x-1/2 w-36 h-8 border-2 border-dashed border-stone-300 flex items-center justify-center">
+                    <span className="text-[10px] text-stone-400">슬롯</span>
                   </div>
                   {/* Animated card */}
                   <motion.div
                     animate={{ y: [0, 40, 40, 0], x: [0, 0, 0, 0], scale: [1, 1.05, 1, 1] }}
                     transition={{ duration: 2.5, repeat: Infinity, repeatDelay: 1, ease: 'easeInOut' }}
-                    className="absolute top-2 left-1/2 -translate-x-1/2 w-36 h-8 rounded-lg bg-amber-500/20 border border-amber-500/40 flex items-center justify-center gap-1.5"
+                    className="absolute top-2 left-1/2 -translate-x-1/2 w-36 h-8 bg-white border border-exam-ink flex items-center justify-center gap-1.5"
                   >
-                    <GripVertical size={10} className="text-amber-400/60" />
-                    <span className="text-[10px] text-amber-300 font-medium">문장 카드</span>
+                    <GripVertical size={10} className="text-stone-400" />
+                    <span className="text-[10px] text-exam-ink font-medium">문장 카드</span>
                   </motion.div>
                   {/* Cursor hint */}
                   <motion.div
@@ -183,7 +188,7 @@ export default function GameTutorialOverlay({ forceOpen, onClose }: Props) {
                     transition={{ duration: 2.5, repeat: Infinity, repeatDelay: 1, ease: 'easeInOut' }}
                     className="absolute top-5 left-[calc(50%+40px)]"
                   >
-                    <MousePointerClick size={14} className="text-amber-400" />
+                    <MousePointerClick size={14} className="text-exam-ink" />
                   </motion.div>
                 </div>
               )}
@@ -194,13 +199,13 @@ export default function GameTutorialOverlay({ forceOpen, onClose }: Props) {
           <div className="flex items-center justify-between mt-6">
             <button
               onClick={dismiss}
-              className="text-xs text-slate-500 hover:text-slate-300 transition-colors"
+              className="text-xs text-stone-400 hover:text-exam-ink transition-colors"
             >
               건너뛰기
             </button>
             <button
               onClick={nextStep}
-              className="px-5 py-2 rounded-xl bg-amber-500 text-slate-900 text-sm font-bold hover:bg-amber-400 transition-colors"
+              className="px-5 py-2 bg-exam-ink text-white text-sm font-bold hover:bg-stone-800 transition-colors"
             >
               {step < STEPS.length - 1 ? '다음' : '시작하기'}
             </button>
