@@ -22,6 +22,10 @@ function LoginForm() {
 
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault()
+    if (!email.trim()) {
+      toast.error('이메일을 입력해주세요.')
+      return
+    }
     setLoading(true)
 
     const supabase = createClient()

@@ -26,6 +26,7 @@ export default function PlayPage({ params }: { params: Promise<{ questionId: str
   const [currentQuestionId, setCurrentQuestionId] = useState<string | null>(questionId)
   const [dailyInfo, setDailyInfo] = useState<{ used: number; limit: number | null } | null>(null)
   const [isReviewMode, setIsReviewMode] = useState(false)
+  const [hintsUsedCount, setHintsUsedCount] = useState(0)
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
 
@@ -60,9 +61,11 @@ export default function PlayPage({ params }: { params: Promise<{ questionId: str
       setQuestion(data.question)
       setCurrentQuestionId(null) // 다음 문제부터는 랜덤
       setHintStep(1)
+      setHintsUsedCount(0)
       setIsReviewMode(!!data.is_review)
       setLevelConfig(getLevelConfig(data.question.difficulty_level))
       setDailyInfo({ used: data.daily_used, limit: data.daily_limit })
+      if (data.hint_points != null) setHintPoints(data.hint_points)
       if (data.is_review) {
         toast.info('이 레벨의 새 문제를 모두 풀었어요! 복습 문제입니다.', { duration: 4000 })
       }
@@ -81,15 +84,21 @@ export default function PlayPage({ params }: { params: Promise<{ questionId: str
       const res = await fetch('/api/game/evaluate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ question_id: question.id, submitted_chain: chain }),
+        body: JSON.stringify({ question_id: question.id, submitted_chain: chain, hints_used: hintsUsedCount }),
       })
 
       if (!res.ok) throw new Error('Evaluation failed')
 
-      const result: EvaluationResult = await res.json()
-      setEvaluationResult(result)
+      const result = await res.json()
+      setEvaluationResult(result as EvaluationResult)
 
-      // levelConfig 업데이트는 GameBoard에서 결과 표시 후 onNextQuestion에서 처리
+      // 정답 시 힌트 포인트 보너스 반영
+      if (result.hint_points_remaining != null) {
+        setHintPoints(result.hint_points_remaining)
+        if (result.hint_points_bonus > 0) {
+          toast.success(`힌트 포인트 +${result.hint_points_bonus}`, { duration: 2000 })
+        }
+      }
     } catch {
       toast.error('평가 중 오류가 발생했어요. 다시 시도해주세요.')
     } finally {
@@ -114,6 +123,7 @@ export default function PlayPage({ params }: { params: Promise<{ questionId: str
         if (data.hint) {
           toast.info(data.hint, { duration: 6000 })
           setHintStep((prev) => prev + 1)
+          setHintsUsedCount((prev) => prev + 1)
         } else {
           toast.info('이 문제에는 더 이상 힌트가 없어요.')
         }
@@ -187,12 +197,20 @@ export default function PlayPage({ params }: { params: Promise<{ questionId: str
       <div className="min-h-screen bg-bg-game flex items-center justify-center">
         <div className="text-center">
           <p className="text-slate-400 mb-4">{error ?? '문제를 찾을 수 없어요.'}</p>
-          <button
-            onClick={() => fetchQuestion()}
-            className="px-4 py-2 rounded-lg bg-amber-500 text-slate-900 text-sm font-semibold"
-          >
-            다시 시도
-          </button>
+          <div className="flex items-center gap-3 justify-center">
+            <button
+              onClick={() => fetchQuestion()}
+              className="px-4 py-2 rounded-lg bg-slate-700 text-slate-200 text-sm font-semibold hover:bg-slate-600 transition-colors"
+            >
+              다시 시도
+            </button>
+            <button
+              onClick={() => router.push('/levels')}
+              className="px-4 py-2 rounded-lg bg-amber-500 text-slate-900 text-sm font-semibold hover:bg-amber-400 transition-colors"
+            >
+              레벨 선택으로
+            </button>
+          </div>
         </div>
       </div>
     )

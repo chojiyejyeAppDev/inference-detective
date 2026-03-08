@@ -36,7 +36,14 @@ export async function middleware(request: NextRequest) {
     }
   )
 
-  const { data: { user } } = await supabase.auth.getUser()
+  let user = null
+  try {
+    const { data } = await supabase.auth.getUser()
+    user = data.user
+  } catch {
+    // Supabase 장애 시 페이지 접근 허용 (API에서 개별 인증 체크)
+    return supabaseResponse
+  }
 
   // 인증 필요 경로
   const protectedPaths = ['/levels', '/play', '/dashboard', '/admin']

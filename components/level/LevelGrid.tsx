@@ -14,6 +14,7 @@ interface LevelGridProps {
   subscriptionExpiresAt: string | null
   dailyUsed: number
   hintPoints: number
+  levelProgress?: { qualified: number; required: number }
 }
 
 export default function LevelGrid({
@@ -22,6 +23,7 @@ export default function LevelGrid({
   subscriptionExpiresAt,
   dailyUsed,
   hintPoints,
+  levelProgress,
 }: LevelGridProps) {
   const router = useRouter()
   const isFree = subscriptionStatus !== 'active'
@@ -36,6 +38,7 @@ export default function LevelGrid({
 
   async function handleLevelClick(level: number) {
     if (loadingLevel !== null) return
+    if (isFree && remaining !== null && remaining <= 0) return
     setLoadingLevel(level)
     try {
       const res = await fetch(`/api/game/question?level=${level}`)
@@ -101,7 +104,7 @@ export default function LevelGrid({
               <span className="text-slate-400 text-xs sm:text-sm">포인트</span>
             </div>
             {isFree && (
-              <div className="flex items-center gap-1.5 text-slate-400 text-xs sm:text-sm">
+              <div className="flex items-center gap-1.5 text-slate-400 text-xs sm:text-sm" role="status" aria-live="polite" aria-atomic="true">
                 <span className="hidden sm:inline">오늘 남은 문제:</span>
                 <span className="sm:hidden">남은:</span>
                 <span className={remaining === 0 ? 'text-red-400 font-bold' : 'text-emerald-400 font-bold'}>
@@ -282,11 +285,23 @@ export default function LevelGrid({
                   ))}
                 </div>
 
-                {/* Level-up condition (current level only) */}
-                {isCurrent && config.level < 7 && (
-                  <p className="mt-2 text-[10px] text-slate-500">
-                    레벨업 조건: 80% 이상 정확도 3회 달성
-                  </p>
+                {/* Level-up progress (current level only) */}
+                {isCurrent && config.level < 7 && levelProgress && (
+                  <div className="mt-3">
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-[10px] text-slate-500">레벨업 진행</span>
+                      <span className="text-[10px] font-semibold text-amber-400">
+                        {levelProgress.qualified}/{levelProgress.required}
+                      </span>
+                    </div>
+                    <div className="h-1.5 rounded-full bg-slate-700/60 overflow-hidden">
+                      <div
+                        className="h-full rounded-full bg-amber-500 transition-all duration-500"
+                        style={{ width: `${(levelProgress.qualified / levelProgress.required) * 100}%` }}
+                      />
+                    </div>
+                    <p className="text-[9px] text-slate-500 mt-1">80% 이상 정확도 세션 {levelProgress.required}회 달성 시 레벨업</p>
+                  </div>
                 )}
               </button>
             </motion.div>
