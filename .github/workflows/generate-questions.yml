@@ -1,0 +1,85 @@
+name: Generate Questions
+
+on:
+  schedule:
+    # 매시간 :17분에 실행 (UTC 기준, 혼잡 시간 회피)
+    - cron: '17 * * * *'
+  workflow_dispatch:
+    inputs:
+      paper:
+        description: '논문 파일 경로 (reading/ 폴더 내)'
+        required: false
+        type: string
+      level:
+        description: '레벨 범위 (예: 1-4, 3, 5-7)'
+        required: false
+        default: ''
+        type: string
+      count:
+        description: '레벨당 문제 수'
+        required: false
+        default: '3'
+        type: string
+      topic:
+        description: '토픽 (humanities/social/science/tech/arts, 비우면 자동 감지)'
+        required: false
+        default: ''
+        type: string
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    env:
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+      NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+
+      # ── 수동 실행: 입력값 사용 ──
+      - name: Generate (manual)
+        if: github.event_name == 'workflow_dispatch' && inputs.paper != ''
+        run: |
+          ARGS="reading/${{ inputs.paper }}"
+          if [ -n "${{ inputs.level }}" ]; then ARGS="$ARGS --level ${{ inputs.level }}"; fi
+          if [ -n "${{ inputs.topic }}" ]; then ARGS="$ARGS --topic ${{ inputs.topic }}"; fi
+          ARGS="$ARGS --count ${{ inputs.count }}"
+          echo "▶ npx tsx scripts/generate-from-paper.ts $ARGS"
+          npx tsx scripts/generate-from-paper.ts $ARGS
+
+      # ── 자동 실행: 시간대별 논문 번갈아 사용 ──
+      - name: Generate (scheduled)
+        if: github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && inputs.paper == '')
+        run: |
+          HOUR=$(date -u +%H)
+          EVEN=$(( HOUR % 2 ))
+
+          if [ "$EVEN" -eq 0 ]; then
+            echo "📄 짝수 시간 — 한국어 논문 (social, 레벨 1-4)"
+            npx tsx scripts/generate-from-paper.ts \
+              "reading/밀레니얼-세대-부부-억울-질적연구.txt" \
+              --topic social --level 1-4 --count 3
+          else
+            echo "📄 홀수 시간 — 영어 논문 (science, 레벨 3-7)"
+            npx tsx scripts/generate-from-paper.ts \
+              "reading/kinase-target-selection-ml.txt" \
+              --topic science --level 3-7 --count 3
+          fi
+
+      - name: Summary
+        if: always()
+        run: |
+          echo "### 📊 문제 생성 결과" >> $GITHUB_STEP_SUMMARY
+          echo "- **시각**: $(TZ=Asia/Seoul date '+%Y-%m-%d %H:%M KST')" >> $GITHUB_STEP_SUMMARY
+          echo "- **트리거**: ${{ github.event_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **상태**: ${{ job.status }}" >> $GITHUB_STEP_SUMMARY
