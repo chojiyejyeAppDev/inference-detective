@@ -34,7 +34,7 @@ export async function POST(req: NextRequest) {
   if (!parsed.success) {
     return NextResponse.json({ error: parsed.error.issues[0]?.message ?? 'Invalid input' }, { status: 400 })
   }
-  const { billingKey, paymentId, plan } = parsed.data
+  const { billingKey, paymentId, plan, paymentMethod } = parsed.data
 
   if (!PLANS[plan as PlanKey]) {
     return NextResponse.json({ error: 'Invalid plan' }, { status: 400 })
@@ -93,6 +93,7 @@ export async function POST(req: NextRequest) {
         customer_key: user.id,
         status: 'active',
         expires_at: expiresAt.toISOString(),
+        payment_method: paymentMethod,
       })
 
       await service
@@ -147,6 +148,7 @@ export async function POST(req: NextRequest) {
         customer_key: user.id,
         status: 'active',
         expires_at: expiresAt.toISOString(),
+        payment_method: paymentMethod,
       })
 
       await service

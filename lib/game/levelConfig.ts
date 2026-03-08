@@ -56,6 +56,8 @@ export const LEVEL_UP_ACCURACY = 0.8
 export const LEVEL_UP_SESSIONS = 3
 export const FREE_DAILY_LIMIT = 5
 export const INVITE_BONUS_QUESTIONS = 2
+export const CORRECT_ANSWER_HINT_BONUS = 1
+export const MAX_HINT_POINTS = 5
 
 export function getLevelConfig(level: number): LevelConfig {
   return LEVEL_CONFIGS[Math.min(level, 7) - 1]

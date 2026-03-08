@@ -49,6 +49,7 @@ lib/supabase/server.ts   # 서버 컴포넌트/API용
 lib/game/evaluator.ts    # 체인 평가 알고리즘
 lib/game/levelConfig.ts  # 7레벨 설정
 lib/payment/portone.ts   # PortOne V2 API 클라이언트
+lib/payment/channels.ts  # 다중 PG 채널 설정 (KG이니시스/카카오페이)
 
 scripts/seed-questions.ts  # 문제 데이터 시딩
 supabase/migrations/       # DB 스키마
@@ -63,7 +64,8 @@ NEXT_PUBLIC_SUPABASE_URL=https://dnfravwzyxiqpuawuyjh.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=<anon key>
 SUPABASE_SERVICE_ROLE_KEY=<service role key>
 NEXT_PUBLIC_PORTONE_STORE_ID=<store id>                   # ✅ 설정 완료
-NEXT_PUBLIC_PORTONE_CHANNEL_KEY=<channel key>             # ✅ 설정 완료
+NEXT_PUBLIC_PORTONE_CHANNEL_KEY_INICIS=<KG이니시스 채널키>   # 다중 PG
+NEXT_PUBLIC_PORTONE_CHANNEL_KEY_KAKAOPAY=<카카오페이 채널키>  # 다중 PG
 PORTONE_API_SECRET=<api secret>                           # ✅ 설정 완료
 RESEND_API_KEY=<resend api key>                           # ✅ 설정 완료
 NEXT_PUBLIC_POSTHOG_KEY=<posthog project key>             # ✅ 설정 완료

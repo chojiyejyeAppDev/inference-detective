@@ -3,10 +3,16 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion, type Variants } from 'framer-motion'
-import { Check, Zap, BookOpen, BarChart3, ArrowLeft, Loader2, CreditCard, ShieldCheck, X } from 'lucide-react'
+import { Check, Zap, BookOpen, BarChart3, ArrowLeft, Loader2, CreditCard, ShieldCheck, X, Smartphone } from 'lucide-react'
 import Link from 'next/link'
 import { toast } from 'sonner'
 import { PLANS, type PlanKey } from '@/lib/payment/portone'
+import {
+  PAYMENT_CHANNELS,
+  PAYMENT_METHOD_ORDER,
+  DEFAULT_PAYMENT_METHOD,
+  type PaymentMethodKey,
+} from '@/lib/payment/channels'
 import { createClient } from '@/lib/supabase/client'
 
 const PLAN_FEATURES: Record<PlanKey, {
@@ -72,9 +78,19 @@ export default function PricingPage() {
   const [showCancelModal, setShowCancelModal] = useState(false)
   const [cancelReason, setCancelReason] = useState<string | null>(null)
   const [cancelStep, setCancelStep] = useState<'reason' | 'offer' | 'confirm'>('reason')
+  const [selectedMethod, setSelectedMethod] = useState<PaymentMethodKey>(DEFAULT_PAYMENT_METHOD)
+  const activeChannel = PAYMENT_CHANNELS[selectedMethod]
   const planInfo = PLANS[selectedPlan]
   const isSubscription = planInfo.type === 'subscription'
   const isAlreadySubscribed = currentSubscription?.status === 'active'
+
+  // 구독 플랜 선택 시 빌링키 미지원 PG가 선택되어 있으면 기본값으로 리셋
+  useEffect(() => {
+    const ch = PAYMENT_CHANNELS[selectedMethod]
+    if (isSubscription && !ch.supportsBillingKey) {
+      setSelectedMethod(DEFAULT_PAYMENT_METHOD)
+    }
+  }, [selectedPlan, selectedMethod, isSubscription])
 
   useEffect(() => {
     const supabase = createClient()
@@ -157,7 +173,7 @@ export default function PricingPage() {
       if (isSubscription) {
         // ── 빌링키 플로우 (월간 구독) ──
         const cleanPhone = phoneNumber.replace(/[^0-9]/g, '')
-        if (!cleanPhone || cleanPhone.length < 10) {
+        if (activeChannel.requiresPhone && (!cleanPhone || cleanPhone.length < 10)) {
           toast.error('휴대폰 번호를 정확히 입력해주세요.')
           setLoading(false)
           setPaymentStep('idle')
@@ -166,15 +182,17 @@ export default function PricingPage() {
 
         const response = await PortOne.requestIssueBillingKey({
           storeId: process.env.NEXT_PUBLIC_PORTONE_STORE_ID!,
-          channelKey: process.env.NEXT_PUBLIC_PORTONE_CHANNEL_KEY!,
-          billingKeyMethod: 'CARD',
+          channelKey: activeChannel.channelKey,
+          billingKeyMethod: activeChannel.billingKeyMethod,
           issueId: `issue_${Date.now()}`,
           issueName: planInfo.name,
           customer: {
             customerId: userId,
             fullName: userName || '이용자',
             email: userEmail,
-            phoneNumber: cleanPhone,
+            ...(activeChannel.requiresPhone && cleanPhone
+              ? { phoneNumber: cleanPhone }
+              : {}),
           },
         })
 
@@ -192,6 +210,7 @@ export default function PricingPage() {
           body: JSON.stringify({
             billingKey: response.billingKey,
             plan: selectedPlan,
+            paymentMethod: selectedMethod,
           }),
         })
 
@@ -205,12 +224,12 @@ export default function PricingPage() {
 
         const response = await PortOne.requestPayment({
           storeId: process.env.NEXT_PUBLIC_PORTONE_STORE_ID!,
-          channelKey: process.env.NEXT_PUBLIC_PORTONE_CHANNEL_KEY!,
+          channelKey: activeChannel.onetimeChannelKey || activeChannel.channelKey,
           paymentId,
           orderName: planInfo.name,
           totalAmount: planInfo.amount,
           currency: 'CURRENCY_KRW',
-          payMethod: 'CARD',
+          payMethod: activeChannel.payMethod,
           customer: {
             customerId: userId,
             fullName: userName || '이용자',
@@ -232,6 +251,7 @@ export default function PricingPage() {
           body: JSON.stringify({
             paymentId,
             plan: selectedPlan,
+            paymentMethod: selectedMethod,
           }),
         })
 
@@ -388,6 +408,51 @@ export default function PricingPage() {
           </div>
         </motion.div>
 
+        {/* 결제 수단 선택 */}
+        <motion.div
+          variants={item}
+          className="rounded-2xl border border-white/[0.08] bg-bg-surface/60 p-6 mb-5"
+        >
+          <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-5">결제 수단</p>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            {PAYMENT_METHOD_ORDER.map((key) => {
+              const ch = PAYMENT_CHANNELS[key]
+              const isSelected = selectedMethod === key
+              const disabled = isSubscription && !ch.supportsBillingKey
+              return (
+                <button
+                  key={key}
+                  onClick={() => !disabled && setSelectedMethod(key)}
+                  disabled={disabled}
+                  className={[
+                    'flex flex-col items-center gap-1.5 rounded-xl border px-3 py-3.5 transition-all duration-200 relative overflow-hidden',
+                    disabled
+                      ? 'border-white/[0.04] opacity-40 cursor-not-allowed'
+                      : isSelected
+                        ? 'border-amber-500/60 bg-amber-500/[0.08]'
+                        : 'border-white/[0.07] hover:border-white/[0.13] hover:bg-white/[0.03]',
+                  ].join(' ')}
+                >
+                  {isSelected && (
+                    <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-amber-500/40 to-transparent" />
+                  )}
+                  {key === 'kakaopay' ? (
+                    <Smartphone size={18} className={isSelected ? 'text-amber-400' : 'text-slate-500'} />
+                  ) : (
+                    <CreditCard size={18} className={isSelected ? 'text-amber-400' : 'text-slate-500'} />
+                  )}
+                  <p className={['text-xs font-bold', isSelected ? 'text-slate-200' : 'text-slate-400'].join(' ')}>
+                    {ch.label}
+                  </p>
+                  <p className="text-[10px] text-slate-500">
+                    {disabled ? '일회성 결제만' : ch.description}
+                  </p>
+                </button>
+              )
+            })}
+          </div>
+        </motion.div>
+
         {/* 서비스 제공 기간 안내 (PG 심사 필수 항목) */}
         <motion.div
           variants={item}
@@ -418,8 +483,8 @@ export default function PricingPage() {
 
         {/* 결제 정보 입력 + 버튼 */}
         <motion.div variants={item}>
-          {/* 전화번호: 구독(빌링키)일 때만 표시 */}
-          {isSubscription && (
+          {/* 전화번호: 구독 + 전화번호 필요한 PG일 때만 표시 */}
+          {isSubscription && activeChannel.requiresPhone && (
             <div className="mb-4">
               <label htmlFor="phoneNumber" className="block text-xs text-slate-500 mb-1.5">
                 휴대폰 번호 <span className="text-amber-500">*</span>
@@ -459,8 +524,12 @@ export default function PricingPage() {
               {loading
                 ? '결제 진행 중...'
                 : isSubscription
-                  ? '카드 등록하고 구독 시작'
-                  : '결제하기'
+                  ? selectedMethod === 'kakaopay'
+                    ? '카카오페이로 구독 시작'
+                    : '카드 등록하고 구독 시작'
+                  : selectedMethod === 'kakaopay'
+                    ? '카카오페이로 결제하기'
+                    : '결제하기'
               }
             </button>
           )}
@@ -636,11 +705,19 @@ export default function PricingPage() {
             className="w-full max-w-xs rounded-2xl border border-slate-700 bg-slate-800 p-6 text-center shadow-2xl"
           >
             {paymentStep === 'card' && (
-              <>
-                <CreditCard size={28} className="text-amber-400 mx-auto mb-3" />
-                <p className="text-sm font-semibold text-white mb-1">카드 정보 입력 중</p>
-                <p className="text-xs text-slate-400">결제창에서 카드 정보를 입력해주세요</p>
-              </>
+              selectedMethod === 'kakaopay' ? (
+                <>
+                  <Smartphone size={28} className="text-amber-400 mx-auto mb-3" />
+                  <p className="text-sm font-semibold text-white mb-1">카카오페이 결제 중</p>
+                  <p className="text-xs text-slate-400">카카오페이에서 결제를 진행해주세요</p>
+                </>
+              ) : (
+                <>
+                  <CreditCard size={28} className="text-amber-400 mx-auto mb-3" />
+                  <p className="text-sm font-semibold text-white mb-1">카드 정보 입력 중</p>
+                  <p className="text-xs text-slate-400">결제창에서 카드 정보를 입력해주세요</p>
+                </>
+              )
             )}
             {paymentStep === 'processing' && (
               <>

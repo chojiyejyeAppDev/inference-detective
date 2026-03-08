@@ -14,7 +14,9 @@ jobs:
       NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
       NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
       NEXT_PUBLIC_PORTONE_STORE_ID: placeholder-store-id
-      NEXT_PUBLIC_PORTONE_CHANNEL_KEY: placeholder-channel-key
+      NEXT_PUBLIC_PORTONE_CHANNEL_KEY_INICIS: placeholder-channel-key
+      NEXT_PUBLIC_PORTONE_CHANNEL_KEY_KAKAOPAY: placeholder-channel-key
+      NEXT_PUBLIC_PORTONE_CHANNEL_KEY_KAKAOPAY_ONETIME: placeholder-channel-key
       PORTONE_API_SECRET: placeholder-api-secret
       NEXT_PUBLIC_APP_URL: http://localhost:3000
 
