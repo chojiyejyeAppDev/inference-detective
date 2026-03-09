@@ -4,12 +4,13 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { cn } from '@/lib/utils'
-import { Home, BookOpen, BarChart3, Award, Settings, MoreHorizontal } from 'lucide-react'
+import { Home, BookOpen, BarChart3, Settings, MoreHorizontal } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 
 const MOBILE_NAV = [
   { href: '/levels', label: '홈', icon: Home },
-  { href: '/review', label: '훈련', icon: BookOpen },
+  { href: '/review', label: '오답 노트', icon: BookOpen },
+  { href: '/dashboard', label: '대시보드', icon: BarChart3 },
   { href: '/settings', label: '더보기', icon: MoreHorizontal },
 ]
 
@@ -17,19 +18,19 @@ const DESKTOP_NAV = [
   { href: '/levels', label: '홈', icon: Home },
   { href: '/review', label: '오답 노트', icon: BookOpen },
   { href: '/dashboard', label: '대시보드', icon: BarChart3 },
-  { href: '/badges', label: '배지', icon: Award },
   { href: '/settings', label: '설정', icon: Settings },
 ]
 
 function isMobileTabActive(href: string, pathname: string): boolean {
   switch (href) {
     case '/levels':
-      return pathname === '/levels' || pathname.startsWith('/levels/') || pathname === '/badges' || pathname.startsWith('/badges/')
+      return pathname === '/levels' || pathname.startsWith('/levels/')
     case '/review':
       return pathname === '/review' || pathname.startsWith('/review/')
+    case '/dashboard':
+      return pathname === '/dashboard' || pathname.startsWith('/dashboard/')
     case '/settings':
       return pathname === '/settings' || pathname.startsWith('/settings/')
-        || pathname === '/dashboard' || pathname.startsWith('/dashboard/')
         || pathname === '/pricing' || pathname.startsWith('/pricing/')
     default:
       return false
@@ -114,7 +115,7 @@ export default function GlobalNav() {
                 key={href}
                 href={href}
                 className={cn(
-                  'flex flex-col items-center justify-center gap-0.5 py-3 px-1 min-w-[125px] flex-1 transition-colors',
+                  'flex flex-col items-center justify-center gap-0.5 py-3 px-1 flex-1 transition-colors',
                   isActive ? 'text-exam-ink' : 'text-stone-400',
                 )}
                 style={{ height: 56 }}

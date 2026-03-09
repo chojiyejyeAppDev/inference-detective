@@ -24,7 +24,12 @@ import { createClient } from '@supabase/supabase-js'
 import * as fs from 'fs'
 import * as path from 'path'
 // eslint-disable-next-line @typescript-eslint/no-require-imports
-const pdfParse = require('pdf-parse')
+const pdfParseModule = require('pdf-parse')
+
+async function parsePdf(buffer: Buffer) {
+  const parse = typeof pdfParseModule === 'function' ? pdfParseModule : pdfParseModule.default
+  return await parse(buffer)
+}
 
 // ── 환경변수 ──────────────────────────────────────────
 const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY
@@ -108,7 +113,7 @@ async function readFileContent(filePath: string): Promise<string> {
 
   if (ext === '.pdf') {
     const buffer = fs.readFileSync(filePath)
-    const { text } = await pdfParse(buffer)
+    const { text } = await parsePdf(buffer)
     return text
   }
 

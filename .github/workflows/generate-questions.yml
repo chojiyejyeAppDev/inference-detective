@@ -2,8 +2,8 @@ name: Generate Questions
 
 on:
   schedule:
-    # 매시간 :17분에 실행 (UTC 기준, 혼잡 시간 회피)
-    - cron: '17 * * * *'
+    # 3시간마다 :17분에 실행 (UTC 기준, 혼잡 시간 회피 — 하루 8회)
+    - cron: '17 */3 * * *'
   workflow_dispatch:
     inputs:
       mode:
@@ -37,7 +37,7 @@ on:
 jobs:
   generate:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 30
 
     env:
       ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}

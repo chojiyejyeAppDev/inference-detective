@@ -95,6 +95,8 @@ export default function GameBoard({
   const [history, setHistory] = useState<{ chain: (string | null)[]; pool: Sentence[] }[]>([])
   const [showTutorial, setShowTutorial] = useState(false)
   const [selectedCardId, setSelectedCardId] = useState<string | null>(null)
+  const [displacedCardId, setDisplacedCardId] = useState<string | null>(null)
+  const [showResetConfirm, setShowResetConfirm] = useState(false)
 
   // Contextual micro-tutorial state
   const [showReadHint, setShowReadHint] = useState(false)
@@ -103,6 +105,13 @@ export default function GameBoard({
   const [showSubmitHint, setShowSubmitHint] = useState(false)
   const [hasDragged, setHasDragged] = useState(false)
   const dragHintTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  // Auto-clear displacement highlight after animation
+  useEffect(() => {
+    if (!displacedCardId) return
+    const t = setTimeout(() => setDisplacedCardId(null), 1200)
+    return () => clearTimeout(t)
+  }, [displacedCardId])
 
   // Persist game state to sessionStorage
   useEffect(() => {
@@ -246,7 +255,10 @@ export default function GameBoard({
         // Pool → Slot: displace existing card if any
         if (newChain[slotIndex]) {
           const displaced = getSentenceById(newChain[slotIndex]!)
-          if (displaced) newPool.push(displaced)
+          if (displaced) {
+            newPool.push(displaced)
+            setDisplacedCardId(displaced.id)
+          }
         }
         newChain[slotIndex] = selectedCardId
         const poolIdx = newPool.findIndex((s) => s.id === selectedCardId)
@@ -310,7 +322,10 @@ export default function GameBoard({
       const slotIdx = parseInt(dstId.replace('slot-', ''))
       if (newChain[slotIdx]) {
         const displaced = getSentenceById(newChain[slotIdx]!)
-        if (displaced) newPool.push(displaced)
+        if (displaced) {
+          newPool.push(displaced)
+          setDisplacedCardId(displaced.id)
+        }
       }
       newChain[slotIdx] = draggableId
       const poolIdx = newPool.findIndex((s) => s.id === draggableId)
@@ -438,15 +453,27 @@ export default function GameBoard({
                         모든 문장이 슬롯에 배치되었어요
                       </div>
                     ) : (
-                      pool.map((sentence, i) => (
-                        <SentenceCard
-                          key={sentence.id}
-                          sentence={sentence}
-                          index={i}
-                          isSelected={selectedCardId === sentence.id}
-                          onSelect={() => handleCardSelect(sentence.id)}
-                        />
-                      ))
+                      pool.map((sentence, i) => {
+                        const isDisplaced = displacedCardId === sentence.id
+                        return (
+                          <div key={sentence.id} className="relative">
+                            {isDisplaced && (
+                              <motion.div
+                                initial={{ opacity: 0.8 }}
+                                animate={{ opacity: 0 }}
+                                transition={{ duration: 1.2, ease: 'easeOut' }}
+                                className="absolute inset-0 border-2 border-exam-red/50 bg-exam-highlight/60 pointer-events-none z-10"
+                              />
+                            )}
+                            <SentenceCard
+                              sentence={sentence}
+                              index={i}
+                              isSelected={selectedCardId === sentence.id}
+                              onSelect={() => handleCardSelect(sentence.id)}
+                            />
+                          </div>
+                        )
+                      })
                     )}
                     {provided.placeholder}
                   </div>
@@ -813,19 +840,43 @@ export default function GameBoard({
                       <Undo2 size={13} />
                       되돌리기
                     </button>
-                    <button
-                      onClick={() => {
-                        setChain(Array(levelConfig.slots).fill(null))
-                        setPool(shuffleArray(question.sentences))
-                        setHistory([])
-                        onReset()
-                      }}
-                      aria-label="모든 배치 초기화"
-                      className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-3 py-2.5 border border-exam-rule text-stone-500 text-sm hover:border-stone-400 transition-colors"
-                    >
-                      <RefreshCw size={13} />
-                      초기화
-                    </button>
+                    {showResetConfirm ? (
+                      <div className="flex-1 sm:flex-none flex items-center gap-1.5">
+                        <button
+                          onClick={() => {
+                            setChain(Array(levelConfig.slots).fill(null))
+                            setPool(shuffleArray(question.sentences))
+                            setHistory([])
+                            setShowResetConfirm(false)
+                            onReset()
+                          }}
+                          className="flex-1 flex items-center justify-center gap-1 px-3 py-2.5 border border-exam-red text-exam-red text-xs font-semibold hover:bg-exam-highlight transition-colors"
+                        >
+                          확인
+                        </button>
+                        <button
+                          onClick={() => setShowResetConfirm(false)}
+                          className="flex-1 flex items-center justify-center px-3 py-2.5 border border-exam-rule text-stone-500 text-xs hover:border-stone-400 transition-colors"
+                        >
+                          취소
+                        </button>
+                      </div>
+                    ) : (
+                      <button
+                        onClick={() => {
+                          // Skip confirmation if nothing has been placed
+                          const hasPlacedCards = chain.some((id) => id !== null)
+                          if (!hasPlacedCards) return
+                          setShowResetConfirm(true)
+                        }}
+                        disabled={chain.every((id) => id === null)}
+                        aria-label="모든 배치 초기화"
+                        className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-3 py-2.5 border border-exam-rule text-stone-500 text-sm hover:border-stone-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        <RefreshCw size={13} />
+                        초기화
+                      </button>
+                    )}
                   </div>
                   {hintPoints <= 0 && levelConfig.level !== 7 && (
                     <p className="text-[11px] text-stone-500 mt-1">

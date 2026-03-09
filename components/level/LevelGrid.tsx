@@ -355,92 +355,98 @@ export default function LevelGrid({
           </motion.div>
         )}
 
-        {/* Trial period active banner */}
-        {isInTrial && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.98 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="relative mb-4 border border-green-300 bg-green-50 p-4 flex items-center gap-3"
-          >
-            <div className="flex items-center justify-center w-10 h-10 border-2 border-green-600">
-              <Clock size={18} className="text-green-700" />
-            </div>
-            <div>
-              <p className="text-green-800 font-bold text-sm">
-                무료 체험 {trialDaysRemaining}일 남음
-              </p>
-              <p className="text-green-700 text-xs mt-0.5">
-                지금은 무제한으로 풀 수 있어요!
-              </p>
-            </div>
-          </motion.div>
-        )}
-
-        {/* Trial expired banner */}
-        {trialExpired && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.98 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="relative mb-4 border border-exam-rule bg-exam-highlight p-4 flex items-center justify-between"
-          >
-            <div>
-              <p className="text-exam-ink font-bold text-sm">체험 기간이 끝났어요</p>
-              <p className="text-stone-500 text-xs mt-0.5">하루 5문제 또는 프리미엄으로 무제한!</p>
-            </div>
-            <button
-              onClick={() => router.push('/pricing')}
-              className="px-4 py-2 bg-exam-ink text-white text-xs font-bold hover:bg-stone-800 transition-colors"
-            >
-              구독하기
-            </button>
-          </motion.div>
-        )}
-
-        {/* Daily limit banner */}
-        {isFree && remaining === 0 && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.98 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="relative mb-6 border border-exam-red/30 bg-exam-highlight p-4 flex items-center justify-between"
-          >
-            <div>
-              <p className="text-exam-red font-bold text-sm">오늘의 추론 훈련을 완료했어요!</p>
-              <p className="text-exam-red/70 text-xs mt-0.5">
-                {resetCountdown ? `${resetCountdown} 후 초기화` : '내일 새로운 5문제가 기다리고 있어요'}. 더 풀고 싶다면 구독해보세요.
-              </p>
-            </div>
-            <button
-              onClick={() => router.push('/pricing')}
-              className="px-4 py-2 bg-exam-ink text-white text-xs font-bold hover:bg-stone-800 transition-colors"
-            >
-              구독하기
-            </button>
-          </motion.div>
-        )}
-
-        {/* Subscription expiring soon banner */}
-        {isExpiringSoon && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.98 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="relative mb-6 border border-exam-rule bg-exam-highlight p-4 flex items-center justify-between"
-          >
-            <div>
-              <p className="text-exam-red font-bold text-sm">
-                구독이 {daysUntilExpiry}일 후 만료돼요
-              </p>
-              <p className="text-stone-500 text-xs mt-0.5">
-                월간 구독으로 전환하면 더 저렴하게 이용할 수 있어요.
-              </p>
-            </div>
-            <button
-              onClick={() => router.push('/pricing')}
-              className="px-4 py-2 bg-exam-ink text-white text-xs font-bold hover:bg-stone-800 transition-colors"
-            >
-              플랜 변경
-            </button>
-          </motion.div>
-        )}
+        {/* Contextual banner — show only the highest-priority one to prevent stacking */}
+        {(() => {
+          // Priority: daily limit > trial expired > subscription expiring > trial active
+          if (isFree && remaining === 0) {
+            return (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.98 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="relative mb-6 border border-exam-red/30 bg-exam-highlight p-4 flex items-center justify-between"
+              >
+                <div>
+                  <p className="text-exam-red font-bold text-sm">오늘의 추론 훈련을 완료했어요!</p>
+                  <p className="text-exam-red/70 text-xs mt-0.5">
+                    {resetCountdown ? `${resetCountdown} 후 초기화` : '내일 새로운 5문제가 기다리고 있어요'}. 더 풀고 싶다면 구독해보세요.
+                  </p>
+                </div>
+                <button
+                  onClick={() => router.push('/pricing')}
+                  className="px-4 py-2 bg-exam-ink text-white text-xs font-bold hover:bg-stone-800 transition-colors shrink-0"
+                >
+                  구독하기
+                </button>
+              </motion.div>
+            )
+          }
+          if (trialExpired) {
+            return (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.98 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="relative mb-4 border border-exam-rule bg-exam-highlight p-4 flex items-center justify-between"
+              >
+                <div>
+                  <p className="text-exam-ink font-bold text-sm">체험 기간이 끝났어요</p>
+                  <p className="text-stone-500 text-xs mt-0.5">하루 5문제 또는 프리미엄으로 무제한!</p>
+                </div>
+                <button
+                  onClick={() => router.push('/pricing')}
+                  className="px-4 py-2 bg-exam-ink text-white text-xs font-bold hover:bg-stone-800 transition-colors shrink-0"
+                >
+                  구독하기
+                </button>
+              </motion.div>
+            )
+          }
+          if (isExpiringSoon) {
+            return (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.98 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="relative mb-6 border border-exam-rule bg-exam-highlight p-4 flex items-center justify-between"
+              >
+                <div>
+                  <p className="text-exam-red font-bold text-sm">
+                    구독이 {daysUntilExpiry}일 후 만료돼요
+                  </p>
+                  <p className="text-stone-500 text-xs mt-0.5">
+                    월간 구독으로 전환하면 더 저렴하게 이용할 수 있어요.
+                  </p>
+                </div>
+                <button
+                  onClick={() => router.push('/pricing')}
+                  className="px-4 py-2 bg-exam-ink text-white text-xs font-bold hover:bg-stone-800 transition-colors shrink-0"
+                >
+                  플랜 변경
+                </button>
+              </motion.div>
+            )
+          }
+          if (isInTrial) {
+            return (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.98 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="relative mb-4 border border-green-300 bg-green-50 p-4 flex items-center gap-3"
+              >
+                <div className="flex items-center justify-center w-10 h-10 border-2 border-green-600">
+                  <Clock size={18} className="text-green-700" />
+                </div>
+                <div>
+                  <p className="text-green-800 font-bold text-sm">
+                    무료 체험 {trialDaysRemaining}일 남음
+                  </p>
+                  <p className="text-green-700 text-xs mt-0.5">
+                    지금은 무제한으로 풀 수 있어요!
+                  </p>
+                </div>
+              </motion.div>
+            )
+          }
+          return null
+        })()}
 
         {/* Level 5 master banner */}
         {currentLevel === 7 && (

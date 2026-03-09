@@ -458,34 +458,6 @@ export default function PricingPage() {
           </div>
         </motion.div>
 
-        {/* 서비스 제공 기간 안내 (PG 심사 필수 항목) */}
-        <motion.div
-          variants={item}
-          className="border border-exam-rule bg-white p-5 mb-5"
-        >
-          <p className="text-xs font-bold text-stone-400 uppercase tracking-wider mb-4">서비스 제공 기간</p>
-          <div className="space-y-3 text-sm">
-            <div className="flex items-start gap-3">
-              <span className="shrink-0 mt-1.5 w-5 h-5 border border-exam-ink flex items-center justify-center text-[10px] font-bold text-exam-ink">1</span>
-              <div>
-                <p className="font-semibold text-exam-ink">월간 구독 ({'\u20A9'}9,900/월)</p>
-                <p className="text-stone-500 text-xs mt-0.5">
-                  결제일로부터 1개월(30일) 이용 후 자동 갱신
-                </p>
-              </div>
-            </div>
-            <div className="flex items-start gap-3">
-              <span className="shrink-0 mt-1.5 w-5 h-5 border border-exam-ink flex items-center justify-center text-[10px] font-bold text-exam-ink">2</span>
-              <div>
-                <p className="font-semibold text-exam-ink">일주일 이용권 ({'\u20A9'}3,900)</p>
-                <p className="text-stone-500 text-xs mt-0.5">
-                  결제일로부터 7일간 서비스 제공 / 자동 갱신 없음 (일회성 결제)
-                </p>
-              </div>
-            </div>
-          </div>
-        </motion.div>
-
         {/* 결제 정보 입력 + 버튼 */}
         <motion.div variants={item}>
           {/* 전화번호: 구독 + 전화번호 필요한 PG일 때만 표시 */}
