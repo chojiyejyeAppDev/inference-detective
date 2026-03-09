@@ -11,7 +11,7 @@ export default async function LevelsPage() {
 
   const { data: profile } = await supabase
     .from('profiles')
-    .select('current_level, subscription_status, subscription_expires_at, daily_questions_used, hint_points, role, streak_days, longest_streak, streak_freeze_count, last_active_date')
+    .select('current_level, subscription_status, subscription_expires_at, daily_questions_used, hint_points, role, streak_days, longest_streak, streak_freeze_count, last_active_date, trial_expires_at')
     .eq('id', user.id)
     .single()
 
@@ -53,6 +53,7 @@ export default async function LevelsPage() {
       streakFreezeCount={profile?.streak_freeze_count ?? 0}
       streakAtRisk={streakAtRisk}
       streak={profile?.streak_days ?? 0}
+      trialExpiresAt={profile?.trial_expires_at ?? null}
     />
   )
 }

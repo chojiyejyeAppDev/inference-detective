@@ -3,7 +3,8 @@
 import { useState, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Lock, ChevronRight, Lightbulb, Loader2, Zap, Flame, Shield } from 'lucide-react'
+import { Lock, ChevronRight, Lightbulb, Loader2, Zap, Flame, Shield, Clock } from 'lucide-react'
+import { cn } from '@/lib/utils'
 import Button from '@/components/ui/Button'
 import Input from '@/components/ui/Input'
 import Card from '@/components/ui/Card'
@@ -24,6 +25,7 @@ interface LevelGridProps {
   streakFreezeCount?: number
   streakAtRisk?: boolean
   streak?: number  // consecutive day streak for hero card
+  trialExpiresAt?: string | null
 }
 
 export default function LevelGrid({
@@ -38,11 +40,39 @@ export default function LevelGrid({
   streakFreezeCount = 0,
   streakAtRisk = false,
   streak,
+  trialExpiresAt = null,
 }: LevelGridProps) {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const isFree = subscriptionStatus !== 'active'
+  const trialExpiry = trialExpiresAt ? new Date(trialExpiresAt) : null
+  const isInTrial = trialExpiry !== null && trialExpiry > new Date()
+  const trialDaysRemaining = isInTrial && trialExpiry
+    ? Math.ceil((trialExpiry.getTime() - Date.now()) / (1000 * 60 * 60 * 24))
+    : 0
+  const trialExpired = trialExpiry !== null && !isInTrial && subscriptionStatus !== 'active'
+
+  const isFree = subscriptionStatus !== 'active' && !isInTrial
   const remaining = isFree ? Math.max(0, FREE_DAILY_LIMIT - dailyUsed) : null
+
+  // Time until KST midnight reset
+  const [resetCountdown, setResetCountdown] = useState('')
+  useEffect(() => {
+    if (!isFree || remaining !== 0) return
+    function update() {
+      const now = new Date()
+      // KST = UTC+9
+      const kstNow = new Date(now.getTime() + 9 * 60 * 60 * 1000)
+      const kstMidnight = new Date(kstNow)
+      kstMidnight.setUTCHours(24, 0, 0, 0) // next KST midnight
+      const diff = kstMidnight.getTime() - kstNow.getTime()
+      const h = Math.floor(diff / (1000 * 60 * 60))
+      const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60))
+      setResetCountdown(`${h}시간 ${m}분`)
+    }
+    update()
+    const timer = setInterval(update, 60_000)
+    return () => clearInterval(timer)
+  }, [isFree, remaining])
 
   const TOPIC_LABELS: Record<string, string> = {
     humanities: '인문', social: '사회', science: '과학', tech: '기술', arts: '예술',
@@ -281,10 +311,10 @@ export default function LevelGrid({
           <motion.div
             initial={{ opacity: 0, scale: 0.98 }}
             animate={{ opacity: 1, scale: 1 }}
-            className={[
+            className={cn(
               'relative mb-4 border bg-white p-4',
               streakAtRisk ? 'border-exam-red/50 bg-exam-highlight' : 'border-exam-rule',
-            ].join(' ')}
+            )}
           >
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
@@ -325,6 +355,47 @@ export default function LevelGrid({
           </motion.div>
         )}
 
+        {/* Trial period active banner */}
+        {isInTrial && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.98 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="relative mb-4 border border-green-300 bg-green-50 p-4 flex items-center gap-3"
+          >
+            <div className="flex items-center justify-center w-10 h-10 border-2 border-green-600">
+              <Clock size={18} className="text-green-700" />
+            </div>
+            <div>
+              <p className="text-green-800 font-bold text-sm">
+                무료 체험 {trialDaysRemaining}일 남음
+              </p>
+              <p className="text-green-700 text-xs mt-0.5">
+                지금은 무제한으로 풀 수 있어요!
+              </p>
+            </div>
+          </motion.div>
+        )}
+
+        {/* Trial expired banner */}
+        {trialExpired && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.98 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="relative mb-4 border border-exam-rule bg-exam-highlight p-4 flex items-center justify-between"
+          >
+            <div>
+              <p className="text-exam-ink font-bold text-sm">체험 기간이 끝났어요</p>
+              <p className="text-stone-500 text-xs mt-0.5">하루 5문제 또는 프리미엄으로 무제한!</p>
+            </div>
+            <button
+              onClick={() => router.push('/pricing')}
+              className="px-4 py-2 bg-exam-ink text-white text-xs font-bold hover:bg-stone-800 transition-colors"
+            >
+              구독하기
+            </button>
+          </motion.div>
+        )}
+
         {/* Daily limit banner */}
         {isFree && remaining === 0 && (
           <motion.div
@@ -334,7 +405,9 @@ export default function LevelGrid({
           >
             <div>
               <p className="text-exam-red font-bold text-sm">오늘의 추론 훈련을 완료했어요!</p>
-              <p className="text-exam-red/70 text-xs mt-0.5">내일 새로운 5문제가 기다리고 있어요. 더 풀고 싶다면 구독해보세요.</p>
+              <p className="text-exam-red/70 text-xs mt-0.5">
+                {resetCountdown ? `${resetCountdown} 후 초기화` : '내일 새로운 5문제가 기다리고 있어요'}. 더 풀고 싶다면 구독해보세요.
+              </p>
             </div>
             <button
               onClick={() => router.push('/pricing')}
@@ -419,29 +492,29 @@ export default function LevelGrid({
                     }
                   }}
                   disabled={!isClickable || loadingLevel !== null}
-                  className={[
+                  className={cn(
                     'w-full text-left border p-5 transition-all duration-250 group relative',
                     isClickable && loadingLevel === null
                       ? isCurrent
-                        ? 'border-2 border-exam-ink bg-white cursor-pointer'
+                        ? 'border-2 border-exam-ink bg-white cursor-pointer hover:shadow-sm'
                         : isCompleted
-                          ? 'border border-exam-rule bg-white hover:border-stone-400 cursor-pointer'
-                          : 'border border-exam-rule bg-white hover:border-stone-400 cursor-pointer'
+                          ? 'border border-exam-rule bg-white hover:border-exam-ink/40 hover:shadow-sm cursor-pointer'
+                          : 'border border-exam-rule bg-white hover:border-exam-ink/40 hover:shadow-sm cursor-pointer'
                       : isThisLoading
                         ? 'border-2 border-exam-ink bg-white cursor-wait'
                         : 'border border-exam-rule bg-bg-base cursor-not-allowed opacity-40',
-                  ].join(' ')}
+                  )}
                 >
                   {/* Level number */}
                   <div className="flex items-center justify-between mb-3">
-                    <div className={[
+                    <div className={cn(
                       'flex items-center justify-center font-bold text-sm transition-all',
                       isCompleted
                         ? 'problem-number-sm bg-white text-green-700 border-green-700'
                         : isCurrent
                           ? 'problem-number'
                           : 'problem-number-sm opacity-60',
-                    ].join(' ')}>
+                    )}>
                       {isCompleted ? '\u2713' : config.level}
                     </div>
 
@@ -490,10 +563,10 @@ export default function LevelGrid({
                     {Array.from({ length: 7 }).map((_, j) => (
                       <span
                         key={j}
-                        className={[
+                        className={cn(
                           'w-1.5 h-1.5 rounded-full',
                           j < config.level ? 'bg-exam-ink' : 'bg-exam-rule',
-                        ].join(' ')}
+                        )}
                       />
                     ))}
                   </div>

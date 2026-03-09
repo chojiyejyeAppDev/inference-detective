@@ -57,9 +57,16 @@ export async function GET(req: NextRequest) {
     currentHintPoints = rechargedPoints
   }
 
+  // 체험 기간 계산
+  const trialExpiresAt = profile.trial_expires_at ? new Date(profile.trial_expires_at) : null
+  const isInTrial = trialExpiresAt !== null && trialExpiresAt > new Date()
+  const trialDaysRemaining = isInTrial && trialExpiresAt
+    ? Math.ceil((trialExpiresAt.getTime() - Date.now()) / (1000 * 60 * 60 * 24))
+    : 0
+
   // 관리자는 모든 제한 면제
   const isAdmin = profile.role === 'admin'
-  const isUnlimited = isAdmin || profile.subscription_status === 'active'
+  const isUnlimited = isAdmin || profile.subscription_status === 'active' || isInTrial
 
   // 무료 사용자: 원자적 일일 제한 체크 + 소비 (race condition 방지)
   if (!isUnlimited) {
@@ -130,6 +137,7 @@ export async function GET(req: NextRequest) {
       daily_limit: isUnlimited ? null : FREE_DAILY_LIMIT,
       subscription_status: isUnlimited ? 'active' : profile.subscription_status,
       invite_code: profile.invite_code ?? null,
+      trial_days_remaining: trialDaysRemaining,
     })
   }
 
@@ -381,6 +389,7 @@ export async function GET(req: NextRequest) {
     daily_limit: isUnlimited ? null : FREE_DAILY_LIMIT,
     subscription_status: isUnlimited ? 'active' : profile.subscription_status,
     invite_code: profile.invite_code ?? null,
+    trial_days_remaining: trialDaysRemaining,
     streak: {
       days: streakDays,
       longest: longestStreak,

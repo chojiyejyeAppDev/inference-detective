@@ -1,6 +1,7 @@
 'use client'
 
 import { motion } from 'framer-motion'
+import { cn } from '@/lib/utils'
 import { useReducedMotion } from '@/lib/hooks/useReducedMotion'
 
 type Strength = 'strong' | 'medium' | 'weak' | 'empty'
@@ -58,13 +59,13 @@ export default function ConnectionIndicator({ strength }: ConnectionIndicatorPro
 
       {/* Bridge badge */}
       <motion.div
-        className={[
+        className={cn(
           'relative z-10 flex items-center gap-1 px-2.5 py-1 text-[10px] font-semibold rounded-full transition-all',
           strength === 'strong' ? 'text-green-700 bg-green-50 border border-green-200' :
           strength === 'medium' ? 'text-amber-600 bg-amber-50 border border-amber-200' :
           strength === 'weak' ? 'text-red-700 bg-red-50 border border-red-200' :
           'text-stone-300 border border-dashed border-stone-200 bg-white',
-        ].join(' ')}
+        )}
         initial={reduced ? false : { scale: 0.8, opacity: 0 }}
         animate={shouldPulse
           ? { scale: [1, 1.05, 1], opacity: 1 }

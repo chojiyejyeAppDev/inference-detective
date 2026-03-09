@@ -3,6 +3,7 @@
 import { Droppable, Draggable } from '@hello-pangea/dnd'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Lightbulb, X } from 'lucide-react'
+import { cn } from '@/lib/utils'
 import { Sentence } from '@/types'
 import { SlotFeedback } from '@/types'
 
@@ -58,7 +59,7 @@ export default function InferenceSlot({
               onReturnToPool?.()
             }
           }}
-          className={[
+          className={cn(
             'relative min-h-[48px] sm:min-h-[60px] border-2 transition-all duration-200',
             !isEvaluated && 'cursor-pointer',
             snapshot.isDraggingOver
@@ -68,11 +69,11 @@ export default function InferenceSlot({
                 : hasSelection && !sentence && !isEvaluated
                   ? 'border-stone-400 bg-bg-base animate-pulse'
                   : feedbackColor,
-          ].filter(Boolean).join(' ')}
+          )}
         >
           {/* Slot number tag — exam problem number style */}
           <div className="absolute -left-3.5 top-1/2 -translate-y-1/2 z-10">
-            <div className={[
+            <div className={cn(
               'problem-number-sm font-exam-serif',
               isEvaluated
                 ? feedback?.is_correct
@@ -81,7 +82,7 @@ export default function InferenceSlot({
                 : sentence
                   ? '!bg-exam-ink !border-exam-ink !text-white'
                   : '',
-            ].join(' ')}>
+            )}>
               {slotIndex + 1}
             </div>
           </div>
@@ -115,11 +116,11 @@ export default function InferenceSlot({
                       ref={draggableProvided.innerRef}
                       {...draggableProvided.draggableProps}
                       {...draggableProvided.dragHandleProps}
-                      className={[
+                      className={cn(
                         'w-full text-sm leading-relaxed text-exam-ink select-none transition-opacity duration-150 focus-visible:ring-2 focus-visible:ring-exam-ink focus-visible:outline-none',
                         isEvaluated ? 'cursor-default' : 'cursor-grab active:cursor-grabbing',
                         draggableSnapshot.isDragging ? 'opacity-50' : 'opacity-100',
-                      ].join(' ')}
+                      )}
                       style={draggableProvided.draggableProps.style}
                     >
                       {sentence.text}

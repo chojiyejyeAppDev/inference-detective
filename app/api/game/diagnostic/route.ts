@@ -1,8 +1,12 @@
 /**
- * 레벨 스킵 진단 테스트 API
+ * 진단 테스트 API
  *
- * GET  — 진단 문제 3개 반환 (target_level 파라미터)
- * POST — 진단 결과 제출 → 레벨 스킵 판정
+ * GET  — 진단 문제 반환
+ *   - mode=onboarding: 온보딩 초기 진단 (레벨 1~3 각 1문제)
+ *   - target_level=N:  레벨 스킵 진단 (해당 레벨 3문제)
+ * POST — 진단 결과 제출
+ *   - mode=onboarding: 초기 진단 점수 저장 + 추천 레벨 결정
+ *   - target_level=N:  레벨 스킵 판정
  */
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient, createServiceClient } from '@/lib/supabase/server'
@@ -12,6 +16,7 @@ import { checkCsrf } from '@/lib/api/csrf'
 import { z } from 'zod'
 
 const DIAGNOSTIC_QUESTIONS = 3
+const ONBOARDING_LEVELS = [1, 2, 3] // 온보딩 시 각 레벨 1문제씩
 
 const diagnosticSubmitSchema = z.object({
   target_level: z.number().int().min(2).max(7),
@@ -20,6 +25,15 @@ const diagnosticSubmitSchema = z.object({
     submitted_chain: z.array(z.string().min(1)),
   })).length(DIAGNOSTIC_QUESTIONS),
 })
+
+const onboardingSubmitSchema = z.object({
+  mode: z.literal('onboarding'),
+  results: z.array(z.object({
+    question_id: z.string().uuid(),
+    submitted_chain: z.array(z.string().min(1)),
+  })).length(DIAGNOSTIC_QUESTIONS),
+})
+
 const PASS_THRESHOLD = 2 // 3개 중 2개 이상 정답
 
 export async function GET(req: NextRequest) {
@@ -33,13 +47,67 @@ export async function GET(req: NextRequest) {
   if (limited) return rateLimitResponse()
 
   const { searchParams } = new URL(req.url)
+  const mode = searchParams.get('mode')
+  const service = await createServiceClient()
+
+  // --- 온보딩 모드 ---
+  if (mode === 'onboarding') {
+    const { data: profile } = await service
+      .from('profiles')
+      .select('initial_diagnostic_at')
+      .eq('id', user.id)
+      .single()
+
+    if (!profile) {
+      return NextResponse.json({ error: 'Profile not found' }, { status: 404 })
+    }
+
+    // 이미 진단을 완료한 경우
+    if (profile.initial_diagnostic_at) {
+      return NextResponse.json({ error: 'Already completed onboarding diagnostic' }, { status: 400 })
+    }
+
+    // 레벨 1, 2, 3에서 각 1문제씩 추출
+    const allQuestions: Array<{
+      id: string
+      difficulty_level: number
+      topic: string
+      passage: string
+      sentences: Array<{ id: string; text: string }>
+      conclusion: string
+      hints: Array<{ level: number; text: string }>
+    }> = []
+
+    for (const level of ONBOARDING_LEVELS) {
+      const { data: qs } = await service
+        .from('questions')
+        .select('id, difficulty_level, topic, passage, sentences, conclusion, hints')
+        .eq('difficulty_level', level)
+        .limit(10)
+
+      if (qs && qs.length > 0) {
+        const shuffled = qs.sort(() => Math.random() - 0.5)
+        allQuestions.push(shuffled[0])
+      }
+    }
+
+    if (allQuestions.length < DIAGNOSTIC_QUESTIONS) {
+      return NextResponse.json({ error: 'Not enough questions for diagnostic' }, { status: 404 })
+    }
+
+    return NextResponse.json({
+      mode: 'onboarding',
+      questions: allQuestions,
+      total: DIAGNOSTIC_QUESTIONS,
+    })
+  }
+
+  // --- 레벨 스킵 모드 (기존) ---
   const targetLevel = parseInt(searchParams.get('target_level') ?? '', 10)
 
   if (!Number.isInteger(targetLevel) || targetLevel < 2 || targetLevel > 7) {
     return NextResponse.json({ error: 'target_level must be 2-7' }, { status: 400 })
   }
-
-  const service = await createServiceClient()
 
   // 현재 레벨 확인 — 이미 해당 레벨 이상이면 불필요
   const { data: profile } = await service
@@ -105,14 +173,98 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 })
   }
 
+  const service = await createServiceClient()
+
+  // --- 온보딩 모드 ---
+  const onboardingParsed = onboardingSubmitSchema.safeParse(rawBody)
+  if (onboardingParsed.success) {
+    const { results } = onboardingParsed.data
+
+    const { data: profile } = await service
+      .from('profiles')
+      .select('current_level, initial_diagnostic_at')
+      .eq('id', user.id)
+      .single()
+
+    if (!profile) {
+      return NextResponse.json({ error: 'Profile not found' }, { status: 404 })
+    }
+
+    if (profile.initial_diagnostic_at) {
+      return NextResponse.json({ error: 'Already completed onboarding diagnostic' }, { status: 400 })
+    }
+
+    // 각 문제 평가
+    const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+    let correctCount = 0
+    let totalAccuracy = 0
+    const evaluations: Array<{ question_id: string; is_correct: boolean; accuracy: number; level: number }> = []
+
+    for (const r of results) {
+      if (!r.question_id || !UUID_RE.test(r.question_id) || !Array.isArray(r.submitted_chain)) {
+        return NextResponse.json({ error: 'Invalid result format' }, { status: 400 })
+      }
+
+      const { data: question } = await service
+        .from('questions')
+        .select('*')
+        .eq('id', r.question_id)
+        .single()
+
+      if (!question) {
+        return NextResponse.json({ error: `Question ${r.question_id} not found` }, { status: 404 })
+      }
+
+      const evaluation = evaluateChain(question, r.submitted_chain)
+      if (evaluation.is_correct) correctCount++
+      totalAccuracy += evaluation.accuracy
+
+      evaluations.push({
+        question_id: r.question_id,
+        is_correct: evaluation.is_correct,
+        accuracy: evaluation.accuracy,
+        level: question.difficulty_level,
+      })
+    }
+
+    const avgAccuracy = totalAccuracy / results.length
+
+    // 추천 레벨 결정: 맞춘 문제의 최고 레벨 기반
+    let recommendedLevel = 1
+    for (const ev of evaluations) {
+      if (ev.is_correct && ev.level >= recommendedLevel) {
+        recommendedLevel = ev.level
+      }
+    }
+
+    // 초기 진단 점수 저장
+    await service
+      .from('profiles')
+      .update({
+        initial_diagnostic_accuracy: Math.round(avgAccuracy * 100),
+        initial_diagnostic_level: recommendedLevel,
+        initial_diagnostic_at: new Date().toISOString(),
+        current_level: recommendedLevel,
+      })
+      .eq('id', user.id)
+
+    return NextResponse.json({
+      mode: 'onboarding',
+      correct_count: correctCount,
+      total: results.length,
+      accuracy: Math.round(avgAccuracy * 100),
+      recommended_level: recommendedLevel,
+      evaluations,
+    })
+  }
+
+  // --- 레벨 스킵 모드 (기존) ---
   const parsed = diagnosticSubmitSchema.safeParse(rawBody)
   if (!parsed.success) {
     return NextResponse.json({ error: parsed.error.issues[0]?.message ?? 'Invalid input' }, { status: 400 })
   }
 
   const { target_level, results } = parsed.data
-
-  const service = await createServiceClient()
 
   // 현재 레벨 확인
   const { data: profile } = await service

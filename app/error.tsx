@@ -68,13 +68,9 @@ export default function AppError({
         )}
 
         {/* Subtle report link */}
-        <button
-          onClick={handleReport}
-          disabled={reported}
-          className="mt-4 text-xs text-stone-400 hover:text-exam-ink transition-colors disabled:text-stone-300"
-        >
+        <Button variant="ghost" size="sm" onClick={handleReport} disabled={reported} className="mt-4">
           {reported ? '신고 완료 — 감사합니다!' : '문제 신고'}
-        </button>
+        </Button>
       </div>
     </div>
   )

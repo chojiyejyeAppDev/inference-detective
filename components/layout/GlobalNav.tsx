@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { cn } from '@/lib/utils'
 import { Home, BookOpen, BarChart3, Award, Settings, MoreHorizontal } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 
@@ -85,12 +86,12 @@ export default function GlobalNav() {
               <Link
                 key={href}
                 href={href}
-                className={[
+                className={cn(
                   'flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors',
                   isActive
                     ? 'bg-exam-ink text-white'
                     : 'text-stone-500 hover:text-exam-ink hover:bg-stone-100',
-                ].join(' ')}
+                )}
               >
                 <Icon size={13} />
                 {label}
@@ -112,10 +113,10 @@ export default function GlobalNav() {
               <Link
                 key={href}
                 href={href}
-                className={[
+                className={cn(
                   'flex flex-col items-center justify-center gap-0.5 py-3 px-1 min-w-[125px] flex-1 transition-colors',
                   isActive ? 'text-exam-ink' : 'text-stone-400',
-                ].join(' ')}
+                )}
                 style={{ height: 56 }}
               >
                 <Icon size={20} />

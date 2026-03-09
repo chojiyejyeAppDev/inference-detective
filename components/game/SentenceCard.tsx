@@ -1,6 +1,7 @@
 'use client'
 
 import { Draggable } from '@hello-pangea/dnd'
+import { cn } from '@/lib/utils'
 import { Sentence } from '@/types'
 
 interface SentenceCardProps {
@@ -34,7 +35,7 @@ export default function SentenceCard({ sentence, index, isDimmed = false, isSele
               onSelect?.()
             }
           }}
-          className={[
+          className={cn(
             'group relative flex items-start gap-2.5 border px-3 py-2.5 cursor-grab active:cursor-grabbing select-none touch-manipulation',
             'transition-all duration-150 focus-visible:ring-2 focus-visible:ring-exam-ink focus-visible:outline-none',
             snapshot.isDragging
@@ -43,7 +44,7 @@ export default function SentenceCard({ sentence, index, isDimmed = false, isSele
                 ? 'border-exam-ink bg-exam-highlight ring-2 ring-exam-red/20'
                 : 'border-exam-rule bg-white hover:border-stone-400 hover:bg-bg-base',
             isDimmed ? 'opacity-35' : 'opacity-100',
-          ].join(' ')}
+          )}
           style={provided.draggableProps.style}
         >
           {/* Number badge — exam circle style */}

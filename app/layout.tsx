@@ -26,13 +26,13 @@ export const viewport: Viewport = {
 }
 
 export const metadata: Metadata = {
-  title: '이:르다 — 수능 비문학 추론 훈련',
-  description: '드래그&드롭으로 추론 경로를 조립하며 수능 비문학 논리력을 훈련하는 학습 게임',
-  keywords: ['수능', '비문학', '추론', '논리', '국어', '학습', '게임', '이르다'],
+  title: '이:르다 — 논리 추론 훈련 플랫폼',
+  description: '수능 비문학, 논술, LEET, 공무원 시험 대비 — 논리 구조를 직접 조립하며 추론력을 훈련하세요',
+  keywords: ['수능', '비문학', '추론', '논리', '국어', '학습', '게임', '이르다', '논술', 'LEET', '공무원', 'PSAT'],
   metadataBase: new URL('https://inference-detective.vercel.app'),
   openGraph: {
-    title: '이:르다 — 수능 비문학 추론 훈련',
-    description: '드래그&드롭으로 추론 경로를 조립하며 수능 비문학 논리력을 훈련하는 학습 게임',
+    title: '이:르다 — 논리 추론 훈련 플랫폼',
+    description: '수능 비문학, 논술, LEET, 공무원 시험 대비 — 논리 구조를 직접 조립하며 추론력을 훈련하세요',
     url: 'https://inference-detective.vercel.app',
     siteName: '이:르다',
     locale: 'ko_KR',
@@ -40,8 +40,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: '이:르다 — 수능 비문학 추론 훈련',
-    description: '드래그&드롭으로 추론 경로를 조립하며 수능 비문학 논리력을 훈련하는 학습 게임',
+    title: '이:르다 — 논리 추론 훈련 플랫폼',
+    description: '수능 비문학, 논술, LEET, 공무원 시험 대비 — 논리 구조를 직접 조립하며 추론력을 훈련하세요',
   },
 }
 

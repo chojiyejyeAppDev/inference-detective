@@ -10,20 +10,21 @@ interface LevelUpAnimationProps {
   onDismiss: () => void
 }
 
-function Particle({ delay, x, y, color }: { delay: number; x: number; y: number; color: string }) {
+function Particle({ delay, x, y, size, color }: { delay: number; x: number; y: number; size: number; color: string }) {
   return (
     <motion.div
-      className="absolute w-2 h-2"
-      style={{ backgroundColor: color }}
-      initial={{ opacity: 0, x: 0, y: 0, scale: 0 }}
+      className="absolute"
+      style={{ backgroundColor: color, width: size, height: size }}
+      initial={{ opacity: 0, x: 0, y: 0, scale: 0, rotate: 0 }}
       animate={{
         opacity: [0, 1, 1, 0],
-        x: [0, x * 0.5, x],
-        y: [0, y * 0.5, y],
+        x: [0, x * 0.4, x],
+        y: [0, y * 0.4, y],
         scale: [0, 1.5, 0],
+        rotate: [0, Math.random() * 360],
       }}
       transition={{
-        duration: 1.2,
+        duration: 1.4,
         delay,
         ease: 'easeOut',
       }}
@@ -39,19 +40,20 @@ export default function LevelUpAnimation({ fromLevel, toLevel, onDismiss }: Leve
     const timer = setTimeout(() => {
       setVisible(false)
       setTimeout(onDismiss, reduced ? 0 : 400)
-    }, reduced ? 2000 : 4000)
+    }, reduced ? 2000 : 5000)
     return () => clearTimeout(timer)
   }, [onDismiss, reduced])
 
-  const particleColors = ['#1C1917', '#C22D2D', '#1C1917', '#C22D2D', '#78716C']
+  const particleColors = ['#1C1917', '#C22D2D', '#1C1917', '#C22D2D', '#78716C', '#D6D3CA']
 
   const particles = reduced
     ? []
-    : Array.from({ length: 20 }, (_, i) => ({
+    : Array.from({ length: 32 }, (_, i) => ({
         id: i,
-        delay: 0.3 + Math.random() * 0.5,
-        x: (Math.random() - 0.5) * 300,
-        y: (Math.random() - 0.5) * 300,
+        delay: 0.2 + Math.random() * 0.6,
+        x: (Math.random() - 0.5) * 400,
+        y: (Math.random() - 0.5) * 400,
+        size: 4 + Math.random() * 8,
         color: particleColors[i % particleColors.length],
       }))
 
@@ -73,60 +75,81 @@ export default function LevelUpAnimation({ fromLevel, toLevel, onDismiss }: Leve
             {/* Particles */}
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
               {particles.map((p) => (
-                <Particle key={p.id} delay={p.delay} x={p.x} y={p.y} color={p.color} />
+                <Particle key={p.id} delay={p.delay} x={p.x} y={p.y} size={p.size} color={p.color} />
               ))}
             </div>
 
-            {/* Ring */}
-            <motion.div
-              className="absolute w-40 h-40 border-2 border-exam-ink/20"
-              initial={{ scale: 0, opacity: 0 }}
-              animate={{ scale: [0, 2.5], opacity: [0.6, 0] }}
-              transition={{ duration: 1.5, delay: 0.2 }}
-            />
+            {/* Expanding rings */}
+            {!reduced && [0, 0.3, 0.6].map((delay, i) => (
+              <motion.div
+                key={i}
+                className="absolute w-40 h-40 border-2 border-exam-ink/15 rounded-full"
+                initial={{ scale: 0, opacity: 0 }}
+                animate={{ scale: [0, 3], opacity: [0.5, 0] }}
+                transition={{ duration: 1.8, delay: 0.2 + delay, ease: 'easeOut' }}
+              />
+            ))}
 
-            {/* Level number */}
+            {/* Score stamp — teacher's red circle */}
             <motion.div
-              initial={{ scale: 0, rotate: -180 }}
-              animate={{ scale: 1, rotate: 0 }}
-              transition={{ type: 'spring', stiffness: 200, damping: 15, delay: 0.1 }}
+              initial={{ scale: 2.5, rotate: -20, opacity: 0 }}
+              animate={{ scale: 1, rotate: -8, opacity: 1 }}
+              transition={{
+                type: 'spring',
+                stiffness: 300,
+                damping: 20,
+                delay: 0.1,
+              }}
               className="relative"
             >
-              <div className="w-28 h-28 border-4 border-exam-ink bg-white flex items-center justify-center">
+              <div className="w-32 h-32 border-[3px] border-exam-red rounded-full flex items-center justify-center bg-white">
                 <div className="text-center">
                   <motion.span
-                    className="text-4xl font-exam-serif font-black text-exam-ink"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ delay: 0.4 }}
+                    className="block text-5xl font-exam-serif font-black text-exam-red"
+                    initial={{ opacity: 0, scale: 0.5 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ delay: 0.4, type: 'spring', stiffness: 400 }}
                   >
                     {toLevel}
+                  </motion.span>
+                  <motion.span
+                    className="block text-[10px] font-bold text-exam-red tracking-widest mt-0.5"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 0.6 }}
+                  >
+                    LEVEL
                   </motion.span>
                 </div>
               </div>
             </motion.div>
 
-            {/* Level up text */}
+            {/* Level up text with wavy underline */}
             <motion.div
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 24 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.5 }}
-              className="mt-6 text-center"
+              transition={{ delay: 0.6, duration: 0.5 }}
+              className="mt-8 text-center"
             >
-              <h2 className="text-2xl font-exam-serif font-black text-exam-ink tracking-wider">
-                LEVEL UP!
+              <h2 className="text-3xl font-exam-serif font-black text-exam-ink tracking-wider">
+                <span className="mark-red">LEVEL UP!</span>
               </h2>
-              <p className="mt-2 text-sm text-stone-500">
+              <motion.p
+                className="mt-3 text-sm text-stone-500"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.9 }}
+              >
                 Lv.{fromLevel} → Lv.{toLevel}
-              </p>
+              </motion.p>
             </motion.div>
 
             {/* Continue hint */}
             <motion.p
               initial={{ opacity: 0 }}
               animate={{ opacity: [0, 0.6] }}
-              transition={{ delay: 1.5 }}
-              className="mt-8 text-xs text-stone-400"
+              transition={{ delay: 2.0 }}
+              className="mt-10 text-xs text-stone-400"
             >
               화면을 터치하면 계속합니다
             </motion.p>

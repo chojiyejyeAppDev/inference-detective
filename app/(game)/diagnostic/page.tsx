@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Zap, ArrowRight, CheckCircle2, XCircle, Loader2 } from 'lucide-react'
+import { Zap, ArrowRight, CheckCircle2, XCircle, Loader2, Target } from 'lucide-react'
 import { toast } from 'sonner'
 import Button from '@/components/ui/Button'
 import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd'
@@ -23,7 +23,9 @@ type Phase = 'intro' | 'test' | 'submitting' | 'result'
 export default function DiagnosticPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
+  const mode = searchParams.get('mode') // 'onboarding' or null
   const targetLevel = parseInt(searchParams.get('target') ?? '0')
+  const isOnboarding = mode === 'onboarding'
 
   const [phase, setPhase] = useState<Phase>('intro')
   const [questions, setQuestions] = useState<DiagnosticQuestion[]>([])
@@ -31,10 +33,12 @@ export default function DiagnosticPage() {
   const [chains, setChains] = useState<Record<string, string[]>>({})
   const [loading, setLoading] = useState(false)
   const [result, setResult] = useState<{
-    passed: boolean
+    passed?: boolean
     correct_count: number
     total: number
-    new_level: number
+    new_level?: number
+    accuracy?: number
+    recommended_level?: number
   } | null>(null)
 
   // 현재 문제의 드래그 가능 카드 + 슬롯
@@ -45,7 +49,7 @@ export default function DiagnosticPage() {
     : []
 
   async function startTest() {
-    if (targetLevel < 2 || targetLevel > 7) {
+    if (!isOnboarding && (targetLevel < 2 || targetLevel > 7)) {
       toast.error('잘못된 레벨입니다.')
       router.push('/levels')
       return
@@ -53,12 +57,15 @@ export default function DiagnosticPage() {
 
     setLoading(true)
     try {
-      const res = await fetch(`/api/game/diagnostic?target_level=${targetLevel}`)
+      const url = isOnboarding
+        ? '/api/game/diagnostic?mode=onboarding'
+        : `/api/game/diagnostic?target_level=${targetLevel}`
+      const res = await fetch(url)
       const data = await res.json()
 
       if (!res.ok) {
         toast.error(data.error ?? '진단 테스트를 시작할 수 없어요.')
-        if (data.error === 'Already at or above target level') {
+        if (data.error === 'Already at or above target level' || data.error === 'Already completed onboarding diagnostic') {
           router.push('/levels')
         }
         return
@@ -76,15 +83,19 @@ export default function DiagnosticPage() {
   async function submitAll() {
     setPhase('submitting')
     try {
-      const results = questions.map((q) => ({
+      const questionResults = questions.map((q) => ({
         question_id: q.id,
         submitted_chain: chains[q.id] ?? [],
       }))
 
+      const body = isOnboarding
+        ? { mode: 'onboarding', results: questionResults }
+        : { target_level: targetLevel, results: questionResults }
+
       const res = await fetch('/api/game/diagnostic', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ target_level: targetLevel, results }),
+        body: JSON.stringify(body),
       })
       const data = await res.json()
 
@@ -108,12 +119,12 @@ export default function DiagnosticPage() {
     const { source, destination, draggableId } = result
 
     if (source.droppableId === 'cards' && destination.droppableId === 'slots') {
-      // 카드 → 슬롯
+      // 카드 -> 슬롯
       const newChain = [...currentChain]
       newChain.splice(destination.index, 0, draggableId)
       setChains({ ...chains, [currentQ.id]: newChain })
     } else if (source.droppableId === 'slots' && destination.droppableId === 'cards') {
-      // 슬롯 → 카드 (제거)
+      // 슬롯 -> 카드 (제거)
       const newChain = currentChain.filter((id) => id !== draggableId)
       setChains({ ...chains, [currentQ.id]: newChain })
     } else if (source.droppableId === 'slots' && destination.droppableId === 'slots') {
@@ -125,7 +136,8 @@ export default function DiagnosticPage() {
     }
   }
 
-  if (targetLevel < 2 || targetLevel > 7) {
+  // 레벨 스킵 모드에서 잘못된 레벨
+  if (!isOnboarding && (targetLevel < 2 || targetLevel > 7)) {
     return (
       <div className="min-h-screen bg-bg-base flex items-center justify-center">
         <p className="text-stone-500">잘못된 레벨이에요.</p>
@@ -147,13 +159,18 @@ export default function DiagnosticPage() {
               className="text-center space-y-6 pt-20"
             >
               <div className="w-16 h-16 border border-exam-rule bg-white flex items-center justify-center mx-auto">
-                <Zap size={28} className="text-exam-ink" />
+                {isOnboarding
+                  ? <Target size={28} className="text-exam-ink" />
+                  : <Zap size={28} className="text-exam-ink" />}
               </div>
               <div>
-                <h1 className="text-2xl font-black text-exam-ink mb-2">레벨 {targetLevel} 진단 테스트</h1>
+                <h1 className="text-2xl font-black text-exam-ink mb-2">
+                  {isOnboarding ? '실력 측정 테스트' : `레벨 ${targetLevel} 진단 테스트`}
+                </h1>
                 <p className="text-stone-500 text-sm max-w-md mx-auto">
-                  레벨 {targetLevel}의 문제 3개를 풀어 실력을 증명하세요.
-                  2개 이상 정답이면 바로 레벨 {targetLevel}로 스킵!
+                  {isOnboarding
+                    ? '현재 추론 실력을 확인하고 맞춤 레벨에서 시작하세요'
+                    : `레벨 ${targetLevel}의 문제 3개를 풀어 실력을 증명하세요. 2개 이상 정답이면 바로 레벨 ${targetLevel}로 스킵!`}
                 </p>
               </div>
               <div className="border border-exam-rule bg-white p-5 max-w-sm mx-auto text-left space-y-3">
@@ -161,31 +178,54 @@ export default function DiagnosticPage() {
                   <span className="text-stone-500">문제 수</span>
                   <span className="text-exam-ink font-semibold">3문제</span>
                 </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-stone-500">통과 조건</span>
-                  <span className="text-exam-ink font-semibold">2/3 정답</span>
-                </div>
+                {isOnboarding ? (
+                  <div className="flex justify-between text-sm">
+                    <span className="text-stone-500">난이도</span>
+                    <span className="text-exam-ink font-semibold">레벨 1~3 혼합</span>
+                  </div>
+                ) : (
+                  <div className="flex justify-between text-sm">
+                    <span className="text-stone-500">통과 조건</span>
+                    <span className="text-exam-ink font-semibold">2/3 정답</span>
+                  </div>
+                )}
                 <div className="flex justify-between text-sm">
                   <span className="text-stone-500">힌트</span>
                   <span className="text-stone-500">사용 불가</span>
                 </div>
+                {isOnboarding && (
+                  <div className="flex justify-between text-sm">
+                    <span className="text-stone-500">소요 시간</span>
+                    <span className="text-exam-ink font-semibold">약 3~5분</span>
+                  </div>
+                )}
               </div>
               <Button
                 variant="primary"
                 size="lg"
                 loading={loading}
                 onClick={startTest}
-                icon={loading ? undefined : <Zap size={16} />}
+                icon={loading ? undefined : isOnboarding ? <Target size={16} /> : <Zap size={16} />}
                 className="mx-auto font-black"
               >
-                {loading ? '준비 중...' : '테스트 시작'}
+                {loading ? '준비 중...' : isOnboarding ? '실력 측정 시작' : '테스트 시작'}
               </Button>
-              <button
-                onClick={() => router.push('/levels')}
-                className="text-stone-500 text-xs hover:text-stone-400 transition-colors"
-              >
-                레벨 선택으로 돌아가기
-              </button>
+              {!isOnboarding && (
+                <button
+                  onClick={() => router.push('/levels')}
+                  className="text-stone-500 text-xs hover:text-stone-400 transition-colors"
+                >
+                  레벨 선택으로 돌아가기
+                </button>
+              )}
+              {isOnboarding && (
+                <button
+                  onClick={() => router.push('/levels')}
+                  className="text-stone-500 text-xs hover:text-stone-400 transition-colors"
+                >
+                  건너뛰고 레벨 1에서 시작하기
+                </button>
+              )}
             </motion.div>
           )}
 
@@ -204,7 +244,9 @@ export default function DiagnosticPage() {
                   문제 {currentIndex + 1}/{questions.length}
                 </h2>
                 <span className="text-xs text-stone-500 bg-stone-100 px-3 py-1 rounded-full">
-                  레벨 {targetLevel} 진단
+                  {isOnboarding
+                    ? `레벨 ${currentQ.difficulty_level}`
+                    : `레벨 ${targetLevel} 진단`}
                 </span>
               </div>
               <div className="h-1.5 rounded-full bg-stone-200 overflow-hidden">
@@ -344,8 +386,80 @@ export default function DiagnosticPage() {
             </motion.div>
           )}
 
-          {/* Result */}
-          {phase === 'result' && result && (
+          {/* Result — Onboarding mode */}
+          {phase === 'result' && result && isOnboarding && (
+            <motion.div
+              key="result-onboarding"
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="text-center space-y-6 pt-12"
+            >
+              {/* Big level circle */}
+              <div className="flex flex-col items-center gap-2">
+                <div className="w-24 h-24 rounded-full border-4 border-exam-ink bg-white flex items-center justify-center mx-auto">
+                  <span className="text-4xl font-black text-exam-ink">{result.recommended_level}</span>
+                </div>
+                <h1 className="text-2xl font-black text-exam-ink mt-2">
+                  당신의 추론 레벨: {result.recommended_level}
+                </h1>
+              </div>
+
+              {/* Stats */}
+              <div className="border border-exam-rule bg-white p-5 max-w-sm mx-auto space-y-4">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-stone-500">정확도</span>
+                  <span className="text-xl font-black text-exam-ink">{result.accuracy}%</span>
+                </div>
+                <div className="h-px bg-exam-rule" />
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-stone-500">정답</span>
+                  <span className="text-sm font-semibold text-exam-ink">
+                    {result.correct_count}/{result.total}
+                  </span>
+                </div>
+                <div className="h-px bg-exam-rule" />
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-stone-500">추천 시작 레벨</span>
+                  <span className="text-lg font-black text-exam-ink">레벨 {result.recommended_level}</span>
+                </div>
+              </div>
+
+              {/* O/X indicators */}
+              <div className="border border-exam-rule bg-white p-5 max-w-xs mx-auto">
+                <div className="flex justify-center gap-3">
+                  {Array.from({ length: result.total }).map((_, i) => (
+                    <div
+                      key={i}
+                      className={`w-12 h-12 flex items-center justify-center text-lg font-bold ${
+                        i < result.correct_count
+                          ? 'bg-green-50 text-green-700 border border-green-300'
+                          : 'bg-red-50 text-red-600 border border-red-300'
+                      }`}
+                    >
+                      {i < result.correct_count ? 'O' : 'X'}
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <p className="text-stone-500 text-sm max-w-md mx-auto">
+                이 점수가 초기 기준이 돼요. 연습하면서 얼마나 성장했는지 대시보드에서 확인할 수 있어요.
+              </p>
+
+              <Button
+                variant="primary"
+                size="lg"
+                onClick={() => router.push('/levels')}
+                className="font-black mx-auto"
+                icon={<ArrowRight size={16} />}
+              >
+                레벨 {result.recommended_level}에서 시작하기
+              </Button>
+            </motion.div>
+          )}
+
+          {/* Result — Level skip mode (existing) */}
+          {phase === 'result' && result && !isOnboarding && (
             <motion.div
               key="result"
               initial={{ opacity: 0, scale: 0.95 }}

@@ -3,6 +3,7 @@
 import * as Sentry from '@sentry/nextjs'
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import Button from '@/components/ui/Button'
 
 export default function GameError({
   error,
@@ -40,12 +41,9 @@ export default function GameError({
         </p>
 
         <div className="flex gap-3 justify-center">
-          <button
-            onClick={reset}
-            className="px-5 py-2.5 bg-exam-ink text-white text-sm font-bold hover:bg-stone-800 transition-colors"
-          >
+          <Button variant="primary" onClick={reset}>
             이어서 풀기
-          </button>
+          </Button>
           <Link
             href="/levels"
             className="px-5 py-2.5 border border-exam-rule text-exam-ink text-sm font-medium hover:bg-bg-base transition-colors"
@@ -70,13 +68,9 @@ export default function GameError({
         )}
 
         {/* Subtle report link */}
-        <button
-          onClick={handleReport}
-          disabled={reported}
-          className="mt-4 text-xs text-stone-400 hover:text-exam-ink transition-colors disabled:text-stone-300"
-        >
+        <Button variant="ghost" size="sm" onClick={handleReport} disabled={reported} className="mt-4">
           {reported ? '신고 완료 — 감사합니다!' : '문제 신고'}
-        </button>
+        </Button>
       </div>
     </div>
   )

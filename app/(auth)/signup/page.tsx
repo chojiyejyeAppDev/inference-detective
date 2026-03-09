@@ -1,6 +1,6 @@
 'use client'
 
-import { Suspense, useState } from 'react'
+import { Suspense, useState, useEffect, useCallback } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
@@ -21,6 +21,7 @@ function SignupForm() {
   const [loading, setLoading] = useState(false)
   const [googleLoading, setGoogleLoading] = useState(false)
   const [done, setDone] = useState(false)
+  const [resendCooldown, setResendCooldown] = useState(0)
 
   const NICKNAME_RE = /^[가-힣a-zA-Z0-9_ ]+$/
   const nicknameError = nickname.length > 0 && !NICKNAME_RE.test(nickname)
@@ -105,10 +106,16 @@ function SignupForm() {
   }
 
   const [resending, setResending] = useState(false)
-  const [resent, setResent] = useState(false)
 
-  async function handleResendVerification() {
-    if (resending || resent) return
+  // Cooldown timer for resend button
+  useEffect(() => {
+    if (resendCooldown <= 0) return
+    const timer = setTimeout(() => setResendCooldown((c) => c - 1), 1000)
+    return () => clearTimeout(timer)
+  }, [resendCooldown])
+
+  const handleResendVerification = useCallback(async () => {
+    if (resending || resendCooldown > 0) return
     setResending(true)
     const supabase = createClient()
     await supabase.auth.resend({
@@ -116,8 +123,8 @@ function SignupForm() {
       email: email.trim().toLowerCase(),
     })
     setResending(false)
-    setResent(true)
-  }
+    setResendCooldown(30)
+  }, [resending, resendCooldown, email])
 
   if (done) {
     return (
@@ -128,10 +135,11 @@ function SignupForm() {
           transition={{ duration: 0.4 }}
           className="w-full max-w-sm text-center"
         >
-          <div className="w-16 h-16 border-2 border-exam-ink flex items-center justify-center mx-auto mb-4">
-            <span className="text-2xl text-exam-ink">&#10003;</span>
+          <div className="w-16 h-16 border-2 border-green-600 bg-green-50 flex items-center justify-center mx-auto mb-4 rounded-full">
+            <span className="text-2xl text-green-600">&#10003;</span>
           </div>
-          <h2 className="text-xl font-bold text-exam-ink mb-2">이메일을 확인해 주세요</h2>
+          <h2 className="text-xl font-bold text-exam-ink mb-1">가입이 거의 완료됐어요!</h2>
+          <p className="text-sm font-medium text-green-700 mb-3">인증 메일을 발송했어요</p>
           <p className="text-stone-500 text-sm mb-4">
             {email}로 인증 링크를 보냈어요.
             <br />
@@ -143,10 +151,10 @@ function SignupForm() {
           <div className="flex flex-col items-center gap-3">
             <button
               onClick={handleResendVerification}
-              disabled={resending || resent}
-              className="text-sm text-exam-ink font-semibold hover:underline underline-offset-2 transition-colors disabled:text-stone-300 disabled:cursor-not-allowed"
+              disabled={resending || resendCooldown > 0}
+              className="text-sm text-exam-ink font-semibold hover:underline underline-offset-2 transition-colors disabled:text-stone-400 disabled:cursor-not-allowed"
             >
-              {resent ? '재발송 완료!' : resending ? '발송 중...' : '인증 메일 재발송'}
+              {resending ? '발송 중...' : resendCooldown > 0 ? `재발송 가능 (${resendCooldown}초)` : '인증 메일 재발송'}
             </button>
             <Link
               href="/login"

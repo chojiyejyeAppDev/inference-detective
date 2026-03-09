@@ -5,6 +5,7 @@ import { DragDropContext, Droppable, DropResult } from '@hello-pangea/dnd'
 import { motion, AnimatePresence } from 'framer-motion'
 import Link from 'next/link'
 import { Lightbulb, Send, RefreshCw, ChevronRight, Undo2, Flame, HelpCircle, XCircle, BookOpen, AlertCircle } from 'lucide-react'
+import { cn } from '@/lib/utils'
 import { Question, Sentence, EvaluationResult, LevelConfig } from '@/types'
 import { buildConnectionMap } from '@/lib/game/connectionStrength'
 import Button from '@/components/ui/Button'
@@ -17,6 +18,7 @@ import LevelUpAnimation from '@/components/level/LevelUpAnimation'
 import ShareResultButton from './ShareResultButton'
 import GameTutorialOverlay from './GameTutorialOverlay'
 import ContextualHint, { hasStepBeenSeen } from './ContextualHint'
+import { useReducedMotion } from '@/lib/hooks/useReducedMotion'
 
 /** Fisher-Yates shuffle — returns a new array in random order */
 function shuffleArray<T>(arr: T[]): T[] {
@@ -63,6 +65,7 @@ export default function GameBoard({
   onReset,
   activeHints = [],
 }: GameBoardProps) {
+  const reduced = useReducedMotion()
   const STORAGE_KEY = `iruda_game_${question.id}`
 
   // Restore saved state or initialize fresh
@@ -425,10 +428,10 @@ export default function GameBoard({
                   <div
                     ref={provided.innerRef}
                     {...provided.droppableProps}
-                    className={[
+                    className={cn(
                       'flex flex-col gap-2 min-h-[48px] p-2 transition-colors duration-200',
                       snapshot.isDraggingOver ? 'bg-bg-base' : 'bg-transparent',
-                    ].join(' ')}
+                    )}
                   >
                     {pool.length === 0 ? (
                       <div className="flex items-center justify-center h-12 text-xs text-stone-400 italic">
@@ -511,9 +514,9 @@ export default function GameBoard({
                 >
                   {/* Big score stamp */}
                   <motion.div
-                    initial={{ scale: 2.5, opacity: 0, rotate: -20 }}
-                    animate={{ scale: 1, opacity: 1, rotate: -8 }}
-                    transition={{ type: 'spring', stiffness: 200, damping: 15, delay: 0.2 }}
+                    initial={reduced ? { opacity: 0 } : { scale: 2.5, opacity: 0, rotate: -20 }}
+                    animate={reduced ? { opacity: 1 } : { scale: 1, opacity: 1, rotate: -8 }}
+                    transition={reduced ? { duration: 0.2 } : { type: 'spring', stiffness: 200, damping: 15, delay: 0.2 }}
                     className="inline-flex flex-col items-center justify-center w-20 h-20 border-3 border-green-700 rounded-full text-green-700 mb-3"
                   >
                     <span className="text-2xl font-black leading-none">{Math.round(evaluationResult.accuracy * 100)}</span>
@@ -906,12 +909,12 @@ export default function GameBoard({
                         {Array.from({ length: evaluationResult.level_progress.required }).map((_, i) => (
                           <div
                             key={i}
-                            className={[
+                            className={cn(
                               'flex-1 h-2 rounded-sm transition-all',
                               i < evaluationResult.level_progress!.qualified
                                 ? 'bg-exam-ink'
                                 : 'bg-stone-200',
-                            ].join(' ')}
+                            )}
                           />
                         ))}
                       </div>

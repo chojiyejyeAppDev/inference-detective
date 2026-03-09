@@ -166,10 +166,12 @@ export default function SettingsForm({
             <Sun size={14} />
             테마
           </div>
-          <div className="flex border border-exam-rule rounded-md overflow-hidden">
+          <div className="flex border border-exam-rule rounded-md overflow-hidden" role="radiogroup" aria-label="테마 선택">
             {themeOptions.map(({ value, label, icon: Icon }) => (
               <button
                 key={value}
+                role="radio"
+                aria-checked={theme === value}
                 onClick={() => setTheme(value)}
                 className={`flex-1 flex items-center justify-center gap-1.5 py-2 text-xs font-medium transition-colors ${
                   theme === value

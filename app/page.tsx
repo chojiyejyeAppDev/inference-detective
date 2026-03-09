@@ -4,12 +4,13 @@ import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence, type Variants } from 'framer-motion'
 import Link from 'next/link'
-import { ArrowRight, GripVertical, Menu, X } from 'lucide-react'
+import { ArrowRight, GripVertical, Menu, X, BookX, FileText, Brain } from 'lucide-react'
 import Footer from '@/components/common/Footer'
 import { createClient } from '@/lib/supabase/client'
+import { cn } from '@/lib/utils'
 
 const STEPS = [
-  { n: '1', title: '읽기', desc: '수능 비문학 지문과 결론을 확인하세요.' },
+  { n: '1', title: '읽기', desc: '지문과 결론을 확인하세요.' },
   { n: '2', title: '조립', desc: '흩어진 문장 카드를 논리 순서로 슬롯에 배치하세요.' },
   { n: '3', title: '피드백', desc: '정확도, 틀린 부분, 약점 분석을 바로 받아보세요.' },
 ]
@@ -49,19 +50,19 @@ function useDemoAnimation() {
     }
 
     if (phase === 'idle') {
-      t(() => { setActiveCard('a'); setPhase('drag1') }, 1200)
+      t(() => { setActiveCard('a'); setPhase('drag1') }, 1800)
     } else if (phase === 'drag1') {
-      t(() => { setSlots(['a', null, null]); setActiveCard(null); setPhase('drag2') }, 800)
+      t(() => { setSlots(['a', null, null]); setActiveCard(null); setPhase('drag2') }, 1000)
     } else if (phase === 'drag2') {
-      t(() => { setActiveCard('b') }, 600)
-      t(() => { setSlots(['a', 'b', null]); setActiveCard(null); setConnections(['green', 'none']); setPhase('drag3') }, 1400)
+      t(() => { setActiveCard('b') }, 800)
+      t(() => { setSlots(['a', 'b', null]); setActiveCard(null); setConnections(['green', 'none']); setPhase('drag3') }, 1600)
     } else if (phase === 'drag3') {
-      t(() => { setActiveCard('c') }, 600)
-      t(() => { setSlots(['a', 'b', 'c']); setActiveCard(null); setConnections(['green', 'green']); setPhase('evaluate') }, 1400)
+      t(() => { setActiveCard('c') }, 800)
+      t(() => { setSlots(['a', 'b', 'c']); setActiveCard(null); setConnections(['green', 'green']); setPhase('evaluate') }, 1600)
     } else if (phase === 'evaluate') {
-      t(() => { setShowResult(true); setPhase('result') }, 800)
+      t(() => { setShowResult(true); setPhase('result') }, 1000)
     } else if (phase === 'result') {
-      t(() => { setPhase('reset') }, 2800)
+      t(() => { setPhase('reset') }, 3500)
     } else if (phase === 'reset') {
       reset()
     }
@@ -117,12 +118,12 @@ function LandingDemo() {
                   initial={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.9, x: 40 }}
                   transition={{ duration: 0.3 }}
-                  className={[
+                  className={cn(
                     'border px-3 py-2 text-xs text-stone-700 flex items-center gap-2 transition-all',
                     activeCard === card.id
                       ? 'border-exam-ink bg-stone-50 shadow-sm'
                       : 'border-exam-rule bg-white',
-                  ].join(' ')}
+                  )}
                 >
                   <GripVertical size={10} className="text-stone-300 shrink-0" />
                   <span className="leading-[1.5]">{card.text}</span>
@@ -139,19 +140,19 @@ function LandingDemo() {
             {slots.map((slotId, i) => (
               <div key={i}>
                 <motion.div
-                  className={[
+                  className={cn(
                     'border px-3.5 py-2.5 text-xs min-h-[36px] flex items-start gap-2.5 transition-all',
                     slotId
                       ? 'border-exam-ink/20 bg-stone-50 text-stone-700'
                       : 'border-dashed border-stone-300 text-stone-400',
-                  ].join(' ')}
+                  )}
                   animate={slotId ? { scale: [1, 1.01, 1] } : {}}
                   transition={{ duration: 0.25 }}
                 >
-                  <span className={[
+                  <span className={cn(
                     'problem-number-sm mt-0.5',
-                    slotId ? '' : 'opacity-30',
-                  ].join(' ')}>
+                    !slotId && 'opacity-30',
+                  )}>
                     {i + 1}
                   </span>
                   <span className="leading-[1.5]">
@@ -162,12 +163,12 @@ function LandingDemo() {
                 {i < 2 && (
                   <div className="flex items-center justify-center py-1">
                     <motion.div
-                      className={[
+                      className={cn(
                         'flex items-center gap-1.5 px-2 py-0.5 text-[10px] font-medium transition-all',
                         connections[i] === 'green' ? 'text-green-700 bg-green-50 border border-green-200'
                           : connections[i] === 'yellow' ? 'text-amber-600 bg-amber-50 border border-amber-200'
                           : 'text-stone-300 border border-transparent',
-                      ].join(' ')}
+                      )}
                       animate={connections[i] !== 'none' ? { scale: [0.8, 1.05, 1], opacity: [0, 1] } : {}}
                       transition={{ duration: 0.4 }}
                     >
@@ -289,41 +290,46 @@ export default function LandingPage() {
       </nav>
 
       {/* ── Hero ── */}
-      <section className="max-w-3xl mx-auto px-4 sm:px-6 pt-20 sm:pt-28 pb-20 sm:pb-24">
+      <section className="max-w-3xl mx-auto px-4 sm:px-6 section-lg">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
         >
           {/* Problem number style badge */}
-          <p className="section-label mb-8">수능 비문학 추론 훈련</p>
+          <p className="section-label mb-8">수능 비문학, 읽는 것만으로는 부족합니다</p>
 
           {/* Headline — exam-style serif */}
           <h1 className="font-exam-serif text-[2.5rem] sm:text-[3.5rem] font-black leading-[1.2] tracking-tight mb-4">
-            추론을 직접 조립하며
+            논리 구조를 직접 조립하며
             <br />
-            <span className="mark-red">정복</span>하세요.
+            <span className="mark-red">추론력</span>을 훈련하세요.
           </h1>
 
-          <p className="text-stone-500 text-base sm:text-lg max-w-md mb-10 leading-relaxed">
-            흩어진 문장을 드래그해 논리 순서로 조립하세요.
+          <p className="text-stone-500 text-base sm:text-lg max-w-md mb-6 leading-relaxed">
+            지문을 읽고 핵심 문장을 논리 순서대로 배치하세요.
+            <br />
+            매일 5분이면 추론력이 바뀝니다.
           </p>
+
+          <div className="flex flex-wrap gap-2 mb-10">
+            {['수능 비문학', '논술', 'LEET', '공무원 시험', 'PSAT'].map((label) => (
+              <span key={label} className="border border-exam-rule text-xs text-stone-500 px-2 py-0.5">
+                {label}
+              </span>
+            ))}
+          </div>
 
           <div className="flex flex-col sm:flex-row gap-3">
             <Link
-              href="/demo"
+              href="/signup"
               className="inline-flex items-center justify-center gap-2 px-8 py-3.5 bg-exam-ink text-white font-bold text-sm hover:bg-stone-800 transition-colors"
             >
-              지금 체험하기
+              무료로 시작하기
               <ArrowRight size={15} />
             </Link>
-            <Link
-              href="/signup"
-              className="inline-flex items-center justify-center gap-1.5 px-8 py-3.5 border border-exam-rule text-stone-600 font-medium text-sm hover:border-exam-ink hover:text-exam-ink transition-colors"
-            >
-              무료 시작
-            </Link>
           </div>
+          <p className="text-xs text-stone-400 mt-3">7일 무제한 체험 · 카드 등록 불필요</p>
         </motion.div>
       </section>
 
@@ -337,7 +343,7 @@ export default function LandingPage() {
           <LandingDemo />
           <div className="text-center mt-5">
             <Link
-              href="/demo"
+              href="/signup"
               className="inline-flex items-center gap-1.5 text-sm font-medium text-stone-500 hover:text-exam-ink transition-colors"
             >
               직접 해보고 싶으세요? <ArrowRight size={14} />
@@ -347,16 +353,57 @@ export default function LandingPage() {
       </section>
 
       {/* ── Stats — inline bar ── */}
-      <div className="flex items-center justify-center gap-6 sm:gap-10 py-8 text-center text-xs text-stone-500">
-        <span><strong className="text-exam-ink text-sm">7</strong> 레벨</span>
-        <span className="text-stone-300">|</span>
-        <span><strong className="text-exam-ink text-sm">5</strong> 문제/일 무료</span>
-        <span className="text-stone-300">|</span>
-        <span><strong className="text-exam-ink text-sm">100+</strong> 문제</span>
+      <div className="grid grid-cols-3 max-w-lg mx-auto py-6 text-center text-xs text-stone-500">
+        <span><strong className="text-exam-ink text-sm block">7 레벨</strong>난이도 체계</span>
+        <span className="border-x border-exam-rule"><strong className="text-exam-ink text-sm block">300+</strong>누적 문제</span>
+        <span><strong className="text-exam-ink text-sm block">평균 15%</strong>정답률 향상</span>
       </div>
 
+      {/* ── Why this works ── */}
+      <section className="border-y border-exam-rule section-md bg-white">
+        <div className="max-w-3xl mx-auto px-6">
+          <p className="section-label mb-3">Why this works</p>
+          <h2 className="font-exam-serif text-2xl sm:text-3xl font-black tracking-tight mb-12">
+            왜 기존 공부법으로는 부족할까?
+          </h2>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+            {[
+              {
+                icon: BookX,
+                title: '인강은 듣기만',
+                desc: '강사의 풀이를 보는 것과 직접 추론하는 것은 다릅니다.',
+              },
+              {
+                icon: FileText,
+                title: '문제집은 정답만',
+                desc: 'O/X만 확인하면 왜 그 순서인지 이해할 수 없습니다.',
+              },
+              {
+                icon: Brain,
+                title: '이:르다는 직접 조립',
+                desc: '논리 체인을 손으로 만들면 추론 회로가 훈련됩니다.',
+              },
+            ].map((card, i) => (
+              <motion.div
+                key={card.title}
+                initial={{ opacity: 0, y: 16 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.08 }}
+                className="border border-exam-rule p-5 hover:border-exam-ink/30 hover:shadow-sm transition-all"
+              >
+                <card.icon size={24} className="text-exam-ink mb-3" strokeWidth={1.5} />
+                <p className="font-bold text-sm text-exam-ink mb-1.5">{card.title}</p>
+                <p className="text-xs text-stone-500 leading-relaxed">{card.desc}</p>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* ── How it works — 3 steps ── */}
-      <section className="border-y border-exam-rule py-20 sm:py-24 bg-white">
+      <section className="py-20 sm:py-24">
         <div className="max-w-3xl mx-auto px-6">
           <p className="section-label mb-3">How it works</p>
           <h2 className="font-exam-serif text-2xl sm:text-3xl font-black tracking-tight mb-12">어떻게 하나요?</h2>
@@ -369,6 +416,7 @@ export default function LandingPage() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.08 }}
+                className="hover:translate-y-[-2px] transition-transform"
               >
                 <div className="problem-number mb-4">{s.n}</div>
                 <p className="font-bold text-sm text-exam-ink mb-1.5">{s.title}</p>
@@ -380,22 +428,22 @@ export default function LandingPage() {
       </section>
 
       {/* ── Pricing — single card ── */}
-      <section className="py-20 sm:py-24">
+      <section className="section-md">
         <div className="max-w-3xl mx-auto px-6">
           <div className="border-2 border-exam-ink bg-white p-6 sm:p-8 max-w-md mx-auto text-center">
             <p className="text-[10px] font-bold text-stone-400 uppercase tracking-wider mb-2">무료로 시작</p>
-            <p className="font-exam-serif text-2xl font-black text-exam-ink mb-1">매일 5문제 무료</p>
-            <p className="text-sm text-stone-500 mb-6">더 필요하면 ₩9,900/월로 무제한</p>
-            <Link href="/demo" className="block w-full py-3 bg-exam-ink text-white text-sm font-bold hover:bg-stone-800 transition-colors">
-              지금 체험하기
+            <p className="font-exam-serif text-2xl font-black text-exam-ink mb-1">7일 무제한 무료 체험</p>
+            <p className="text-sm text-stone-500 mb-6">체험 후 하루 5문제 무료 · ₩9,900/월 무제한</p>
+            <Link href="/signup" className="block w-full py-3 bg-exam-ink text-white text-sm font-bold hover:bg-stone-800 transition-colors">
+              무료로 시작하기
             </Link>
-            <p className="text-xs text-stone-400 mt-3">가입 불필요 · 바로 플레이</p>
+            <p className="text-xs text-stone-400 mt-3">카드 등록 불필요 · 바로 플레이</p>
           </div>
         </div>
       </section>
 
       {/* ── Testimonials ── */}
-      <section className="border-y border-exam-rule py-16 sm:py-20 bg-white">
+      <section className="border-y border-exam-rule section-md bg-white">
         <div className="max-w-3xl mx-auto px-6">
           <motion.div
             variants={container}
@@ -419,7 +467,7 @@ export default function LandingPage() {
               <motion.div
                 key={t.name}
                 variants={item}
-                className="border border-exam-rule p-5"
+                className="border border-exam-rule p-5 hover:border-exam-ink/30 hover:shadow-sm transition-all"
               >
                 <div className="mb-3 pb-3 border-b border-exam-rule">
                   <p className="text-sm font-bold text-exam-ink">{t.name}</p>
@@ -433,13 +481,13 @@ export default function LandingPage() {
       </section>
 
       {/* ── CTA ── */}
-      <section className="py-16 sm:py-20">
+      <section className="section-sm">
         <div className="max-w-3xl mx-auto px-6 text-center">
           <h2 className="font-exam-serif text-2xl sm:text-3xl font-black tracking-tight mb-4">
             지금 바로 시작하세요
           </h2>
-          <Link href="/demo" className="inline-flex items-center gap-2 px-10 py-3.5 bg-exam-ink text-white font-bold text-sm hover:bg-stone-800 transition-colors">
-            무료 체험 →
+          <Link href="/signup" className="inline-flex items-center gap-2 px-10 py-3.5 bg-exam-ink text-white font-bold text-sm hover:bg-stone-800 transition-colors">
+            무료로 시작하기 →
           </Link>
         </div>
       </section>

@@ -42,6 +42,7 @@ export interface Profile {
   longest_streak: number
   last_active_date: string | null
   streak_freeze_count: number
+  trial_expires_at: string | null
 }
 
 export interface MockScore {

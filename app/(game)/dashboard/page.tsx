@@ -6,7 +6,7 @@ import HintDependencyChart from '@/components/dashboard/HintDependencyChart'
 import TopicAnalysisCard from '@/components/dashboard/TopicAnalysisCard'
 import InviteSection from '@/components/dashboard/InviteSection'
 import Link from 'next/link'
-import { BookOpen, TrendingUp, TrendingDown, Target, Zap, ClipboardList, Flame } from 'lucide-react'
+import { BookOpen, TrendingUp, TrendingDown, Target, Zap, ClipboardList, Flame, ArrowUpRight, ArrowRight } from 'lucide-react'
 
 export default async function DashboardPage() {
   const supabase = await createClient()
@@ -18,7 +18,7 @@ export default async function DashboardPage() {
 
   const { data: profile, error: profileError } = await service
     .from('profiles')
-    .select('*, streak_days, longest_streak')
+    .select('*, streak_days, longest_streak, initial_diagnostic_accuracy, initial_diagnostic_level, initial_diagnostic_at')
     .eq('id', user.id)
     .single()
 
@@ -145,6 +145,63 @@ export default async function DashboardPage() {
             ← 레벨로
           </Link>
         </div>
+
+        {/* Improvement tracking — diagnostic vs. current */}
+        {profile.initial_diagnostic_at ? (() => {
+          const initialAcc = Number(profile.initial_diagnostic_accuracy) ?? 0
+          const diff = overallAccuracy - initialAcc
+          const improved = diff > 0
+          return (
+            <div className="border border-exam-rule bg-white p-5 mb-6">
+              <span className="section-label mb-3">성장 추적</span>
+              <div className="flex items-center justify-between gap-4">
+                <div className="flex items-center gap-6">
+                  <div className="text-center">
+                    <p className="text-[11px] text-stone-500 mb-1">첫 진단 정확도</p>
+                    <p className="text-xl font-black text-stone-400">{initialAcc}%</p>
+                  </div>
+                  <ArrowRight size={16} className="text-stone-300 shrink-0" />
+                  <div className="text-center">
+                    <p className="text-[11px] text-stone-500 mb-1">현재 정확도</p>
+                    <p className="text-xl font-black text-exam-ink">{overallAccuracy}%</p>
+                  </div>
+                </div>
+                {totalQ >= 5 && (
+                  <div className={`flex items-center gap-1 px-3 py-1.5 text-sm font-bold ${
+                    improved
+                      ? 'bg-green-50 text-green-700 border border-green-200'
+                      : diff === 0
+                        ? 'bg-stone-50 text-stone-500 border border-stone-200'
+                        : 'bg-red-50 text-red-600 border border-red-200'
+                  }`}>
+                    {improved && <ArrowUpRight size={14} />}
+                    {improved ? '+' : ''}{diff}%
+                  </div>
+                )}
+              </div>
+              {totalQ < 5 && (
+                <p className="text-[11px] text-stone-400 mt-2">
+                  5문제 이상 풀면 정확한 성장률을 확인할 수 있어요.
+                </p>
+              )}
+            </div>
+          )
+        })() : (
+          <Link
+            href="/diagnostic?mode=onboarding"
+            className="border border-dashed border-exam-rule bg-white p-5 mb-6 flex items-center gap-3 hover:border-exam-ink transition-colors group block"
+          >
+            <div className="w-10 h-10 border border-exam-rule flex items-center justify-center shrink-0 group-hover:border-exam-ink transition-colors">
+              <Target size={18} className="text-stone-400 group-hover:text-exam-ink transition-colors" />
+            </div>
+            <div>
+              <p className="text-sm font-semibold text-exam-ink">진단 테스트로 실력 측정하기</p>
+              <p className="text-[11px] text-stone-500 mt-0.5">
+                현재 추론 실력을 측정하고 성장 과정을 추적하세요
+              </p>
+            </div>
+          </Link>
+        )}
 
         {/* Paywall for free users */}
         {!isPremium && (

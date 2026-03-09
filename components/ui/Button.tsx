@@ -1,5 +1,6 @@
 import { forwardRef, type ButtonHTMLAttributes, type ReactNode } from 'react'
 import { Loader2 } from 'lucide-react'
+import { cn } from '@/lib/utils'
 
 type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'danger'
 type ButtonSize = 'sm' | 'md' | 'lg'
@@ -48,15 +49,13 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       <button
         ref={ref}
         disabled={disabled || loading}
-        className={[
+        className={cn(
           'inline-flex items-center justify-center gap-2 font-bold transition-colors',
           variantStyles[variant],
           sizeStyles[size],
-          fullWidth ? 'w-full' : '',
+          fullWidth && 'w-full',
           className,
-        ]
-          .filter(Boolean)
-          .join(' ')}
+        )}
         {...props}
       >
         {loading ? (

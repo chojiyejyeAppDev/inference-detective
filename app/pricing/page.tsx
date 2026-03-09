@@ -14,6 +14,7 @@ import {
   type PaymentMethodKey,
 } from '@/lib/payment/channels'
 import { createClient } from '@/lib/supabase/client'
+import { cn } from '@/lib/utils'
 import Button from '@/components/ui/Button'
 import Input from '@/components/ui/Input'
 
@@ -126,6 +127,13 @@ export default function PricingPage() {
   function closeCancelModal() {
     setShowCancelModal(false)
   }
+
+  useEffect(() => {
+    if (!showCancelModal) return
+    const handleEsc = (e: KeyboardEvent) => { if (e.key === 'Escape') closeCancelModal() }
+    document.addEventListener('keydown', handleEsc)
+    return () => document.removeEventListener('keydown', handleEsc)
+  }, [showCancelModal])
 
   async function executeCancelSubscription() {
     setCancelLoading(true)
@@ -302,12 +310,12 @@ export default function PricingPage() {
         <motion.div variants={item} className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
           {/* Free plan card */}
           <div
-            className={[
+            className={cn(
               'border-2 p-6 flex flex-col transition-all',
               !isAlreadySubscribed
                 ? 'border-exam-ink bg-white'
                 : 'border-exam-rule bg-white',
-            ].join(' ')}
+            )}
           >
             {!isAlreadySubscribed && (
               <span className="self-start text-[10px] font-bold text-exam-ink border border-exam-ink px-2 py-0.5 mb-3">
@@ -391,12 +399,12 @@ export default function PricingPage() {
                 <button
                   key={key}
                   onClick={() => setSelectedPlan(key)}
-                  className={[
+                  className={cn(
                     'flex-1 py-3 border text-sm font-semibold transition-all text-center',
                     isSelected
                       ? 'border-exam-ink bg-exam-highlight text-exam-ink'
                       : 'border-exam-rule text-stone-400 hover:border-stone-400 hover:text-stone-600',
-                  ].join(' ')}
+                  )}
                 >
                   {plan.label}
                   <span className="block text-xs font-normal mt-0.5">
@@ -411,9 +419,9 @@ export default function PricingPage() {
         {/* 결제 수단 선택 */}
         <motion.div
           variants={item}
-          className="rounded-2xl border border-white/[0.08] bg-bg-surface/60 p-6 mb-5"
+          className="border border-exam-rule bg-white p-6 mb-5"
         >
-          <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-5">결제 수단</p>
+          <p className="text-xs font-bold text-stone-400 uppercase tracking-wider mb-4">결제 수단</p>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             {PAYMENT_METHOD_ORDER.map((key) => {
               const ch = PAYMENT_CHANNELS[key]
@@ -424,27 +432,24 @@ export default function PricingPage() {
                   key={key}
                   onClick={() => !disabled && setSelectedMethod(key)}
                   disabled={disabled}
-                  className={[
-                    'flex flex-col items-center gap-1.5 rounded-xl border px-3 py-3.5 transition-all duration-200 relative overflow-hidden',
+                  className={cn(
+                    'flex flex-col items-center gap-1.5 border px-3 py-3.5 transition-all duration-200 relative overflow-hidden',
                     disabled
-                      ? 'border-white/[0.04] opacity-40 cursor-not-allowed'
+                      ? 'border-exam-rule opacity-40 cursor-not-allowed'
                       : isSelected
-                        ? 'border-amber-500/60 bg-amber-500/[0.08]'
-                        : 'border-white/[0.07] hover:border-white/[0.13] hover:bg-white/[0.03]',
-                  ].join(' ')}
+                        ? 'border-exam-ink bg-exam-highlight'
+                        : 'border-exam-rule hover:border-stone-400',
+                  )}
                 >
-                  {isSelected && (
-                    <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-amber-500/40 to-transparent" />
-                  )}
                   {key === 'kakaopay' ? (
-                    <Smartphone size={18} className={isSelected ? 'text-amber-400' : 'text-slate-500'} />
+                    <Smartphone size={18} className={isSelected ? 'text-exam-red' : 'text-stone-400'} />
                   ) : (
-                    <CreditCard size={18} className={isSelected ? 'text-amber-400' : 'text-slate-500'} />
+                    <CreditCard size={18} className={isSelected ? 'text-exam-red' : 'text-stone-400'} />
                   )}
-                  <p className={['text-xs font-bold', isSelected ? 'text-slate-200' : 'text-slate-400'].join(' ')}>
+                  <p className={cn('text-xs', isSelected ? 'text-exam-ink font-bold' : 'text-stone-500')}>
                     {ch.label}
                   </p>
-                  <p className="text-[10px] text-slate-500">
+                  <p className="text-[10px] text-stone-400">
                     {disabled ? '일회성 결제만' : ch.description}
                   </p>
                 </button>
@@ -585,6 +590,9 @@ export default function PricingPage() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           className="fixed inset-0 z-[100] bg-black/40 backdrop-blur-sm flex items-center justify-center px-4"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="cancel-modal-title"
           onClick={(e) => { if (e.target === e.currentTarget) closeCancelModal() }}
         >
           <motion.div
@@ -602,7 +610,7 @@ export default function PricingPage() {
 
             {cancelStep === 'reason' && (
               <>
-                <h3 className="font-exam-serif text-lg font-bold text-exam-ink mb-1">구독을 취소하시겠어요?</h3>
+                <h3 id="cancel-modal-title" className="font-exam-serif text-lg font-bold text-exam-ink mb-1">구독을 취소하시겠어요?</h3>
                 <p className="text-xs text-stone-500 mb-5">
                   더 나은 서비스를 위해 이유를 알려주세요.
                 </p>
@@ -611,12 +619,12 @@ export default function PricingPage() {
                     <button
                       key={r.key}
                       onClick={() => setCancelReason(r.key)}
-                      className={[
+                      className={cn(
                         'w-full text-left px-4 py-3 border text-sm transition-all',
                         cancelReason === r.key
                           ? 'border-exam-ink bg-exam-highlight text-exam-ink'
                           : 'border-exam-rule hover:border-stone-400 text-stone-500',
-                      ].join(' ')}
+                      )}
                     >
                       {r.label}
                     </button>
@@ -642,7 +650,7 @@ export default function PricingPage() {
 
             {cancelStep === 'offer' && (
               <>
-                <h3 className="font-exam-serif text-lg font-bold text-exam-ink mb-1">잠깐만요!</h3>
+                <h3 id="cancel-modal-title" className="font-exam-serif text-lg font-bold text-exam-ink mb-1">잠깐만요!</h3>
                 <p className="text-xs text-stone-500 mb-5">
                   {cancelReason === 'too_expensive'
                     ? '일주일 이용권(\u20A93,900)으로 부담 없이 계속해보세요.'
@@ -711,7 +719,7 @@ export default function PricingPage() {
 
             {cancelStep === 'confirm' && (
               <>
-                <h3 className="font-exam-serif text-lg font-bold text-exam-ink mb-1">정말 취소하시겠어요?</h3>
+                <h3 id="cancel-modal-title" className="font-exam-serif text-lg font-bold text-exam-ink mb-1">정말 취소하시겠어요?</h3>
                 <p className="text-xs text-stone-500 mb-5">
                   만료일까지는 프리미엄 기능을 계속 이용할 수 있어요.
                   {currentSubscription?.expiresAt && (
@@ -755,6 +763,9 @@ export default function PricingPage() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           className="fixed inset-0 z-[100] bg-black/40 backdrop-blur-sm flex items-center justify-center px-4"
+          role="dialog"
+          aria-modal="true"
+          aria-label="결제 진행 중"
         >
           <motion.div
             initial={{ scale: 0.9, opacity: 0 }}

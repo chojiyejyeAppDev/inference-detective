@@ -100,6 +100,33 @@ export async function GET(req: NextRequest) {
       if (needsNickname) {
         return NextResponse.redirect(`${origin}/levels?setup_nickname=true`)
       }
+
+      // 신규 사용자 → 진단 테스트로 안내 (user_progress 0건이면 신규)
+      if (user && next === '/levels') {
+        try {
+          const svc = await createServiceClient()
+          const { count } = await svc
+            .from('user_progress')
+            .select('id', { count: 'exact', head: true })
+            .eq('user_id', user.id)
+
+          if (count === 0) {
+            // 초기 진단 점수가 없는 신규 사용자
+            const { data: prof } = await svc
+              .from('profiles')
+              .select('initial_diagnostic_at')
+              .eq('id', user.id)
+              .single()
+
+            if (prof && !prof.initial_diagnostic_at) {
+              return NextResponse.redirect(`${origin}/diagnostic?mode=onboarding`)
+            }
+          }
+        } catch {
+          // 조회 실패 시 기본 경로로 진행
+        }
+      }
+
       return NextResponse.redirect(`${origin}${next}`)
     }
   }
