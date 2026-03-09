@@ -547,6 +547,26 @@ function validateQuestion(q: GeneratedQuestion, spec: LevelSpec): boolean {
   return true
 }
 
+// ── 복구용 JSON 덤프 ─────────────────────────────────
+function dumpForRecovery(questions: GeneratedQuestion[]): void {
+  if (questions.length === 0) return
+
+  console.log('\n📦 [RECOVERY_DUMP_START]')
+  console.log(JSON.stringify(questions))
+  console.log('[RECOVERY_DUMP_END]')
+
+  const dumpDir = path.resolve(__dirname, '..', '.question-dumps')
+  try {
+    if (!fs.existsSync(dumpDir)) fs.mkdirSync(dumpDir, { recursive: true })
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19)
+    const dumpPath = path.join(dumpDir, `questions-${timestamp}.json`)
+    fs.writeFileSync(dumpPath, JSON.stringify(questions, null, 2), 'utf-8')
+    console.log(`  💾 복구 파일 저장: ${dumpPath}`)
+  } catch {
+    // CI 환경에서 쓰기 실패해도 로그 덤프가 있으므로 무시
+  }
+}
+
 // ── Supabase 저장 ─────────────────────────────────────
 async function saveToSupabase(questions: GeneratedQuestion[]): Promise<number> {
   if (!SUPABASE_URL || !SUPABASE_KEY) {
@@ -556,6 +576,7 @@ async function saveToSupabase(questions: GeneratedQuestion[]): Promise<number> {
 
   const supabase = createClient(SUPABASE_URL, SUPABASE_KEY)
   let saved = 0
+  const failed: GeneratedQuestion[] = []
 
   for (const q of questions) {
     const { error } = await supabase.from('questions').insert({
@@ -575,9 +596,15 @@ async function saveToSupabase(questions: GeneratedQuestion[]): Promise<number> {
 
     if (error) {
       console.error(`  ❌ 저장 실패 (${q.topic}, L${q.difficulty_level}): ${error.message}`)
+      failed.push(q)
     } else {
       saved++
     }
+  }
+
+  if (failed.length > 0) {
+    console.error(`\n⚠️  ${failed.length}개 문제 저장 실패 — 복구용 덤프 생성`)
+    dumpForRecovery(failed)
   }
 
   return saved
@@ -647,6 +674,9 @@ async function main() {
     }
     return
   }
+
+  // 저장 전 전체 덤프 (만약을 위해)
+  dumpForRecovery(allQuestions)
 
   // DB 저장
   const saved = await saveToSupabase(allQuestions)
