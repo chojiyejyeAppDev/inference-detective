@@ -3,11 +3,11 @@ import { validateQuestion } from './validator'
 import type { Topic } from '@/lib/questions/types'
 
 const LEVEL_GUIDE: Record<number, { slots: number; hints: number; passageLen: string; style: string }> = {
-  1: { slots: 3, hints: 3, passageLen: '80~120자 (3문장)', style: '일상/기초 인과. 짧고 명확한 문장.' },
-  2: { slots: 3, hints: 3, passageLen: '80~150자 (3문장)', style: '부분 추상 개념 포함. 약간의 학술 용어.' },
-  3: { slots: 4, hints: 3, passageLen: '150~200자 (4~5문장)', style: '수식어/종속절 포함. 복합 문장 사용.' },
-  4: { slots: 4, hints: 3, passageLen: '250~350자 (5~7문장)', style: '모의고사 수준. 전문 용어와 복합 인과.' },
-  5: { slots: 5, hints: 1, passageLen: '350~500자 (7~9문장)', style: '대조/역전 논리. 반례와 예외 포함.' },
+  1: { slots: 3, hints: 3, passageLen: '200~300자 (6~7문장)', style: '일상/기초 인과. 짧고 명확한 문장.' },
+  2: { slots: 3, hints: 3, passageLen: '200~350자 (6~8문장)', style: '부분 추상 개념 포함. 약간의 학술 용어.' },
+  3: { slots: 4, hints: 3, passageLen: '250~400자 (6~9문장)', style: '수식어/종속절 포함. 복합 문장 사용.' },
+  4: { slots: 4, hints: 3, passageLen: '300~450자 (6~10문장)', style: '모의고사 수준. 전문 용어와 복합 인과.' },
+  5: { slots: 5, hints: 1, passageLen: '350~500자 (7~11문장)', style: '대조/역전 논리. 반례와 예외 포함.' },
   6: { slots: 6, hints: 1, passageLen: '450~650자 (9~12문장)', style: '수능 실전 수준. 다층적 논증 구조.' },
   7: { slots: 7, hints: 0, passageLen: '550~800자 (11~15문장)', style: '고난도 추상. 복잡한 논리 구조와 전문 개념.' },
 }
