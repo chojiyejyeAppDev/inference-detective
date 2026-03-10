@@ -26,8 +26,9 @@ export async function POST(request: Request) {
   const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
   const service = createServiceClient(supabaseUrl, serviceKey)
 
-  // Upload to Supabase Storage
-  const storagePath = `papers/${Date.now()}-${file.name}`
+  // Upload to Supabase Storage (use sanitized path to avoid invalid key errors)
+  const safeFileName = `${Date.now()}-${crypto.randomUUID().slice(0, 8)}.pdf`
+  const storagePath = `papers/${safeFileName}`
   const buffer = Buffer.from(await file.arrayBuffer())
 
   const { error: uploadError } = await service.storage
