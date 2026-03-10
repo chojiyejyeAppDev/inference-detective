@@ -1,4 +1,4 @@
-import pdf from 'pdf-parse'
+import { PDFParse } from 'pdf-parse'
 
 export interface ParseResult {
   text: string
@@ -6,10 +6,11 @@ export interface ParseResult {
 }
 
 export async function parsePdf(buffer: Buffer): Promise<ParseResult> {
-  const data = await pdf(buffer)
+  const parser = new PDFParse({ data: new Uint8Array(buffer) })
+  const result = await parser.getText()
   return {
-    text: data.text.trim(),
-    pageCount: data.numpages,
+    text: result.text.trim(),
+    pageCount: result.total,
   }
 }
 
