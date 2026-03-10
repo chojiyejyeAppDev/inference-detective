@@ -14,7 +14,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     .eq('id', user.id)
     .single()
 
-  if (profile?.role !== 'admin') redirect('/levels')
+  if (profile?.role !== 'admin') redirect('/login')
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-200">
@@ -37,9 +37,6 @@ export default async function AdminLayout({ children }: { children: React.ReactN
             사용자
           </Link>
           <div className="flex-1" />
-          <Link href="/levels" className="text-xs text-slate-500 hover:text-slate-300 transition-colors">
-            게임으로 돌아가기
-          </Link>
         </div>
       </nav>
 
