@@ -12,6 +12,9 @@ interface Question {
   conclusion: string
   correct_chain: string[]
   created_at: string
+  source: string | null
+  auto_generated: boolean
+  papers: { filename: string }[] | null
 }
 
 const topicLabel: Record<string, string> = {
@@ -27,23 +30,27 @@ export default function QuestionsPage() {
   const [loading, setLoading] = useState(true)
   const [filterLevel, setFilterLevel] = useState<number | null>(null)
   const [filterTopic, setFilterTopic] = useState<string | null>(null)
+  const [filterSource, setFilterSource] = useState<string | null>(null)
 
   const fetchQuestions = useCallback(async () => {
     setLoading(true)
     const supabase = createClient()
     let query = supabase
       .from('questions')
-      .select('id, difficulty_level, topic, passage, conclusion, correct_chain, created_at')
+      .select('id, difficulty_level, topic, passage, conclusion, correct_chain, created_at, source, auto_generated, papers(filename)')
       .order('difficulty_level')
       .order('created_at', { ascending: false })
 
     if (filterLevel) query = query.eq('difficulty_level', filterLevel)
     if (filterTopic) query = query.eq('topic', filterTopic)
+    if (filterSource === 'paper') query = query.not('paper_id', 'is', null)
+    else if (filterSource === 'ai') query = query.eq('auto_generated', true).is('paper_id', null)
+    else if (filterSource === 'manual') query = query.eq('auto_generated', false).is('paper_id', null)
 
     const { data } = await query
     setQuestions((data as Question[]) ?? [])
     setLoading(false)
-  }, [filterLevel, filterTopic])
+  }, [filterLevel, filterTopic, filterSource])
 
   useEffect(() => {
     fetchQuestions()
@@ -98,6 +105,16 @@ export default function QuestionsPage() {
             <option key={k} value={k}>{v}</option>
           ))}
         </select>
+        <select
+          value={filterSource ?? ''}
+          onChange={(e) => setFilterSource(e.target.value || null)}
+          className="rounded-lg bg-slate-800 border border-slate-700 text-sm px-3 py-2 text-slate-200"
+        >
+          <option value="">전체 출처</option>
+          <option value="paper">논문 기반</option>
+          <option value="ai">AI 자동 생성</option>
+          <option value="manual">수동 등록</option>
+        </select>
       </div>
 
       {/* Table */}
@@ -112,6 +129,7 @@ export default function QuestionsPage() {
                 <th className="py-3 px-2 text-slate-400 font-medium">주제</th>
                 <th className="py-3 px-2 text-slate-400 font-medium">결론</th>
                 <th className="py-3 px-2 text-slate-400 font-medium">체인</th>
+                <th className="py-3 px-2 text-slate-400 font-medium">출처</th>
                 <th className="py-3 px-2 text-slate-400 font-medium">작업</th>
               </tr>
             </thead>
@@ -127,6 +145,24 @@ export default function QuestionsPage() {
                   <td className="py-3 px-2 text-slate-300 max-w-xs truncate">{q.conclusion}</td>
                   <td className="py-3 px-2 text-slate-500 font-mono text-xs">
                     {q.correct_chain.join(' → ')}
+                  </td>
+                  <td className="py-3 px-2">
+                    {q.papers && q.papers.length > 0 ? (
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs bg-blue-500/10 text-blue-400" title={q.papers[0].filename}>
+                        <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} aria-hidden="true">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
+                        </svg>
+                        <span className="max-w-[120px] truncate">{q.papers[0].filename.replace(/\.pdf$/i, '')}</span>
+                      </span>
+                    ) : q.auto_generated ? (
+                      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs bg-purple-500/10 text-purple-400">
+                        AI 생성
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs bg-slate-500/10 text-slate-400">
+                        수동
+                      </span>
+                    )}
                   </td>
                   <td className="py-3 px-2">
                     <div className="flex gap-2">
