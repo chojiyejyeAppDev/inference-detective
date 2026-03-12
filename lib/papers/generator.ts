@@ -171,10 +171,12 @@ export async function generateQuestions(options: GenerateOptions): Promise<Gener
       const result = validateQuestion(rawQuestions[i])
       if (result.valid) {
         const shuffled = shuffleSentenceIds(rawQuestions[i])
-        shuffled.source = text.length > 0 ? 'paper' : 'ai_generated'
-        shuffled.paper_id = paperId ?? null
-        shuffled.auto_generated = true
-        validQuestions.push(shuffled as unknown as GeneratedQuestion)
+        validQuestions.push({
+          ...shuffled,
+          source: text.length > 0 ? 'paper' : 'ai_generated',
+          paper_id: paperId ?? null,
+          auto_generated: true,
+        })
       } else {
         errors.push(`문제 ${i + 1} 검증 실패: ${result.errors.join(', ')}`)
       }
