@@ -112,7 +112,7 @@ ${text.length > 0 ? `\n## 입력 텍스트\n${text.slice(0, 15000)}` : ''}`
  * Fisher-Yates 셔플로 sentence ID를 무작위 재배정.
  * 논리적 순서(correct_chain)는 유지하되, ID가 알파벳순이 아니게 됨.
  */
-function shuffleSentenceIds(q: Record<string, unknown>): Record<string, unknown> {
+function shuffleSentenceIds(q: Record<string, unknown>): void {
   const sentences = q.sentences as Array<{ id: string; text: string }>
   const chain = q.correct_chain as string[]
 
@@ -126,11 +126,8 @@ function shuffleSentenceIds(q: Record<string, unknown>): Record<string, unknown>
   const idMap = new Map<string, string>()
   oldIds.forEach((old, idx) => idMap.set(old, newIds[idx]))
 
-  return {
-    ...q,
-    sentences: sentences.map(s => ({ ...s, id: idMap.get(s.id)! })),
-    correct_chain: chain.map(id => idMap.get(id)!),
-  }
+  sentences.forEach(s => { s.id = idMap.get(s.id)! })
+  q.correct_chain = chain.map(id => idMap.get(id)!)
 }
 
 export async function generateQuestions(options: GenerateOptions): Promise<GenerateResult> {
@@ -170,9 +167,9 @@ export async function generateQuestions(options: GenerateOptions): Promise<Gener
     for (let i = 0; i < rawQuestions.length; i++) {
       const result = validateQuestion(rawQuestions[i])
       if (result.valid) {
-        const shuffled = shuffleSentenceIds(rawQuestions[i])
+        shuffleSentenceIds(rawQuestions[i])
         validQuestions.push({
-          ...shuffled,
+          ...rawQuestions[i],
           source: text.length > 0 ? 'paper' : 'ai_generated',
           paper_id: paperId ?? null,
           auto_generated: true,
